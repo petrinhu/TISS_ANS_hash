@@ -93,6 +93,7 @@ Cargo.lock
 *.gcno
 *.gcov
 build/
+build_*/
 cmake-build-*/
 CMakeCache.txt
 CMakeFiles/
