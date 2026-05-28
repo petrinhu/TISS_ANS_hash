@@ -20,9 +20,11 @@ jobs:
     # que mapeia pra runner individual e fica em fila se offline).
     runs-on: codeberg-small
     container:
-      # node:20-bookworm tem git+curl+ca-certificates pre-instalados
-      # (deps de actions/checkout); setup-python instala o Python da matriz.
-      image: docker.io/library/node:20-bookworm
+      # Imagem do mirror oficial Forgejo (evita rate-limit/policy do docker.io
+      # nos runners codeberg-*). node:20-bookworm tem git+curl+ca-certificates
+      # pre-instalados (deps de actions/checkout); setup-python instala a
+      # versao Python da matriz por cima.
+      image: code.forgejo.org/oci/node:20-bookworm
     strategy:
       fail-fast: false
       matrix:
