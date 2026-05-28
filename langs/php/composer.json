@@ -1,0 +1,50 @@
+{
+    "name": "petrinhu/tiss-hash",
+    "description": "Hash MD5 do epilogo XML TISS/ANS (Padrao TISS 4.01.00). Validado contra goldens reais.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "tiss",
+        "ans",
+        "md5",
+        "xml",
+        "hash",
+        "saude-suplementar",
+        "brasil",
+        "healthcare"
+    ],
+    "authors": [
+        {
+            "name": "Petrus Silva Costa",
+            "email": "petrinhu@yahoo.com.br"
+        }
+    ],
+    "homepage": "https://github.com/petrinhu/TISS_ANS_hash",
+    "support": {
+        "issues": "https://github.com/petrinhu/TISS_ANS_hash/issues",
+        "source": "https://github.com/petrinhu/TISS_ANS_hash"
+    },
+    "require": {
+        "php": "^8.1",
+        "ext-dom": "*",
+        "ext-libxml": "*",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "TissHash\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TissHash\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --colors=auto tests/"
+    },
+    "minimum-stability": "stable"
+}

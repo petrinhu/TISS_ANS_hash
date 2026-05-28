@@ -1,0 +1,47 @@
+{
+  "name": "tiss-hash",
+  "version": "0.1.0",
+  "description": "Hash MD5 do epílogo XML TISS/ANS (Padrão TISS 4.01.00). Reverse-engineered, validado contra goldens reais.",
+  "type": "module",
+  "main": "src/index.cjs",
+  "module": "src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "require": "./src/index.cjs"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test 'test/**/*.test.*'"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.0"
+  },
+  "keywords": [
+    "tiss",
+    "ans",
+    "md5",
+    "xml",
+    "hash",
+    "saude-suplementar",
+    "brasil",
+    "healthcare"
+  ],
+  "author": "Petrus Silva Costa <petrinhu@yahoo.com.br>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/petrinhu/TISS_ANS_hash.git",
+    "directory": "langs/node"
+  },
+  "homepage": "https://github.com/petrinhu/TISS_ANS_hash",
+  "bugs": "https://github.com/petrinhu/TISS_ANS_hash/issues"
+}

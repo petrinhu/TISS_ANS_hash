@@ -1,0 +1,9 @@
+# Conteúdo fora do pacote distribuído.
+test/
+node_modules/
+*.log
+.gitignore
+tsconfig.json
+.DS_Store
+coverage/
+.nyc_output/

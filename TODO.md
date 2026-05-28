@@ -36,8 +36,8 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F5.1 | Port Rust | langs/rust/ (quick-xml ou roxmltree, crate tiss-hash, 15 vetores PASS) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F5.2 | Port C | langs/c/ (libxml2 ou parser próprio, lib + header + Makefile) | Alta | F2.4 | Alta | ⏳ Pendente | — |
 | F5.3 | Port C++ | langs/cpp/ (pugixml + Qt-friendly opcional, CMake) | Alta | F5.2 | Média | ⏳ Pendente | — |
-| F5.4 | Port Node | langs/node/ (fast-xml-parser, package tiss-hash NPM) | Alta | F2.4 | Média | ⏳ Pendente | — |
-| F5.5 | Port PHP | langs/php/ (DOMDocument stdlib, composer package) | Alta | F2.4 | Média | ⏳ Pendente | — |
+| F5.4 | Port Node | langs/node/ (@xmldom/xmldom, ESM+CJS, tiss-hash NPM) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
+| F5.5 | Port PHP | langs/php/ (DOMDocument stdlib, composer package) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F6.1 | Port Java | langs/java/ (Maven, javax.xml stdlib) | Média | F5.1 | Média | ⏳ Pendente | — |
 | F6.2 | Port Kotlin | langs/kotlin/ ou compartilhado com Java via JVM | Média | F6.1 | Baixa | ⏳ Pendente | — |
 | F6.3 | Port C# | langs/csharp/ (.NET 8, NuGet) | Média | F2.4 | Média | ⏳ Pendente | — |
