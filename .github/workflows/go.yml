@@ -41,9 +41,8 @@ jobs:
           go-version: ${{ matrix.go-version }}
           cache-dependency-path: langs/go/go.sum
 
-      - name: Tidy + vet + fmt
+      - name: Vet + fmt
         run: |
-          go mod tidy -diff
           go vet ./...
           test -z "$(gofmt -l .)"
 

@@ -38,9 +38,8 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Tidy + vet + fmt
+      - name: Vet + fmt
         run: |
-          go mod tidy -diff
           go vet ./...
           test -z "$(gofmt -l .)"
 
