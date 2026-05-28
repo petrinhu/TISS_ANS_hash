@@ -38,6 +38,7 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F4.6 | CI | Fix c.yml Codeberg (clang dropado da matrix .forgejo, gcc cobre; GitHub mantém gcc+clang) — run #4311698 PASS | Média | F5.2 | Média | ✅ Concluído | ✓ |
 | F4.7 | CI | Fix node.yml (glob `**` não expandia; matrix drop node18) | Média | F5.4 | Baixa | ✅ Concluído | ✓ |
 | F4.8 | CI | Fix php.yml (require ^8.2 — codigo usa `static fn(): null`; matrix 8.2/8.3/8.4) | Média | F5.5 | Baixa | ✅ Concluído | ✓ |
+| F4.9 | CI | Workflows .github + .forgejo pros 3 ports Tier 2: Java (mvn matrix 17/21), Go (matrix 1.22/1.23), C# (.NET 8) — 6 workflows verdes nas 2 plataformas; armadilhas (apt install maven; drop tidy -diff) documentadas no cookbook global | Alta | F6.1, F6.3, F6.5 | Média | ✅ Concluído | ✓ |
 | F4.4 | CI | Release automation (PyPI via trusted publishing) | Média | F7.1 | Média | ⏳ Pendente | — |
 | F5.1 | Port Rust | langs/rust/ (quick-xml ou roxmltree, crate tiss-hash, 15 vetores PASS) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F5.2 | Port C | langs/c/ (libxml2 + OpenSSL EVP MD5, CMake + Makefile + pkg-config, ASan+valgrind clean) | Alta | F2.4 | Alta | ✅ Concluído | ✓ |
