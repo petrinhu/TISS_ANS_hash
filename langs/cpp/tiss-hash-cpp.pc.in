@@ -1,0 +1,12 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: tiss-hash-cpp
+Description: @PROJECT_DESCRIPTION@
+Version: @PROJECT_VERSION@
+URL: @PROJECT_HOMEPAGE_URL@
+Requires: pugixml libcrypto
+Libs: -L${libdir} -ltiss_hash_cpp
+Cflags: -I${includedir} -std=c++20

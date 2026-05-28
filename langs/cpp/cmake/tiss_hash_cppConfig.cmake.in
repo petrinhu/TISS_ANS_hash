@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(OpenSSL COMPONENTS Crypto)
+find_dependency(pugixml CONFIG)
+
+include("${CMAKE_CURRENT_LIST_DIR}/tiss_hash_cppTargets.cmake")
+
+check_required_components(tiss_hash_cpp)

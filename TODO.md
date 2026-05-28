@@ -37,7 +37,7 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F4.4 | CI | Release automation (PyPI via trusted publishing) | Média | F7.1 | Média | ⏳ Pendente | — |
 | F5.1 | Port Rust | langs/rust/ (quick-xml ou roxmltree, crate tiss-hash, 15 vetores PASS) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F5.2 | Port C | langs/c/ (libxml2 + OpenSSL EVP MD5, CMake + Makefile + pkg-config, ASan+valgrind clean) | Alta | F2.4 | Alta | ✅ Concluído | ✓ |
-| F5.3 | Port C++ | langs/cpp/ (pugixml + Qt-friendly opcional, CMake) | Alta | F5.2 | Média | ⏳ Pendente | — |
+| F5.3 | Port C++ | langs/cpp/ (pugixml + OpenSSL EVP, CMake, doctest, C++20) | Alta | F5.2 | Média | ✅ Concluído | ✓ |
 | F5.4 | Port Node | langs/node/ (@xmldom/xmldom, ESM+CJS, tiss-hash NPM) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F5.5 | Port PHP | langs/php/ (DOMDocument stdlib, composer package) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F6.1 | Port Java | langs/java/ (Maven, javax.xml stdlib) | Média | F5.1 | Média | ⏳ Pendente | — |
