@@ -29,11 +29,11 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F3.5 | Docs | Templates .forgejo/ (issues, PR) | Média | F2.2 | Baixa | ✅ Concluído | ✓ |
 | F3.6 | Docs | docs/legal/ (LGPD-NOTE, DISCLAIMER, TISS-COMPLIANCE) — MIT adaptado | Alta | F1.6 | Média | ✅ Concluído | ✓ |
 | F3.7 | Docs | CLAUDE.md do projeto (perfil + escopo + regras locais) | Baixa | F2.4 | Baixa | ✅ Concluído | ✓ |
-| F4.1 | CI | Workflow .github/workflows/python.yml (lint+test+coverage) | Alta | F2.4 | Média | ⏳ Pendente | — |
-| F4.2 | CI | Workflow .forgejo/workflows/python.yml | Alta | F2.4 | Média | ⏳ Pendente | — |
+| F4.1 | CI | Workflow .github/workflows/python.yml (lint+test+coverage) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
+| F4.2 | CI | Workflow .forgejo/workflows/python.yml | Alta | F2.4 | Média | ✅ Concluído | ⚠ |
 | F4.3 | CI | Workflow CI matrix (futuro: roda todo port contra vectors.json) | Média | F5.1 | Alta | 💡 Decisão tomada | — |
 | F4.4 | CI | Release automation (PyPI via trusted publishing) | Média | F7.1 | Média | ⏳ Pendente | — |
-| F5.1 | Port Rust | langs/rust/ (quick-xml ou roxmltree, crate tiss-hash, 15 vetores PASS) | Alta | F2.4 | Média | ⏳ Pendente | — |
+| F5.1 | Port Rust | langs/rust/ (quick-xml ou roxmltree, crate tiss-hash, 15 vetores PASS) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F5.2 | Port C | langs/c/ (libxml2 ou parser próprio, lib + header + Makefile) | Alta | F2.4 | Alta | ⏳ Pendente | — |
 | F5.3 | Port C++ | langs/cpp/ (pugixml + Qt-friendly opcional, CMake) | Alta | F5.2 | Média | ⏳ Pendente | — |
 | F5.4 | Port Node | langs/node/ (fast-xml-parser, package tiss-hash NPM) | Alta | F2.4 | Média | ⏳ Pendente | — |

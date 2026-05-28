@@ -1,0 +1,42 @@
+[package]
+name = "tiss-hash"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+description = "MD5 hash do epílogo XML TISS/ANS (Padrão TISS 4.01.00). Reverse-engineered + validado contra goldens reais."
+repository = "https://github.com/petrinhu/TISS_ANS_hash"
+documentation = "https://docs.rs/tiss-hash"
+homepage = "https://github.com/petrinhu/TISS_ANS_hash"
+readme = "README.md"
+keywords = ["tiss", "ans", "md5", "xml", "healthcare"]
+categories = ["cryptography", "parser-implementations"]
+authors = ["Petrus Silva Costa <petrinhu@yahoo.com.br>"]
+exclude = [
+    "target/*",
+    ".idea/*",
+    ".vscode/*",
+]
+
+# Dependências runtime: roxmltree (DOM, semântica próxima da referência Python
+# `lxml`) + md-5 da RustCrypto. Zero outras deps obrigatórias.
+[dependencies]
+roxmltree = "0.20"
+md-5 = "0.10"
+
+[dev-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[lib]
+name = "tiss_hash"
+path = "src/lib.rs"
+
+[[test]]
+name = "conformance"
+path = "tests/conformance.rs"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
