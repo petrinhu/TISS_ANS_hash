@@ -1,0 +1,47 @@
+name: node
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/node/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/node.yml'
+  pull_request:
+    paths:
+      - 'langs/node/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/node.yml'
+
+concurrency:
+  group: node-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: node${{ matrix.node-version }}
+    runs-on: codeberg-small
+    container:
+      # Compat full GitHub Actions; necessario pra setup-node em runners
+      # Codeberg sem stack pre-instalada.
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['18', '20', '22']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        working-directory: langs/node
+        run: npm ci || npm install
+
+      - name: Test
+        working-directory: langs/node
+        run: npm test

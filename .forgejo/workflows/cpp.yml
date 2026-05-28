@@ -1,0 +1,63 @@
+name: cpp
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/cpp/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/cpp.yml'
+  pull_request:
+    paths:
+      - 'langs/cpp/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/cpp.yml'
+
+concurrency:
+  group: cpp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: g++-13 ${{ matrix.build-type }}
+    # codeberg-medium: C++20 + build de pugixml + ctest > 5min.
+    runs-on: codeberg-medium
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type: [Debug]
+    env:
+      CXX: g++-13
+      CC: gcc-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain (gcc-13 pra C++20) + deps (pugixml, openssl)
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          # gcc-13 nao esta no Ubuntu 22.04 default; ubuntu-toolchain-r PPA fornece.
+          apt-get install -y --no-install-recommends software-properties-common
+          add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          apt-get update -qq
+          apt-get install -y --no-install-recommends \
+            cmake ninja-build python3 \
+            gcc-13 g++-13 \
+            libpugixml-dev libssl-dev pkg-config
+
+      - name: Configure
+        working-directory: langs/cpp
+        run: |
+          cmake -GNinja -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
+
+      - name: Build
+        working-directory: langs/cpp
+        run: cmake --build build --parallel
+
+      - name: Test
+        working-directory: langs/cpp
+        run: ctest --test-dir build --output-on-failure

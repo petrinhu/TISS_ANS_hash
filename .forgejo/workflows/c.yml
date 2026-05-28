@@ -1,0 +1,63 @@
+name: c
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/c/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/c.yml'
+  pull_request:
+    paths:
+      - 'langs/c/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/c.yml'
+
+concurrency:
+  group: c-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: ${{ matrix.compiler }} ${{ matrix.build-type }}
+    # codeberg-medium: build+ctest com sanitizers > 5min em codeberg-small.
+    runs-on: codeberg-medium
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        build-type: [Debug]
+    env:
+      CC: ${{ matrix.compiler }}
+      ASAN_OPTIONS: "detect_leaks=1:strict_string_checks=1:detect_stack_use_after_return=1"
+      UBSAN_OPTIONS: "print_stacktrace=1:halt_on_error=1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain + deps (libxml2, openssl)
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y --no-install-recommends \
+            cmake ninja-build python3 \
+            ${{ matrix.compiler }} \
+            libxml2-dev libssl-dev pkg-config
+
+      - name: Configure (with ASan + UBSan)
+        working-directory: langs/c
+        run: |
+          cmake -GNinja -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+            -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build
+        working-directory: langs/c
+        run: cmake --build build --parallel
+
+      - name: Test
+        working-directory: langs/c
+        run: ctest --test-dir build --output-on-failure

@@ -1,0 +1,42 @@
+name: node
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/node/**'
+      - 'conformance/**'
+      - '.github/workflows/node.yml'
+  pull_request:
+    paths:
+      - 'langs/node/**'
+      - 'conformance/**'
+      - '.github/workflows/node.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: node-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: node${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['18', '20', '22']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: langs/node/package-lock.json
+      - working-directory: langs/node
+        run: npm ci || npm install
+      - working-directory: langs/node
+        run: npm test
