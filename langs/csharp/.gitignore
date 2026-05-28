@@ -1,0 +1,36 @@
+# .NET build outputs
+bin/
+obj/
+out/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test output
+TestResults/
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+coverage.json
+coverage.opencover.xml
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+artifacts/
+
+# Rider
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# OS
+.DS_Store
+Thumbs.db

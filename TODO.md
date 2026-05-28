@@ -44,11 +44,11 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F5.3 | Port C++ | langs/cpp/ (pugixml + OpenSSL EVP, CMake, doctest, C++20) | Alta | F5.2 | Média | ✅ Concluído | ✓ |
 | F5.4 | Port Node | langs/node/ (@xmldom/xmldom, ESM+CJS, tiss-hash NPM) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F5.5 | Port PHP | langs/php/ (DOMDocument stdlib, composer package) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
-| F6.1 | Port Java | langs/java/ (Maven, javax.xml stdlib) | Média | F5.1 | Média | ⏳ Pendente | — |
+| F6.1 | Port Java | langs/java/ (DocumentBuilder stdlib, Maven, JDK 17+ alvo) — 23/23 PASS (15 conformance + 8 aux) | Média | F5.1 | Média | ✅ Concluído | ✓ |
 | F6.2 | Port Kotlin | langs/kotlin/ ou compartilhado com Java via JVM | Média | F6.1 | Baixa | ⏳ Pendente | — |
-| F6.3 | Port C# | langs/csharp/ (.NET 8, NuGet) | Média | F2.4 | Média | ⏳ Pendente | — |
+| F6.3 | Port C# | langs/csharp/ (XDocument stdlib + xUnit, .NET 8) — 21/21 PASS | Média | F2.4 | Média | ✅ Concluído | ✓ |
 | F6.4 | Port Delphi | langs/delphi/ (Object Pascal, OmniXML/MSXML, FPC compat) | Média | F2.4 | Alta | ⏳ Pendente | — |
-| F6.5 | Port Go | langs/go/ (encoding/xml stdlib, go module) | Média | F2.4 | Média | ⏳ Pendente | — |
+| F6.5 | Port Go | langs/go/ (encoding/xml stdlib + golang.org/x/text, module) — 21/21 PASS | Média | F2.4 | Média | ✅ Concluído | ✓ |
 | F6.6 | Port Dart | langs/dart/ (package:xml, pub.dev) | Baixa | F2.4 | Média | ⏳ Pendente | — |
 | F6.7 | Port WASM | langs/wasm/ (Rust core compilado, browser-side, LGPD-friendly) | Baixa | F5.1 | Alta | 💡 Decisão tomada | — |
 | F7.1 | Release | Tag v0.1.0 Python + publicar PyPI | Alta | F1.9, F4.1 | Baixa | ⏳ Pendente | — |

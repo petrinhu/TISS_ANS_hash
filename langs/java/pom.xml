@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>dev.petrus</groupId>
+  <artifactId>tiss-hash</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <name>tiss-hash</name>
+  <description>
+    Hash MD5 canônico do epílogo &lt;ans:hash&gt; em XMLs do Padrão TISS/ANS
+    (Padrão TISS 4.01.00 — Troca de Informações em Saúde Suplementar,
+    regulamentado pela Agência Nacional de Saúde Suplementar). Port Java
+    da biblioteca multi-linguagem TISS_ANS_hash; bate byte-a-byte com a
+    referência Python (conformance/reference.py) nos 15 vetores de
+    conformidade.
+  </description>
+  <url>https://github.com/petrinhu/TISS_ANS_hash</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>petrinhu</id>
+      <name>Petrus Silva Costa</name>
+      <email>petrinhu@yahoo.com.br</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/petrinhu/TISS_ANS_hash.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/petrinhu/TISS_ANS_hash.git</developerConnection>
+    <url>https://github.com/petrinhu/TISS_ANS_hash</url>
+  </scm>
+
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <junit.jupiter.version>5.10.2</junit.jupiter.version>
+    <orgjson.version>20240303</orgjson.version>
+    <surefire.version>3.2.5</surefire.version>
+  </properties>
+
+  <!-- Zero dependências runtime: JDK puro (javax.xml + java.security.MessageDigest). -->
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>${orgjson.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>

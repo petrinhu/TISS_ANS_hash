@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- 1591 = membro publico sem XML doc; mantemos pra forcar doc, mas
+         a CS0419 e similares ja ficam errors. Algumas tags <example> com
+         codigo nao-XML disparam CS1570 (XML doc malformado) — preferimos
+         markdown-style em <code> blocks. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- NuGet metadata (publicacao em NuGet NAO faz parte deste port; campos
+         preenchidos pra deixar pronto se a decisao mudar). -->
+    <PackageId>TissHash</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Petrus Silva Costa</Authors>
+    <Company>Petrus Silva Costa</Company>
+    <Description>Hash MD5 canonico do epilogo &lt;ans:hash&gt; em XMLs do Padrao TISS/ANS (saude suplementar brasileira). Port .NET multi-linguagem; valida byte-a-byte contra 15 vetores de conformancia.</Description>
+    <Copyright>Copyright (c) 2026 Petrus Silva Costa</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/petrinhu/TISS_ANS_hash</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/petrinhu/TISS_ANS_hash</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>tiss;ans;md5;xml;hash;healthcare;saude-suplementar;brasil</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>TissHash</RootNamespace>
+    <AssemblyName>TissHash</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ISO-8859-1 nao vem no runtime .NET Core+ por padrao; provedor
+         oficial Microsoft adiciona as code pages legacy. -->
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
