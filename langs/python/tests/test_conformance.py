@@ -12,9 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from tiss_hash import InvalidTissXml, hash_tiss, hash_tiss_file
-
 
 # Carregamento do manifesto em import-time para alimentar @parametrize.
 # Replicamos a lógica do conftest aqui porque parametrize precisa dos

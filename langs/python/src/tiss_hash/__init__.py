@@ -24,7 +24,8 @@ from ._core import InvalidTissXml, hash_tiss, hash_tiss_file
 # Fallback "0.0.0+unknown" cobre execução direta a partir do source tree
 # (sem ``pip install``), o que é comum em desenvolvimento.
 try:
-    from importlib.metadata import PackageNotFoundError, version as _pkg_version
+    from importlib.metadata import PackageNotFoundError
+    from importlib.metadata import version as _pkg_version
 
     try:
         __version__: str = _pkg_version("tiss-hash")

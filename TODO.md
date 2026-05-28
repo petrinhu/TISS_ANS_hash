@@ -20,8 +20,8 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F2.2 | Repos | Criar repo TISS_ANS_hash no Codeberg (público) | Alta | F1.6 | Baixa | ✅ Concluído | ✓ |
 | F2.3 | Repos | git init + branch main + configurar dual-push remote | Alta | F1.7, F2.1, F2.2 | Baixa | ✅ Concluído | ✓ |
 | F2.4 | Repos | Primeiro commit (feat inicial) + push aos dois remotes | Alta | F2.3 | Baixa | ✅ Concluído | ✓ |
-| F2.5 | Repos | Habilitar Discussions no GitHub | Baixa | F2.4 | Baixa | ⏳ Pendente | — |
-| F2.6 | Repos | Adicionar topics aos repos (tiss, ans, hash, saude-suplementar, brasil) | Baixa | F2.4 | Baixa | ⏳ Pendente | — |
+| F2.5 | Repos | Habilitar Discussions no GitHub | Baixa | F2.4 | Baixa | ✅ Concluído | ✓ |
+| F2.6 | Repos | Adicionar topics aos repos (tiss, ans, hash, saude-suplementar, brasil) | Baixa | F2.4 | Baixa | ✅ Concluído | ✓ |
 | F3.1 | Docs | README com badges + tabela de status linguagens | Alta | F1.4 | Baixa | ✅ Concluído | ✓ |
 | F3.2 | Docs | docs/USAGE.md (uso completo, exemplos, FAQ) | Alta | F1.4 | Média | ✅ Concluído | ✓ |
 | F3.3 | Docs | CONTRIBUTING.md + CODE_OF_CONDUCT.md + SECURITY.md + CHANGELOG.md | Alta | — | Baixa | ✅ Concluído | ✓ |

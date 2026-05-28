@@ -25,14 +25,16 @@ import io
 import os
 from xml.etree.ElementTree import ParseError, TreeBuilder
 
+from defusedxml.common import DefusedXmlException
+
 # defusedxml é usado em vez de xml.etree.ElementTree.parse porque os
 # parsers da stdlib são vulneráveis a XXE (XML External Entity) e
 # "billion laughs" / quadratic blowup. Como esta lib pode receber XMLs
 # vindos de operadoras / parceiros externos, parsing seguro é mandatório.
 # defusedxml.ElementTree é drop-in compatível com xml.etree e desabilita
 # por padrão DOCTYPE, entidades externas e expansion de entidades.
-from defusedxml.ElementTree import DefusedXMLParser, parse as _safe_parse
-from defusedxml.common import DefusedXmlException
+from defusedxml.ElementTree import DefusedXMLParser
+from defusedxml.ElementTree import parse as _safe_parse
 
 __all__ = ["InvalidTissXml", "hash_tiss", "hash_tiss_file"]
 
