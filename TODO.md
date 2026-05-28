@@ -55,6 +55,16 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F7.2 | Release | Release v0.1.0 no GitHub + Codeberg (notes + checksums) | Alta | F7.1 | Baixa | ⏳ Pendente | — |
 | F7.3 | Release | Anúncio (DEV.to, LinkedIn, fórum de saúde suplementar BR) | Baixa | F7.2 | Baixa | ⏳ Pendente | — |
 | F7.4 | Release | Submeter pacote pra mirrors (conda-forge se aplicável) | Baixa | F7.1 | Baixa | ⏳ Pendente | — |
+| F8.1 | SEO (Tier 1) | Reescrever primeira frase do README maximizando keyword density (Python, Rust, C, C++, Node, PHP, hash MD5, epílogo XML, Padrão TISS/ANS 4.01.00, saúde suplementar BR) | Alta | F2.4 | Baixa | ✅ Concluído | ✓ |
+| F8.2 | SEO (Tier 1) | Reescrever description dos repos GitHub+Codeberg (denso, 126 chars, com nomes das 6 linguagens) | Alta | F2.4 | Baixa | ✅ Concluído | ✓ |
+| F8.3 | SEO (Tier 1) | Adicionar 6 topics extras: library, epilogo, hash-md5, tiss-401, ans-saude, xml-tiss (vai pra 17/20) | Alta | F2.4 | Baixa | ✅ Concluído | ✓ |
+| F8.4 | SEO (Tier 1) | Seção "Termos relacionados" no README com aliases (hash tiss ans, calculo hash padrao tiss, md5 epilogo tiss, etc) — vira tag cloud SEO | Alta | F8.1 | Baixa | ✅ Concluído | ✓ |
+| F8.5 | SEO (Tier 2) | Sincronizar `keywords` em pyproject.toml/package.json/Cargo.toml/composer.json/CMakeLists pros 6 ports (mesma lista canônica) | Média | F8.3 | Baixa | ⏳ Pendente | — |
+| F8.6 | SEO (Tier 2) | Seção "História" no README — Gama Saúde extinta + manual ambíguo + 3 goldens reverse-engineered (gera matches semânticos pra dúvidas reais) | Média | F8.1 | Baixa | ⏳ Pendente | — |
+| F8.7 | SEO (Tier 3) | Submit PR awesome-brasil + awesome-health-tech + awesome-tiss (se existir) | Baixa | F7.1 | Baixa | ⏳ Pendente | — |
+| F8.8 | SEO (Tier 3) | Blog post anúncio: DEV.to + LinkedIn + fóruns TI saúde suplementar BR | Baixa | F7.1 | Média | ⏳ Pendente | — |
+| F8.9 | SEO (Tier 3) | GitHub Pages site (Hugo/MkDocs) com domínio próprio ou subpath github.io | Baixa | F8.1 | Média | ⏳ Pendente | — |
+| F8.10 | SEO (Tier 3) | Submit conda-forge (overlap c/ F7.4) | Baixa | F7.1 | Baixa | ⏳ Pendente | — |
 
 ## Resumo
 

@@ -1,7 +1,7 @@
-# lib_hash_ans
+# TISS_ANS_hash · lib hash TISS / ANS
 
-> Bibliotecas multi-linguagem do hash MD5 do epílogo TISS/ANS.
-> Multi-language libraries for the TISS/ANS epilogue MD5 hash.
+> **Biblioteca multi-linguagem (Python, Rust, C, C++, Node.js, PHP) para gerar o hash MD5 do epílogo XML do Padrão TISS/ANS 4.01.00 (saúde suplementar Brasil).**
+> Multi-language library (Python, Rust, C, C++, Node.js, PHP) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard, 4.01.00).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Codeberg CI](https://ci.codeberg.org/api/badges/petrinhu/TISS_ANS_hash/status.svg)](https://ci.codeberg.org/petrinhu/TISS_ANS_hash)
@@ -176,6 +176,22 @@ lib_hash_ans/
 ## Histórico
 
 - 2026-05-27: projeto criado. Algoritmo extraído do TISSGama. 15 vetores sintéticos travados. Port Python liberado (19 testes passando). XMLs reais retirados do repo (LGPD). Repos públicos novos: GitHub `petrinhu/TISS_ANS_hash` + Codeberg `petrinhu/TISS_ANS_hash`. Predecessor TISSGama arquivado.
+
+## Termos relacionados (busca / SEO)
+
+Se você procurou por algum dos termos abaixo e chegou aqui, é exatamente este o projeto:
+
+- hash TISS, hash ANS, hash TISS ANS, hash MD5 TISS, hash MD5 ANS
+- lib hash ANS, lib hash TISS, biblioteca hash TISS, biblioteca hash ANS
+- cálculo hash Padrão TISS, cálculo hash epílogo TISS, MD5 epílogo TISS
+- Padrão TISS 4.01.00, TISS 401, padrao TISS hash, epilogo TISS hash
+- hash XML ANS, XML TISS hash, ans:hash, &lt;ans:hash&gt;
+- saúde suplementar Brasil hash, operadora hash TISS, prestador hash TISS
+- tiss-hash Python, tiss-hash Rust, tiss-hash Node, tiss-hash PHP, tiss-hash C, tiss-hash C++
+- ans hash xml utf-8, tiss hash não bate, hash tiss errado, hash tiss rejeitado, hash tiss divergente
+- ANS XML hash library, TISS supplementary health hash, Brazilian healthcare XML MD5
+
+Especificação completa do algoritmo (incluindo a divergência UTF-8 vs ISO-8859-1 do manual oficial): [`docs/SPEC.md`](docs/SPEC.md).
 
 ## Licença
 
