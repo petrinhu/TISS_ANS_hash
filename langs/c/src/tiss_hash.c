@@ -11,7 +11,8 @@
  *     - DOM completo com xmlNodeGetContent normalizando entidades.
  *     - Comentarios preservados na arvore (xmlNode com type XML_COMMENT_NODE).
  *     - Resolucao correta de namespace W3C (ns->href).
- *     - Hardening contra XXE via flags (XML_PARSE_NONET sem NOENT-EXT).
+ *     - Hardening contra XXE: deny_external_entity_loader recusa toda
+ *       entidade externa (XML_PARSE_NONET so cobre rede, nao file://).
  *     - Normalizacao automatica do encoding declarado pra UTF-8 internamente.
  *
  * - expat: SAX-based, exige reconstruir manualmente o conceito de folha
@@ -87,12 +88,38 @@
 
 static pthread_once_t g_init_once = PTHREAD_ONCE_INIT;
 
+/* Loader de entidade externa que recusa TUDO.
+ *
+ * Mitigacao de XXE (XML External Entity). XML_PARSE_NONET bloqueia apenas
+ * esquemas de REDE (http://, ftp://) — NAO bloqueia `file://`. Um XML
+ * malicioso com:
+ *     <!DOCTYPE x [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+ * combinado com XML_PARSE_NOENT (que precisamos pra decodificar &amp; etc.)
+ * faria o parser ler o arquivo local e injeta-lo no conteudo hashed.
+ * Registrar este loader global faz qualquer resolucao de entidade EXTERNA
+ * retornar NULL (sem fetch de arquivo nem de rede). Entidades predefinidas
+ * (&amp; &lt; etc.) NAO passam por este loader — continuam funcionando
+ * (ambiguidade #4 preservada). */
+static xmlParserInputPtr deny_external_entity_loader(const char *URL,
+                                                     const char *ID,
+                                                     xmlParserCtxtPtr ctxt)
+{
+    (void)URL;
+    (void)ID;
+    (void)ctxt;
+    return NULL;
+}
+
 static void tiss_hash_init_libxml(void)
 {
     /* Inicializa estruturas globais do libxml2 (catalogos, hashes, etc).
      * Idempotente em chamadas subsequentes, mas a PRIMEIRA chamada nao
      * e thread-safe — por isso o once. */
     xmlInitParser();
+
+    /* Recusar qualquer entidade externa (anti-XXE). Ver comentario do
+     * loader acima. Setter global do libxml2; aplicado a todos os parses. */
+    xmlSetExternalEntityLoader(deny_external_entity_loader);
 
     /* Silenciar handler de erro default (escreve em stderr). Vamos
      * relatar erro via codigo de retorno; mensagens do parser ficam
@@ -388,11 +415,14 @@ tiss_hash_status_t tiss_hash_bytes(const unsigned char *xml,
     pthread_once(&g_init_once, tiss_hash_init_libxml);
 
     /* Hardening:
-     *   XML_PARSE_NONET  - proibe rede (file://, http://) em resolucao
-     *                      de DTD/entidade.
+     *   XML_PARSE_NONET  - proibe esquemas de REDE (http://, ftp://) em
+     *                      resolucao de DTD/entidade. ATENCAO: NAO bloqueia
+     *                      `file://` — a defesa contra XXE local vem do
+     *                      deny_external_entity_loader registrado na init.
      *   XML_PARSE_NOENT  - substitui entidades predefinidas (&amp; etc.)
      *                      pelo valor — necessario pra reproduzir
      *                      ambiguidade #4 (entidades sao decodificadas).
+     *                      Entidades EXTERNAS sao recusadas pelo loader.
      *
      * NAO usamos XML_PARSE_NOBLANKS: perderia whitespace dentro de
      * valores (ambiguidade #7).

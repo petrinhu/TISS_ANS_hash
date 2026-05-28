@@ -42,6 +42,7 @@ LIB_SONAME  := $(BUILD)/libtiss_hash.so.$(SOVERSION)
 LIB_LINK    := $(BUILD)/libtiss_hash.so
 LIB_STATIC  := $(BUILD)/libtiss_hash.a
 TEST_BIN    := $(BUILD)/test_conformance
+XXE_BIN     := $(BUILD)/test_xxe
 
 SRC         := src/tiss_hash.c
 OBJ         := $(BUILD)/tiss_hash.o
@@ -55,7 +56,7 @@ INPUTS_DIR  := ../../conformance/inputs
 
 .PHONY: all test clean install uninstall valgrind regen-vectors
 
-all: $(LIB_STATIC) $(LIB_LINK) $(TEST_BIN)
+all: $(LIB_STATIC) $(LIB_LINK) $(TEST_BIN) $(XXE_BIN)
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -84,8 +85,13 @@ $(TEST_BIN): tests/test_conformance.c $(VEC_HEADER) $(LIB_STATIC) $(HDR) | $(BUI
 	$(CC) $(CFLAGS_BASE) -Itests -Iinclude tests/test_conformance.c \
 		$(LIB_STATIC) $(LDFLAGS_LIB) -o $@
 
-test: $(TEST_BIN)
+$(XXE_BIN): tests/test_xxe.c $(LIB_STATIC) $(HDR) | $(BUILD)
+	$(CC) $(CFLAGS_BASE) -Iinclude tests/test_xxe.c \
+		$(LIB_STATIC) $(LDFLAGS_LIB) -o $@
+
+test: $(TEST_BIN) $(XXE_BIN)
 	$(TEST_BIN) $(INPUTS_DIR)
+	$(XXE_BIN)
 
 valgrind: $(TEST_BIN)
 	valgrind --error-exitcode=23 --leak-check=full --show-leak-kinds=all \

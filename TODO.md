@@ -75,7 +75,7 @@ Pipeline `/bigtech` porte=solo (elevação cirúrgica CISO+CLO). 4 frentes paral
 
 | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| A-SEC1 | Segurança | XXE explorável no port C — `XML_PARSE_NONET` não bloqueia `file://`; com `NOENT` payload `<!ENTITY xxe SYSTEM "file:///etc/passwd">` vaza arquivo local (comprovado empírico). Fix: `xmlSetExternalEntityLoader(deny)` em `tiss_hash_init_libxml` (tiss_hash.c:90) + vetor regressão XXE | Alta | — | Baixa | ⏳ Pendente | ⚠ |
+| A-SEC1 | Segurança | XXE explorável no port C — FIX APLICADO: `deny_external_entity_loader` registrado via `xmlSetExternalEntityLoader` na init; `tests/test_xxe.c` regressão (hash payload XXE == controle vazio = não vaza); conformance 15/15 mantido (entidades predefinidas ainda decodificam); valgrind 0 leak; build `-Werror` limpo | Alta | — | Baixa | ✅ Concluído | ✓ |
 | A-DOC1 | Privacidade | `docs/SPEC.md` §8/§2/§10 EXPÕE hashes dos 3 XMLs reais (adc506.../df52c4.../6f3349...) e os lista como vetores públicos — vazamento indireto de PII, contradiz política LGPD. Remover hashes reais, listar os 15 sintéticos | Alta | — | Baixa | ⏳ Pendente | ⚠ |
 | A-DOC2 | Docs | Contagem falsa de vetores em docs: SPEC "8 vetores/5 sintéticos", PORTING_GUIDE "8/8", TEST_PLAN "18 vetores/3 reais no manifesto", Python README "8 passed". Real = 15 sintéticos. Instruções enganam quem porta/valida | Alta | — | Média | ⏳ Pendente | ⚠ |
 | A-DOC3 | Docs | `docs/PORTING_GUIDE.md` manda usar diretório `ports/<lang>/` inexistente (canônico = `langs/`). Quem segue cria no lugar errado | Alta | — | Baixa | ⏳ Pendente | ⚠ |

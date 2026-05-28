@@ -120,6 +120,15 @@ if(TISS_HASH_BUILD_TESTS)
     add_test(
         NAME conformance
         COMMAND test_conformance ${INPUTS_DIR})
+
+    # Regressao de seguranca XXE (achado A-SEC1). Nao depende de inputs.
+    add_executable(test_xxe tests/test_xxe.c)
+    target_link_libraries(test_xxe PRIVATE tiss_hash)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+        target_compile_options(test_xxe PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    add_test(NAME xxe COMMAND test_xxe)
 endif()
 
 # ----------------------------------------------------------------------------
