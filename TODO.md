@@ -33,11 +33,11 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F4.2 | CI | Workflow .forgejo/workflows/python.yml | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F4.2a | CI | ~~Solicitar habilitação Forgejo Actions Codeberg~~ — desnecessário; runners codeberg-small/medium globais já ativos por default | Média | F4.2 | Baixa | ✅ Concluído | ✓ |
 | F4.2b | CI | Alternativa self-host forgejo-runner (backup) | Baixa | F4.2 | Média | ⏳ Pendente | — |
-| F4.3 | CI | Workflow CI matrix (1 workflow por port contra vectors.json) — Python+Cpp passam, Rust/C/Node/PHP falham | Média | F5.1 | Alta | 🟡 Parcial | ⚠ |
-| F4.5 | CI | Fix Codeberg .forgejo/workflows/rust.yml (provável: rustup timeout 10min ou RUSTFLAGS estrito; fix candidato = container docker.io/library/rust:1-bookworm) | Média | F5.1 | Média | ⏳ Pendente | — |
-| F4.6 | CI | Fix Codeberg .forgejo/workflows/c.yml (provável: ASan/UBSan + libxml2/libssl pkg-config; fix candidato = mover sanitizers pra job separado) | Média | F5.2 | Média | ⏳ Pendente | — |
-| F4.7 | CI | Fix Codeberg .forgejo/workflows/node.yml (provável: npm ci com package-lock stale; fix candidato = só npm install) | Média | F5.4 | Baixa | ⏳ Pendente | — |
-| F4.8 | CI | Fix Codeberg .forgejo/workflows/php.yml (provável: shivammathur/setup-php network; fix candidato = apt install PHP no step) | Média | F5.5 | Baixa | ⏳ Pendente | — |
+| F4.3 | CI | Workflow CI matrix — 6/6 workflows verdes em GitHub E Codeberg (python, cpp, c, rust, node, php) | Média | F5.1 | Alta | ✅ Concluído | ✓ |
+| F4.5 | CI | Fix rust.yml (cargo fmt diff em tests/conformance.rs:38-40) | Média | F5.1 | Média | ✅ Concluído | ✓ |
+| F4.6 | CI | Fix c.yml Codeberg (clang dropado da matrix .forgejo, gcc cobre; GitHub mantém gcc+clang) — run #4311698 PASS | Média | F5.2 | Média | ✅ Concluído | ✓ |
+| F4.7 | CI | Fix node.yml (glob `**` não expandia; matrix drop node18) | Média | F5.4 | Baixa | ✅ Concluído | ✓ |
+| F4.8 | CI | Fix php.yml (require ^8.2 — codigo usa `static fn(): null`; matrix 8.2/8.3/8.4) | Média | F5.5 | Baixa | ✅ Concluído | ✓ |
 | F4.4 | CI | Release automation (PyPI via trusted publishing) | Média | F7.1 | Média | ⏳ Pendente | — |
 | F5.1 | Port Rust | langs/rust/ (quick-xml ou roxmltree, crate tiss-hash, 15 vetores PASS) | Alta | F2.4 | Média | ✅ Concluído | ✓ |
 | F5.2 | Port C | langs/c/ (libxml2 + OpenSSL EVP MD5, CMake + Makefile + pkg-config, ASan+valgrind clean) | Alta | F2.4 | Alta | ✅ Concluído | ✓ |
