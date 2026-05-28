@@ -27,7 +27,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: [gcc, clang]
+        # clang dropado: libclang-rt do catthehacker/ubuntu:act-latest nao
+        # bate com -fsanitize=address,undefined. gcc cobre. Matrix cheia
+        # (gcc+clang) mantida no .github/workflows/c.yml (ubuntu-latest).
+        compiler: [gcc]
         build-type: [Debug]
     env:
       CC: ${{ matrix.compiler }}
