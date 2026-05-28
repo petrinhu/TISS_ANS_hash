@@ -40,16 +40,18 @@ Detalhe crítico: o arquivo é lido como ISO-8859-1 (encoding declarado pelo TIS
   },
   "vectors": [
     {
-      "id": "real_envio1.xml",
-      "input": "inputs/real_envio1.xml",
-      "expected_md5": "adc506a9374e05c8a8525a11a50d37ee",
-      "source": "real" | "derived",
+      "id": "syn_minimal.xml",
+      "input": "inputs/syn_minimal.xml",
+      "expected_md5": "3aa0c578c95cdb861a125f480a8a4de5",
+      "source": "derived",
       "desc": "descricao livre do caso de borda coberto"
     },
     ...
   ]
 }
 ```
+
+O manifesto público distribuído contém **15 vetores, todos `source: derived` (100% sintéticos)**. O campo `source` admite o valor `"real"` no schema, mas vetores reais (PII de pacientes) só existem no build privado do mantenedor e nunca são commitados.
 
 **Schema dos campos por vetor:**
 
@@ -93,7 +95,7 @@ if fails: REPROVAR e listar
 
 | Categoria | Vetores | Cobre |
 |---|---|---|
-| **Reais** | `real_envio1.xml`, `real_envio2.xml`, `real_envio3.xml` | Goldens validados manualmente pelo usuário; arquivos reais TISS. Não toque. |
+| **Goldens reais (privados, fora do repo)** | três XMLs reais TISS | Validados manualmente pelo mantenedor; contêm PII e NÃO entram no manifesto público. Validados apenas no build privado (`TISS_PRIVATE_XMLS`). |
 | **Estrutura básica** | `syn_minimal.xml`, `syn_empty.xml`, `syn_multi_guia.xml` | Cabeçalho mínimo, campos vazios (`<x></x>` e `<y/>`), ordem documento em multi-guia. |
 | **Encoding** | `syn_acento.xml`, `syn_iso8859_simbolos.xml`, `syn_bom_utf8.xml` | Acentuação (`É Ç Ã`), símbolos latin1 (`° § ½ µ`), arquivo com BOM UTF-8. |
 | **Whitespace** | `syn_crlf_value.xml`, `syn_whitespace_puro.xml` | CR/LF dentro de valor preservado, valor com só espaços preservado. |
@@ -138,7 +140,7 @@ if fails: REPROVAR e listar
 | Nível | Cobertura | Frameworks sugeridos por linguagem |
 |---|---|---|
 | Unit | concat de folhas, encoding UTF-8, zeragem do hash | pytest / Catch2 / cargo test / vitest / phpunit |
-| Conformance (este) | os 18 vetores deste manifest | linguagem-nativa lendo `vectors.json` |
+| Conformance (este) | os 15 vetores deste manifest | linguagem-nativa lendo `vectors.json` |
 | Property-based | invariante "hash(doc1+doc1) ≠ hash(doc1)" e "reordenar atributos não muda hash" | hypothesis / proptest / fast-check |
 | Performance | baseline + tolerância no `syn_perf_grande.xml` | criterion / benchmark.js / pytest-benchmark |
 | Integração | API real recebendo arquivo via HTTP/CLI | curl + jq / playwright |
@@ -147,7 +149,7 @@ if fails: REPROVAR e listar
 
 | Risco | Probabilidade | Impacto | Vetor primário |
 |---|---|---|---|
-| Port usa ISO-8859-1 nos bytes do MD5 | Alta (manual induz ao erro) | Crítico (hash errado) | `syn_acento.xml`, todos os reais |
+| Port usa ISO-8859-1 nos bytes do MD5 | Alta (manual induz ao erro) | Crítico (hash errado) | `syn_acento.xml`, `syn_iso8859_simbolos.xml` |
 | Port ignora atributos diferente | Baixa | Médio | `syn_atributo_folha.xml`, `syn_namespace_xsi.xml` |
 | Port "normaliza" whitespace | Média | Crítico | `syn_crlf_value.xml`, `syn_whitespace_puro.xml` |
 | Port resolve CDATA diferente | Média | Crítico | `syn_cdata.xml` |
@@ -157,9 +159,9 @@ if fails: REPROVAR e listar
 
 ## Critérios de saída
 
-- [ ] Os 18 vetores listados em `vectors.json` foram regerados pela referência.
-- [ ] Os 3 vetores `source: real` continuam com hash inalterado.
-- [ ] Cada port-target tem suite que lê `vectors.json` e bate 18/18.
+- [ ] Os 15 vetores listados em `vectors.json` foram regerados pela referência.
+- [ ] Os 3 goldens reais privados (fora do repo) continuam com hash inalterado no build privado.
+- [ ] Cada port-target tem suite que lê `vectors.json` e bate 15/15.
 - [ ] `AMBIGUITY_NOTES.md` revisado por cada implementador antes de codar.
 - [ ] Performance do `syn_perf_grande.xml` documentada por linguagem.
 - [ ] Sem teste flaky em 100 runs consecutivos (`for i in $(seq 100); do pytest ...; done`).
@@ -173,7 +175,7 @@ cd conformance
 python3 build_fixture.py
 ```
 
-Saída esperada: lista os 18 vetores com hash, sem traceback. Os 3 reais devem bater (assert interno).
+Saída esperada (build público): `OK: 15 vetores (0 reais, 15 sinteticos)`, sem traceback. No build privado do mantenedor (`TISS_PRIVATE_XMLS` apontando para os XMLs reais), os 3 goldens reais devem bater via assert interno — mas continuam fora do `vectors.json` distribuído.
 
 **Rodar a referência manualmente em um arquivo**:
 

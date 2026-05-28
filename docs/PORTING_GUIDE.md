@@ -2,7 +2,7 @@
 title: Como portar lib_hash_ans para uma nova linguagem
 type: how-to
 audience: dev que vai implementar um port
-last-reviewed: 2026-05-27
+last-reviewed: 2026-05-28
 owner: petrinhu@yahoo.com.br
 ---
 
@@ -12,7 +12,7 @@ Guia prático para implementar a lib em uma linguagem ainda não suportada. Ante
 
 ## Quando usar este guia
 
-- Você quer adicionar suporte a uma linguagem listada no README (ou propor uma nova).
+- Você quer adicionar suporte a uma linguagem ainda não coberta (9 ports já estão prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#).
 - Você já tem a linguagem instalada e conhece o ecossistema de parser XML dela.
 - Você tem `python3` + `lxml` disponíveis para rodar a referência localmente.
 
@@ -25,19 +25,19 @@ Guia prático para implementar a lib em uma linguagem ainda não suportada. Ante
   cd conformance
   python3 build_fixture.py
   ```
-  Deve imprimir `OK: 8 vetores`. Se não imprimir, **pare e abra issue** antes de portar.
+  Deve imprimir `OK: 15 vetores`. Se não imprimir, **pare e abra issue** antes de portar.
 
 ## Passo 1: criar o esqueleto do port
 
-Convenção de diretório: `ports/<linguagem>/`.
+Convenção de diretório: `langs/<linguagem>/`.
 
 Layout mínimo sugerido (adaptar à idiomática da linguagem):
 ```
-ports/<linguagem>/
+langs/<linguagem>/
 ├── README.md                  # quickstart específico
 ├── src/                       # ou equivalente
 ├── tests/
-│   └── conformance_test.<ext> # roda os 8 vetores
+│   └── conformance_test.<ext> # roda os 15 vetores
 └── <manifest de build>        # Cargo.toml, package.json, composer.json, CMakeLists.txt, etc.
 ```
 
@@ -122,7 +122,7 @@ for v in vectors.vectors:
 assert fails.empty(), "vetores falhando: " + format(fails)
 ```
 
-Roda no CI do port. **Sem flexibilidade: 8/8 ou nada.**
+Roda no CI do port. **Sem flexibilidade: 15/15 ou nada.**
 
 ## Passo 5: pegadinhas comuns por categoria de parser
 
@@ -165,7 +165,7 @@ Não negocie. Falhar feio se o input tentar entidade externa.
 
 ## Passo 6: documentar o port
 
-Em `ports/<linguagem>/README.md`:
+Em `langs/<linguagem>/README.md`:
 - Instalação (gerenciador de pacotes da linguagem).
 - Exemplo de uso mínimo (5 linhas).
 - Como rodar os testes de conformidade.
@@ -176,17 +176,17 @@ Em `ports/<linguagem>/README.md`:
 
 Antes de abrir PR para inclusão do port, marque tudo:
 
-- [ ] `ports/<linguagem>/` criado seguindo convenção idiomática da linguagem.
+- [ ] `langs/<linguagem>/` criado seguindo convenção idiomática da linguagem.
 - [ ] API pública implementada: `hash_tiss(bytes)` + `hash_tiss_file(path)`.
 - [ ] XXE explicitamente desligado no parser.
 - [ ] Encoding do MD5 confirmado UTF-8 (não usar encoding do XML).
 - [ ] Teste de conformidade lê `conformance/vectors.json` programaticamente (não hardcoded).
-- [ ] **Os 8 vetores passam** localmente. Cole a saída no PR.
+- [ ] **Os 15 vetores passam** localmente. Cole a saída no PR.
 - [ ] Docstrings/comentários públicos na API.
-- [ ] Exemplo de uso de 5 linhas no `ports/<linguagem>/README.md`.
+- [ ] Exemplo de uso de 5 linhas no `langs/<linguagem>/README.md`.
 - [ ] Build local funciona com instruções escritas (testado em máquina limpa ou container).
 - [ ] Linter/formatter padrão da linguagem rodou sem erros.
-- [ ] Commit segue Conventional Commits: `feat(port-<linguagem>): impl. inicial passando 8/8 vetores`.
+- [ ] Commit segue Conventional Commits: `feat(port-<linguagem>): impl. inicial passando 15/15 vetores`.
 - [ ] Linha no `README.md` raiz atualizada de `planejado` para `em progresso` ou `pronto`.
 
 ## Relacionados

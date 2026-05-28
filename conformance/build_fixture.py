@@ -27,11 +27,15 @@ PRIVATE = os.environ.get(
     os.path.abspath(os.path.join(AQUI, "..", "..", "_private_tiss_real_xmls")),
 )
 
-# Goldens REAIS — hashes validados manualmente pelo usuário (autoridade).
+# Goldens REAIS — mapeamento destino -> origem (nome legado). Os hashes esperados
+# NÃO ficam neste script público (são PII indireta; ver política LGPD do projeto).
+# Vivem em `<PRIVATE>/expected_hashes.json` (fora do repo, junto dos XMLs reais):
+#   { "real_envio1.xml": "<hash>", "real_envio2.xml": "<hash>", ... }
+# Sem esse arquivo, os reais são só calculados (sem assert de golden).
 REAIS = {
-    "real_envio1.xml": ("padrao_gama_Lote_envio1.xml", "adc506a9374e05c8a8525a11a50d37ee"),
-    "real_envio2.xml": ("padrao_gama_Lote_envio2.xml", "df52c4a644b5fde5f9a704545f3f471b"),
-    "real_envio3.xml": ("padrao_gama_Lote_envio3.xml", "6f3349379b9c090c33b929de9290dda4"),
+    "real_envio1.xml": "padrao_gama_Lote_envio1.xml",
+    "real_envio2.xml": "padrao_gama_Lote_envio2.xml",
+    "real_envio3.xml": "padrao_gama_Lote_envio3.xml",
 }
 
 # Sintéticos: (nome, descrição do caso de borda, conteúdo unicode).
@@ -271,7 +275,14 @@ def main():
     # Reais — contêm PII de pacientes; só processados se o diretório privado existir.
     # NUNCA são copiados para `inputs/` (que é distribuído). O build privado valida em memória.
     if os.path.isdir(PRIVATE):
-        for destino, (origem, esperado) in REAIS.items():
+        expected_path = os.path.join(PRIVATE, "expected_hashes.json")
+        reais_expected = {}
+        if os.path.isfile(expected_path):
+            with open(expected_path, encoding="utf-8") as fh:
+                reais_expected = json.load(fh)
+        else:
+            print(f"AVISO: {expected_path} ausente; goldens reais sem assert (só cálculo).")
+        for destino, origem in REAIS.items():
             src_priv = os.path.join(PRIVATE, destino)
             src_legacy = os.path.join(LEGACY, origem)
             src = src_priv if os.path.exists(src_priv) else src_legacy
@@ -280,8 +291,12 @@ def main():
                 continue
             with open(src, "rb") as fh:
                 calc = hash_tiss_bytes(fh.read())
+            esperado = reais_expected.get(destino)
+            if esperado is None:
+                print(f"PRIVADO: {destino} hash calculado (sem golden em expected_hashes.json)")
+                continue
             assert calc == esperado, (
-                f"REAL {destino}: referencia {calc} != golden {esperado} "
+                f"REAL {destino}: referencia diverge do golden esperado "
                 f"(validação privada — não distribuída)"
             )
             print(f"PRIVADO OK: {destino} valida contra golden (não vai pro vectors.json público)")

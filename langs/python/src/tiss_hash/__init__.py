@@ -11,9 +11,9 @@ de referência em ``conformance/reference.py``.
 
 Exemplo:
     >>> from tiss_hash import hash_tiss
-    >>> with open("envio.xml", "rb") as fh:
-    ...     hash_tiss(fh.read())
-    'adc506a9374e05c8a8525a11a50d37ee'
+    >>> with open("lote.xml", "rb") as fh:
+    ...     hash_tiss(fh.read())  # valor ilustrativo (vetor syn_minimal)
+    '3aa0c578c95cdb861a125f480a8a4de5'
 """
 
 from __future__ import annotations

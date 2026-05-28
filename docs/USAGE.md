@@ -285,7 +285,7 @@ Calcula o hash MD5 do epílogo TISS/ANS a partir dos bytes do XML.
 
 - `xml` (`bytes` | `bytearray` | `memoryview`): bytes do documento XML completo.
 
-**Retorno:** string com 32 caracteres hex minúsculos (ex.: `"adc506a9374e05c8a8525a11a50d37ee"`).
+**Retorno:** string com 32 caracteres hex minúsculos (ex.: `"3aa0c578c95cdb861a125f480a8a4de5"`, do vetor sintético `syn_minimal.xml`).
 
 **Exceções:**
 

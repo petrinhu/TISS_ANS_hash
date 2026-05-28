@@ -79,9 +79,13 @@ Implementação de referência: `conformance/reference.py`.
 
 ## Conformidade
 
-Esta lib passa os 8 vetores de conformidade em
-`conformance/vectors.json` (3 goldens reais + 5 sintéticos cobrindo:
-mínimo, acentuação, campos vazios, CR/LF embutido, múltiplas guias).
+Esta lib passa os **15 vetores de conformidade** em
+`conformance/vectors.json`, todos sintéticos (`source: derived`). O
+conjunto público de conformidade é 100% sintético, sem qualquer XML real
+de paciente. Cobrem: mínimo, acentuação, campos vazios, CR/LF embutido,
+múltiplas guias, entidades XML, CDATA, comentário, atributo de folha,
+namespace alternativo, whitespace puro, zeros à esquerda, símbolos
+ISO-8859-1, performance e BOM UTF-8.
 
 Rodar os testes localmente, a partir da raiz do repositório:
 
@@ -90,7 +94,10 @@ python -m pip install -e ./langs/python[dev]
 pytest langs/python/tests/ -v
 ```
 
-Saída esperada: `8 passed` (mais os testes de API auxiliares).
+Saída esperada: `19 passed`. Desses, 15 testes são os vetores de
+conformidade (um por vetor, parametrizados) e 4 são testes de API
+auxiliares (`hash_tiss_file`, XML inválido, tipo de entrada errado e
+integridade do manifesto).
 
 ## Dependências
 
@@ -103,5 +110,17 @@ Saída esperada: `8 passed` (mais os testes de API auxiliares).
 
 ## Licença
 
-Ver `LICENSE` (placeholder; definição final a cargo do papel
-`compliance-legal` do projeto).
+[MIT](https://github.com/petrinhu/TISS_ANS_hash/blob/main/LICENSE)
+Copyright (c) 2026 Petrus Silva Costa. Licença única do projeto, na raiz
+do repositório.
+
+## Ver também
+
+- Repositório (origin): https://github.com/petrinhu/TISS_ANS_hash
+- Mirror: https://codeberg.org/petrinhu/TISS_ANS_hash
+- [`docs/SPEC.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/SPEC.md):
+  especificação canônica do algoritmo.
+- [`docs/PORTING_GUIDE.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/PORTING_GUIDE.md):
+  guia para portar para outras linguagens.
+- [`conformance/reference.py`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/conformance/reference.py):
+  implementação de referência (oráculo).

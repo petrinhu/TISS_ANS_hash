@@ -36,7 +36,7 @@ import { readFileSync } from 'node:fs';
 
 // A partir de bytes (sincrono)
 const md5 = hashTiss(readFileSync('lote.xml'));
-console.log(md5); // 'adc506a9374e05c8a8525a11a50d37ee'
+console.log(md5); // ex.: '3aa0c578c95cdb861a125f480a8a4de5'
 
 // A partir de um caminho de arquivo (assincrono)
 const md5b = await hashTissFile('lote.xml');

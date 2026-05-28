@@ -43,7 +43,7 @@ use TissHash\TissHash;
 
 // A partir de bytes do arquivo
 $hash = TissHash::hashTiss(file_get_contents('lote.xml'));
-echo $hash; // ex.: "adc506a9374e05c8a8525a11a50d37ee"
+echo $hash; // ex.: "3aa0c578c95cdb861a125f480a8a4de5"
 
 // Ou direto do caminho
 $hash = TissHash::hashTissFile('lote.xml');

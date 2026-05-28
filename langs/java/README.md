@@ -35,7 +35,7 @@ import java.nio.file.Paths;
 // A partir de bytes
 byte[] xml = Files.readAllBytes(Paths.get("lote.xml"));
 String md5 = TissHash.hashTiss(xml);
-// resultado: "adc506a9374e05c8a8525a11a50d37ee" (32 chars hex lowercase)
+// resultado ilustrativo: "3aa0c578c95cdb861a125f480a8a4de5" (32 chars hex lowercase)
 
 // Atalho de arquivo
 String md5b = TissHash.hashTissFile(Paths.get("lote.xml"));
