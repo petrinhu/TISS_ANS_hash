@@ -67,9 +67,62 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F8.9 | SEO (Tier 3) | GitHub Pages site (Hugo/MkDocs) com domínio próprio ou subpath github.io | Baixa | F8.1 | Média | ⏳ Pendente | — |
 | F8.10 | SEO (Tier 3) | Submit conda-forge (overlap c/ F7.4) | Baixa | F7.1 | Baixa | ⏳ Pendente | — |
 
+## Fase 9 — Auditoria bigtech (2026-05-28)
+
+Pipeline `/bigtech` porte=solo (elevação cirúrgica CISO+CLO). 4 frentes paralelas: qa-engineer (técnico), compliance-legal (LGPD/licença), devops-sre (supply-chain/CI/release), technical-writer (docs). Achados por severidade.
+
+### CRÍTICO (bloqueia release v0.1.0)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| A-SEC1 | Segurança | XXE explorável no port C — `XML_PARSE_NONET` não bloqueia `file://`; com `NOENT` payload `<!ENTITY xxe SYSTEM "file:///etc/passwd">` vaza arquivo local (comprovado empírico). Fix: `xmlSetExternalEntityLoader(deny)` em `tiss_hash_init_libxml` (tiss_hash.c:90) + vetor regressão XXE | Alta | — | Baixa | ⏳ Pendente | ⚠ |
+| A-DOC1 | Privacidade | `docs/SPEC.md` §8/§2/§10 EXPÕE hashes dos 3 XMLs reais (adc506.../df52c4.../6f3349...) e os lista como vetores públicos — vazamento indireto de PII, contradiz política LGPD. Remover hashes reais, listar os 15 sintéticos | Alta | — | Baixa | ⏳ Pendente | ⚠ |
+| A-DOC2 | Docs | Contagem falsa de vetores em docs: SPEC "8 vetores/5 sintéticos", PORTING_GUIDE "8/8", TEST_PLAN "18 vetores/3 reais no manifesto", Python README "8 passed". Real = 15 sintéticos. Instruções enganam quem porta/valida | Alta | — | Média | ⏳ Pendente | ⚠ |
+| A-DOC3 | Docs | `docs/PORTING_GUIDE.md` manda usar diretório `ports/<lang>/` inexistente (canônico = `langs/`). Quem segue cria no lugar errado | Alta | — | Baixa | ⏳ Pendente | ⚠ |
+| A-LEG1 | Legal | `NOTICE` referenciado em CLAUDE.md+snapshot mas NÃO existe. C++ embarca doctest (MIT) + pugixml (MIT); C usa libxml2+OpenSSL(Apache-2.0) — atribuição de terceiros exigida ao distribuir. Criar NOTICE/THIRD_PARTY_LICENSES OU corrigir docs | Alta | — | Baixa | ⏳ Pendente | ⚠ |
+| A-DOC4 | Docs | `langs/python/README.md` licença = placeholder "a cargo do compliance-legal" + sem URLs canônicas (F1.10 nunca resolvida); LICENSE raiz já é MIT real. Único port com licença em placeholder | Alta | F1.6 | Baixa | ⏳ Pendente | ⚠ |
+
+### IMPORTANTE (qualidade / release-readiness)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| A-COV1 | Conformance | Vetor `syn_default_ns.xml` (namespace default sem prefixo `ans:`) — risco ALTO: ports que casam `<ans:hash>` por string de prefixo falham; gerador TISS pode emitir sem prefixo | Alta | — | Baixa | ⏳ Pendente | — |
+| A-COV2 | Conformance | Decidir comportamento + vetor `syn_multi_hash.xml` (múltiplos `<ans:hash>`) — AMBIGUITY_NOTES §9 "não-fixado"; ports divergem silenciosos (getElementsByTagName vs .find) | Média | — | Baixa | ⏳ Pendente | — |
+| A-COV3 | Conformance | Vetor `syn_sem_hash.xml` (documento sem `<ans:hash>`) — caminho "hash ausente" não exercitado; ports que assumem presença podem dar NPE/panic | Média | — | Baixa | ⏳ Pendente | — |
+| A-COV4 | Conformance | Vetor `syn_entidade_numerica.xml` (`&#xE9;`/`&#233;` → `é`) — entidade de caractere numérica não coberta; complementa syn_acento | Baixa | — | Baixa | ⏳ Pendente | — |
+| A-COV5 | Conformance | Decidir suporte UTF-16 (vetor ou rejeição documentada) — ports com detecção manual de encoding (Rust/Node/Go) só tratam iso/utf-8 | Baixa | — | Baixa | ⏳ Pendente | — |
+| A-CI1 | CI | ASan+UBSan no `cpp.yml` (espelhar c.yml) — C++ com pugixml+walker manual é onde sanitizer pega bug; infra local existe (build_san) mas não está no CI | Média | F5.3 | Baixa | ⏳ Pendente | — |
+| A-CI2 | CI | clang na matrix C++ + Release em C/C++ (hoje C++ só g++-13 Debug; C só Debug) | Média | F5.3 | Baixa | ⏳ Pendente | — |
+| A-CI3 | CI | Lint gate nos 6 ports sem lint (PHP phpstan/phpcs, C/C++ clang-tidy+format, Node eslint, Java checkstyle/spotbugs, C# dotnet format). Só Python/Rust/Go têm | Média | — | Média | ⏳ Pendente | — |
+| A-CI4 | CI | Coverage diferencial + baseline onde barato (tarpaulin Rust, go test -cover, jacoco Java, c8 Node, coverlet C#); hoje só Python mede, PHP tem coverage:none | Baixa | — | Média | ⏳ Pendente | — |
+| A-SUP1 | Supply-chain | `.github/dependabot.yml` multi-ecosystem (pip/npm/cargo/composer/maven/gomod/nuget/gh-actions) — sem update automático de deps | Média | — | Baixa | ⏳ Pendente | — |
+| A-SUP2 | Supply-chain | Gate de CVE por port em CI (pip-audit/npm audit/cargo audit/govulncheck/composer audit/dotnet --vulnerable) — hoje zero scan, regride silencioso | Média | — | Média | ⏳ Pendente | — |
+| A-LEG2 | Legal | Padronizar seção "Dependências e licenças" nos READMEs de C, Go, Node, Rust (C++ já tem); OpenSSL Apache-2.0 exige atribuição | Média | A-LEG1 | Baixa | ⏳ Pendente | — |
+| A-LEG3 | Legal | Versão TISS "4.01.00" hard-coded em packaging (Cargo/npm/composer/pom) + TISS-COMPLIANCE.md contradiz decisão de remover versão; risco de afirmação enganosa quando ANS publicar nova | Média | — | Baixa | ⏳ Pendente | — |
+| A-DOC5 | Docs | README raiz tabela de status: 9 ports prontos marcados como "planejado"; "6 ports" deveria ser "9 ports". Subvende o projeto | Média | — | Baixa | ⏳ Pendente | — |
+| A-DOC6 | Docs | README raiz: caminho `langs/nodejs/` quebrado (real = `langs/node/`); árvore "Estrutura" lista só python/; "LICENSE (a criar inline)" desatualizado | Média | — | Baixa | ⏳ Pendente | — |
+| A-DOC7 | Docs | README badges: badge Codeberg/Woodpecker tende 404 (CI real é Forgejo Actions, sem .woodpecker.yml); GitHub badge aponta só python.yml de 9 | Média | F4.9 | Baixa | ⏳ Pendente | — |
+| A-DOC8 | Docs | `docs/USAGE.md` documenta só Python; 8 ports prontos marcados "em breve" | Média | — | Média | ⏳ Pendente | — |
+| A-DOC9 | Docs | CHANGELOG parou no 0.1.0 (só Python); Unreleased vazio; 8 ports Tier 2 + expansão 5→15 vetores ausentes | Média | — | Baixa | ⏳ Pendente | — |
+| A-LEG4 | Legal | Confirmar que vendor/ node_modules/ .venv/ NÃO estão no índice git — VERIFICADO: git ls-files limpo, zero artefato trackeado | Baixa | — | Baixa | ✅ Concluído | ✓ |
+
+### COSMÉTICO
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| A-DOC10 | Docs | Memória + CLAUDE.md dizem Python ref usa "xml.etree+defusedxml"; `reference.py` usa lxml. Importa: ambiguidade #2 (comentários no concat) é subproduto do `lxml.iter()` | Baixa | — | Baixa | ⏳ Pendente | — |
+| A-DOC11 | Docs | Ratificar ou agendar decisão sobre AMBIGUITY_NOTES §2 (comentários XML entram no concat) — marcado "não-intencional"; travado em 9 ports mas ninguém decidiu de propósito | Baixa | — | Baixa | 💡 Decisão tomada | — |
+| A-CI5 | CI | C/C++ test runner depende de CWD pra achar conformance/inputs (falha se rodado fora do ctest); dar resolução robusta (env TISS_CONFORMANCE_DIR) | Baixa | — | Baixa | ⏳ Pendente | — |
+| A-DOC12 | Docs | ADR-0003 cita `hash_tiss_bytes`/`HashTissBytes`; impl real = `hash_tiss`/`HashTiss`. groupId Maven `br.dev.petrus` (ADR) vs `dev.petrus` (Java README) — fixar um. Abrir ADR-0005 | Baixa | — | Baixa | ⏳ Pendente | — |
+| A-DOC13 | Docs | ADR-0004 cita workflows `lang-<x>.yml`+`conformance.yml`+`release-*.yml`; reais = `<x>.yml` sem extras. Nota de superseção / ADR-0005 | Baixa | — | Baixa | ⏳ Pendente | — |
+| A-REL1 | Release | SBOM (syft/cyclonedx) + SHA256SUMS no release GitHub/Codeberg (F7.2 prevê mas nada existe); assinatura GPG nice-to-have | Baixa | F7.2 | Média | ⏳ Pendente | — |
+| A-SUP3 | Supply-chain | Bump preventivo `golang.org/x/text` v0.14→latest (govulncheck hoje clean, ~6 versões atrás) | Baixa | — | Baixa | ⏳ Pendente | — |
+| A-DOC14 | Docs | Suavizar menção a "3 goldens reais" em prosa nos README rust/node/php (sem hash exposto, só contagem) | Baixa | — | Baixa | ⏳ Pendente | — |
+| A-QA1 | QA | Mutation testing onde barato (cargo-mutants/mutmut/stryker) sobre função core pra revelar asserts que passam por inércia | Baixa | — | Média | ⏳ Pendente | — |
+
 ## Resumo
 
-- **Concluído:** 16 (algoritmo, fixture, lib Python, docs canônicos, ADRs, repos criados, LICENSE/gitignore raiz, templates).
-- **Pendência crítica imediata:** F1.8 → F1.9 → F2.3 → F2.4 (ajustes Python + git setup + primeiro push duplo).
-- **Próxima onda:** F4.1-F4.2 (CI) + F5.1-F5.5 (Tier 1 ports).
-- **Médio prazo:** F6.x (Tier 2) + F7.x (release).
+- **Concluído:** 46 itens (algoritmo, fixture, 9 ports 15/15, 18 jobs CI verdes, repos públicos dual-push, docs, ADRs, SEO Tier 1+2).
+- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO, 9/9 ports byte-a-byte). **6 CRÍTICOS** pré-release: A-SEC1 (XXE port C, comprovado), A-DOC1 (SPEC vaza hash real/PII), A-DOC2/3 (docs com contagem falsa + dir errado), A-LEG1 (NOTICE ausente), A-DOC4 (Python README licença placeholder).
+- **Ordem de ataque sugerida:** A-SEC1 (segurança, bloqueia tudo) → A-DOC1 (PII) → A-LEG1+A-DOC4 (licença/atribuição) → A-DOC2/3 (docs falsas) → A-COV1 (vetor namespace default, maior risco de divergência) → resto IMPORTANTE → release F7.
+- **Não-bloqueante pós-release:** ports F6.x restantes (Kotlin/Delphi/Dart/WASM), SEO Tier 3, mutation testing.
