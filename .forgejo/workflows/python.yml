@@ -13,18 +13,23 @@ on:
       - 'conformance/**'
       - '.forgejo/workflows/python.yml'
 
+concurrency:
+  group: python-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: py${{ matrix.python-version }}
-    # codeberg-small = runner global ativo no Codeberg (vs label "docker"
-    # que mapeia pra runner individual e fica em fila se offline).
+    # codeberg-small = runner global ATIVO (2 CPU/4GB/5min). NÃO usar "docker"
+    # (mapeia pro runner individual "claudio" que fica offline).
     runs-on: codeberg-small
     container:
-      # Imagem do mirror oficial Forgejo (evita rate-limit/policy do docker.io
-      # nos runners codeberg-*). node:20-bookworm tem git+curl+ca-certificates
-      # pre-instalados (deps de actions/checkout); setup-python instala a
-      # versao Python da matriz por cima.
-      image: code.forgejo.org/oci/node:20-bookworm
+      # Default oficial atual do Codeberg (catthehacker/ubuntu, imagem do
+      # nektos/act). Tem build deps de Python + git + curl + sudo, garantia
+      # de compat com actions/setup-python e demais setup-*. node:*-bookworm
+      # QUEBRA setup-python ("unable to obtain a proper python version" —
+      # codeberg/community#1718). NÃO mexer sem motivo.
+      image: ghcr.io/catthehacker/ubuntu:act-latest
     strategy:
       fail-fast: false
       matrix:
