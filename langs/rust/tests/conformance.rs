@@ -37,8 +37,8 @@ fn conformance_dir() -> PathBuf {
 
 fn load_manifest() -> Manifest {
     let path = conformance_dir().join("vectors.json");
-    let raw = std::fs::read(&path)
-        .unwrap_or_else(|e| panic!("falha ao ler {}: {e}", path.display()));
+    let raw =
+        std::fs::read(&path).unwrap_or_else(|e| panic!("falha ao ler {}: {e}", path.display()));
     serde_json::from_slice(&raw)
         .unwrap_or_else(|e| panic!("vectors.json mal-formado em {}: {e}", path.display()))
 }

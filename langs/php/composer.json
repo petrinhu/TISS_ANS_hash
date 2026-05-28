@@ -25,7 +25,7 @@
         "source": "https://github.com/petrinhu/TISS_ANS_hash"
     },
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "ext-dom": "*",
         "ext-libxml": "*",
         "ext-mbstring": "*"
