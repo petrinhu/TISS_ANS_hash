@@ -16,9 +16,13 @@ on:
 jobs:
   test:
     name: py${{ matrix.python-version }}
-    runs-on: docker
+    # codeberg-small = runner global ativo no Codeberg (vs label "docker"
+    # que mapeia pra runner individual e fica em fila se offline).
+    runs-on: codeberg-small
     container:
-      image: catthehacker/ubuntu:act-latest
+      # node:20-bookworm tem git+curl+ca-certificates pre-instalados
+      # (deps de actions/checkout); setup-python instala o Python da matriz.
+      image: docker.io/library/node:20-bookworm
     strategy:
       fail-fast: false
       matrix:
