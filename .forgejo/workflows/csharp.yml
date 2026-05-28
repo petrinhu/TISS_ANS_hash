@@ -1,0 +1,48 @@
+name: csharp
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/csharp/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/csharp.yml'
+  pull_request:
+    paths:
+      - 'langs/csharp/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/csharp.yml'
+
+concurrency:
+  group: csharp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: dotnet${{ matrix.dotnet-version }}
+    runs-on: codeberg-small
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet-version: ['8.0.x']
+    defaults:
+      run:
+        working-directory: langs/csharp
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Test
+        run: dotnet test -c Release --no-build --logger "console;verbosity=normal"

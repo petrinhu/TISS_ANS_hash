@@ -1,0 +1,44 @@
+name: java
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/java/**'
+      - 'conformance/**'
+      - '.github/workflows/java.yml'
+  pull_request:
+    paths:
+      - 'langs/java/**'
+      - 'conformance/**'
+      - '.github/workflows/java.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: java-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: jdk${{ matrix.java-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: ['17', '21']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java-version }}
+          cache: maven
+
+      - name: Test
+        working-directory: langs/java
+        run: mvn -B -ntp test
