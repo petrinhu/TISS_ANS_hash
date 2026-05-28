@@ -36,6 +36,14 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.java-version }}
 
+      - name: Install Maven
+        # catthehacker/ubuntu:act-latest nao traz Maven; setup-java instala JDK
+        # mas nao tooling de build. apt install eh idempotente.
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y --no-install-recommends maven
+
       - name: Test
         working-directory: langs/java
         run: mvn -B -ntp test
