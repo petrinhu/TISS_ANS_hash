@@ -13,13 +13,13 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F1.5 | Setup | ADRs 0001-0004 + ARCHITECTURE + SPEC + PORTING_GUIDE | Alta | F1.1 | Média | ✅ Concluído | ✓ |
 | F1.6 | Setup | LICENSE MIT na raiz | Alta | — | Baixa | ✅ Concluído | ✓ |
 | F1.7 | Setup | .gitignore (bloqueia real_*.xml, _private_*/, multi-stack) | Alta | — | Baixa | ✅ Concluído | ✓ |
-| F1.8 | Setup | Substituir langs/python/LICENSE por MIT | Alta | F1.6 | Baixa | ⏳ Pendente | — |
-| F1.9 | Setup | Ajustar langs/python/pyproject.toml (classifier MIT + URLs reais GitHub/Codeberg) | Alta | F1.8 | Baixa | ⏳ Pendente | — |
+| F1.8 | Setup | Substituir langs/python/LICENSE por MIT | Alta | F1.6 | Baixa | ✅ Concluído | ✓ |
+| F1.9 | Setup | Ajustar langs/python/pyproject.toml (classifier MIT + URLs reais GitHub/Codeberg) | Alta | F1.8 | Baixa | ✅ Concluído | ✓ |
 | F1.10 | Setup | Atualizar langs/python/README.md (mencionar MIT + URLs) | Média | F1.8 | Baixa | ⏳ Pendente | — |
 | F2.1 | Repos | Criar repo TISS_ANS_hash no GitHub (público) | Alta | F1.6 | Baixa | ✅ Concluído | ✓ |
 | F2.2 | Repos | Criar repo TISS_ANS_hash no Codeberg (público) | Alta | F1.6 | Baixa | ✅ Concluído | ✓ |
-| F2.3 | Repos | git init + branch main + configurar dual-push remote | Alta | F1.7, F2.1, F2.2 | Baixa | ⏳ Pendente | — |
-| F2.4 | Repos | Primeiro commit (feat inicial) + push aos dois remotes | Alta | F2.3 | Baixa | ⏳ Pendente | — |
+| F2.3 | Repos | git init + branch main + configurar dual-push remote | Alta | F1.7, F2.1, F2.2 | Baixa | ✅ Concluído | ✓ |
+| F2.4 | Repos | Primeiro commit (feat inicial) + push aos dois remotes | Alta | F2.3 | Baixa | ✅ Concluído | ✓ |
 | F2.5 | Repos | Habilitar Discussions no GitHub | Baixa | F2.4 | Baixa | ⏳ Pendente | — |
 | F2.6 | Repos | Adicionar topics aos repos (tiss, ans, hash, saude-suplementar, brasil) | Baixa | F2.4 | Baixa | ⏳ Pendente | — |
 | F3.1 | Docs | README com badges + tabela de status linguagens | Alta | F1.4 | Baixa | ✅ Concluído | ✓ |
@@ -28,7 +28,7 @@ Convenções: F1-F7 = fases. Status: ✅ Concluído / 🔄 Em andamento / 🟡 P
 | F3.4 | Docs | Templates .github/ (issues, PR, FUNDING, config) | Média | F2.1 | Baixa | ✅ Concluído | ✓ |
 | F3.5 | Docs | Templates .forgejo/ (issues, PR) | Média | F2.2 | Baixa | ✅ Concluído | ✓ |
 | F3.6 | Docs | docs/legal/ (LGPD-NOTE, DISCLAIMER, TISS-COMPLIANCE) — MIT adaptado | Alta | F1.6 | Média | ✅ Concluído | ✓ |
-| F3.7 | Docs | CLAUDE.md do projeto (perfil + escopo + regras locais) | Baixa | F2.4 | Baixa | ⏳ Pendente | — |
+| F3.7 | Docs | CLAUDE.md do projeto (perfil + escopo + regras locais) | Baixa | F2.4 | Baixa | ✅ Concluído | ✓ |
 | F4.1 | CI | Workflow .github/workflows/python.yml (lint+test+coverage) | Alta | F2.4 | Média | ⏳ Pendente | — |
 | F4.2 | CI | Workflow .forgejo/workflows/python.yml | Alta | F2.4 | Média | ⏳ Pendente | — |
 | F4.3 | CI | Workflow CI matrix (futuro: roda todo port contra vectors.json) | Média | F5.1 | Alta | 💡 Decisão tomada | — |
