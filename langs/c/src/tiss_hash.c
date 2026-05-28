@@ -268,6 +268,61 @@ static xmlNode *find_first_tiss_hash(xmlNode *node)
     return NULL;
 }
 
+/* Conta todos os <ans:hash> do namespace TISS na arvore (DFS pre-order).
+ * Usado pra rejeitar documentos nao conformes com >1 hash (SPEC §7,
+ * AMBIGUITY_NOTES §9). O TISS preve exatamente um; >1 e ambiguo (qual
+ * zerar?) e por isso recusado em vez de adivinhado. */
+static size_t count_tiss_hash(const xmlNode *node)
+{
+    size_t total = 0;
+    for (const xmlNode *n = node; n != NULL; n = n->next) {
+        if (is_tiss_hash_element(n)) {
+            total++;
+        }
+        if (n->children) {
+            total += count_tiss_hash(n->children);
+        }
+    }
+    return total;
+}
+
+/* Detecta BOM de encoding FORA DE ESCOPO (UTF-16/UTF-32) nos bytes brutos.
+ *
+ * Escopo do Padrao TISS = ISO-8859-1 e UTF-8 (SPEC §2, §7). UTF-16/UTF-32
+ * devem ser REJEITADOS, detectados pelo BOM inicial. A checagem e feita
+ * ANTES do parse, sobre os bytes crus, porque a libxml2 aceitaria UTF-16
+ * silenciosamente — e queremos fail-fast com causa raiz clara.
+ *
+ * Ordem importa: UTF-32 LE (FF FE 00 00) tem prefixo igual ao UTF-16 LE
+ * (FF FE). Testar UTF-32 ANTES de UTF-16 evita classificar errado (o
+ * codigo de retorno e o mesmo TISS_HASH_ERR_ENCODING, mas a ordem mantem
+ * a semantica documentada e protege futura diferenciacao).
+ *
+ * BOM UTF-8 (EF BB BF) NAO e rejeitado: UTF-8 esta em escopo (vetor
+ * positivo syn_bom_utf8.xml). */
+static int has_out_of_scope_bom(const unsigned char *b, size_t len)
+{
+    /* UTF-32 LE: FF FE 00 00 ; UTF-32 BE: 00 00 FE FF */
+    if (len >= 4) {
+        if (b[0] == 0xFF && b[1] == 0xFE && b[2] == 0x00 && b[3] == 0x00) {
+            return 1;
+        }
+        if (b[0] == 0x00 && b[1] == 0x00 && b[2] == 0xFE && b[3] == 0xFF) {
+            return 1;
+        }
+    }
+    /* UTF-16 LE: FF FE ; UTF-16 BE: FE FF */
+    if (len >= 2) {
+        if (b[0] == 0xFF && b[1] == 0xFE) {
+            return 1;
+        }
+        if (b[0] == 0xFE && b[1] == 0xFF) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 /* Remove todos os filhos de um nodo (usado pra "zerar" <ans:hash>). */
 static void clear_node_children(xmlNode *n)
 {
@@ -412,6 +467,13 @@ tiss_hash_status_t tiss_hash_bytes(const unsigned char *xml,
         return TISS_HASH_ERR_ARG;
     }
 
+    /* Rejeicao de encoding fora de escopo (UTF-16/UTF-32 por BOM), ANTES
+     * do parse. libxml2 aceitaria UTF-16 silenciosamente; queremos
+     * fail-fast com causa raiz clara. Ver SPEC §7 / AMBIGUITY §11b. */
+    if (has_out_of_scope_bom(xml, len)) {
+        return TISS_HASH_ERR_ENCODING;
+    }
+
     pthread_once(&g_init_once, tiss_hash_init_libxml);
 
     /* Hardening:
@@ -449,15 +511,23 @@ tiss_hash_status_t tiss_hash_bytes(const unsigned char *xml,
         return TISS_HASH_ERR_INVALID_XML;
     }
 
-    /* 1) Zerar conteudo do primeiro <ans:hash>. Multiplos <ans:hash>
-     *    no documento = comportamento NAO fixado (ambiguidade #9);
-     *    seguimos a referencia e zeramos so o primeiro. */
+    /* 1) Rejeitar documento nao conforme com >1 <ans:hash> do namespace
+     *    TISS. O Padrao preve exatamente um; multiplos sao ambiguos (qual
+     *    zerar?) e por isso recusados em vez de adivinhados (SPEC §7,
+     *    AMBIGUITY §9). Documento SEM <ans:hash> e VALIDO (concatena tudo).
+     */
+    if (count_tiss_hash(root) > 1) {
+        xmlFreeDoc(doc);
+        return TISS_HASH_ERR_MULTI_HASH;
+    }
+
+    /* 2) Zerar conteudo do unico <ans:hash> (se existir). */
     xmlNode *hash_node = find_first_tiss_hash(root);
     if (hash_node) {
         clear_node_children(hash_node);
     }
 
-    /* 2) Walker em ordem de documento. */
+    /* 3) Walker em ordem de documento. */
     concat_buf_t buf;
     concat_init(&buf);
     if (buf.oom) {
@@ -473,7 +543,7 @@ tiss_hash_status_t tiss_hash_bytes(const unsigned char *xml,
         goto cleanup;
     }
 
-    /* 3) MD5 dos bytes UTF-8 (libxml2 ja entregou em UTF-8). */
+    /* 4) MD5 dos bytes UTF-8 (libxml2 ja entregou em UTF-8). */
     if (md5_hex((const unsigned char *)buf.data, buf.len, out_hex) != 0) {
         rc = TISS_HASH_ERR_ALLOC;
         goto cleanup;
@@ -545,6 +615,8 @@ const char *tiss_hash_strerror(tiss_hash_status_t s)
     case TISS_HASH_ERR_IO:          return "falha de I/O ao ler arquivo";
     case TISS_HASH_ERR_ALLOC:       return "falha de alocacao de memoria";
     case TISS_HASH_ERR_ARG:         return "argumento invalido";
+    case TISS_HASH_ERR_MULTI_HASH:  return "documento nao conforme: multiplos <ans:hash> (esperado 1)";
+    case TISS_HASH_ERR_ENCODING:    return "encoding fora de escopo (UTF-16/UTF-32 por BOM)";
     default:                        return "erro desconhecido";
     }
 }

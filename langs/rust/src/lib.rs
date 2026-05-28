@@ -6,8 +6,9 @@
 //!
 //! Spec canônica: `docs/SPEC.md` no repositório principal.
 //! Implementação de referência: `conformance/reference.py` (Python + lxml).
-//! Esta crate **bate byte-a-byte** com a referência nos 15 vetores em
-//! `conformance/vectors.json` (3 reais privados + 15 sintéticos públicos).
+//! Esta crate **bate byte-a-byte** com a referência nos vetores em
+//! `conformance/vectors.json` (positivos comparam `expected_md5`; negativos
+//! exigem `Err`, ex.: múltiplos `<ans:hash>` e BOM UTF-16/UTF-32).
 //!
 //! ## Algoritmo (resumo)
 //!
@@ -130,6 +131,16 @@ impl From<roxmltree::Error> for TissHashError {
 /// assert_eq!(digest.len(), 32);
 /// ```
 pub fn hash_tiss(xml: &[u8]) -> Result<String, TissHashError> {
+    // Rejeição por BOM fora de escopo: o escopo é ISO-8859-1 + UTF-8.
+    // UTF-32 ANTES de UTF-16, pois o BOM UTF-32 LE (FF FE 00 00) começa
+    // com os mesmos 2 bytes do UTF-16 LE (FF FE) — checar o mais longo
+    // primeiro evita classificar erroneamente.
+    if let Some(enc) = detect_unsupported_bom(xml) {
+        return Err(TissHashError::InvalidXml(format!(
+            "encoding {enc} fora de escopo (suportado: ISO-8859-1, UTF-8)"
+        )));
+    }
+
     let utf8 = decode_to_utf8(xml);
     // ParsingOptions padrão: roxmltree não resolve entidades externas
     // (não suporta), DTDs externos são ignorados — política segura por
@@ -141,8 +152,9 @@ pub fn hash_tiss(xml: &[u8]) -> Result<String, TissHashError> {
     let doc = roxmltree::Document::parse_with_options(&utf8, opts)?;
     let root = doc.root_element();
 
-    // Localizar o primeiro <ans:hash> (qualquer prefixo, namespace TISS).
-    let hash_node_id = find_first_hash(&doc, root);
+    // Localizar o(s) <ans:hash> (qualquer prefixo, namespace TISS).
+    // TISS define no máximo 1; >1 é documento inválido e deve ser rejeitado.
+    let hash_node_id = find_hash_node(root)?;
 
     // Concat dos textos de folhas em ordem de documento, zerando <ans:hash>.
     let mut buf = String::new();
@@ -194,21 +206,56 @@ fn is_leaf_for_hash(n: roxmltree::Node<'_, '_>) -> bool {
         .any(|c| c.is_element() || c.is_comment() || c.is_pi())
 }
 
-/// Localiza o primeiro `<ans:hash>` (namespace TISS) por id de nó.
-fn find_first_hash(
-    _doc: &roxmltree::Document<'_>,
+/// Localiza o `<ans:hash>` (namespace TISS, qualquer prefixo) por id de nó.
+///
+/// Casa por **URI de namespace**, não por prefixo literal (`local == "hash"`
+/// e `namespace == TISS_NAMESPACE`), então o namespace default casa.
+///
+/// # Erros
+///
+/// - [`TissHashError::InvalidXml`] se houver **mais de um** `<ans:hash>`:
+///   o Padrão TISS define exatamente um epílogo, então `>1` é documento
+///   inválido (ver `AMBIGUITY_NOTES.md` §9). Zero é válido (caminho "hash
+///   ausente" — concatena tudo).
+fn find_hash_node(
     root: roxmltree::Node<'_, '_>,
-) -> Option<roxmltree::NodeId> {
-    root.descendants().find_map(|n| {
+) -> Result<Option<roxmltree::NodeId>, TissHashError> {
+    let mut found: Option<roxmltree::NodeId> = None;
+    let mut count = 0usize;
+    for n in root.descendants() {
         if n.is_element()
             && n.tag_name().name() == "hash"
             && n.tag_name().namespace() == Some(TISS_NAMESPACE)
         {
-            Some(n.id())
-        } else {
-            None
+            count += 1;
+            if found.is_none() {
+                found = Some(n.id());
+            }
         }
-    })
+    }
+    if count > 1 {
+        return Err(TissHashError::InvalidXml(format!(
+            "múltiplos elementos <hash> do namespace TISS (encontrados {count}, esperado no máximo 1)"
+        )));
+    }
+    Ok(found)
+}
+
+/// Detecta BOM de encoding fora de escopo (UTF-16 / UTF-32).
+///
+/// Ordem importa: UTF-32 ANTES de UTF-16, pois o BOM UTF-32 LE
+/// (`FF FE 00 00`) começa com os mesmos 2 bytes do UTF-16 LE (`FF FE`).
+/// Retorna o rótulo do encoding detectado, ou `None` se nenhum BOM
+/// fora de escopo estiver presente (UTF-8 BOM é tratado depois, em
+/// `decode_to_utf8`).
+fn detect_unsupported_bom(raw: &[u8]) -> Option<&'static str> {
+    if raw.starts_with(&[0xFF, 0xFE, 0x00, 0x00]) || raw.starts_with(&[0x00, 0x00, 0xFE, 0xFF]) {
+        Some("UTF-32")
+    } else if raw.starts_with(&[0xFF, 0xFE]) || raw.starts_with(&[0xFE, 0xFF]) {
+        Some("UTF-16")
+    } else {
+        None
+    }
 }
 
 /// Decodifica bytes XML para `String` UTF-8 compatível com `roxmltree`.
@@ -316,6 +363,79 @@ mod tests {
     fn xml_invalido_retorna_erro() {
         let r = hash_tiss(b"<no-encoding><sem-fechar>");
         assert!(matches!(r, Err(TissHashError::InvalidXml(_))));
+    }
+
+    #[test]
+    fn multiplos_hash_rejeitado() {
+        let xml = b"<?xml version='1.0' encoding='utf-8'?>\
+            <ans:mensagemTISS xmlns:ans=\"http://www.ans.gov.br/padroes/tiss/schemas\">\
+            <ans:epilogo><ans:hash>A</ans:hash><ans:hash>B</ans:hash></ans:epilogo>\
+            </ans:mensagemTISS>";
+        assert!(matches!(hash_tiss(xml), Err(TissHashError::InvalidXml(_))));
+    }
+
+    #[test]
+    fn um_hash_aceito() {
+        // Sanidade: exatamente 1 <ans:hash> não dispara a rejeição.
+        let xml = b"<?xml version='1.0' encoding='utf-8'?>\
+            <ans:mensagemTISS xmlns:ans=\"http://www.ans.gov.br/padroes/tiss/schemas\">\
+            <ans:epilogo><ans:hash>X</ans:hash></ans:epilogo>\
+            </ans:mensagemTISS>";
+        assert!(hash_tiss(xml).is_ok());
+    }
+
+    #[test]
+    fn sem_hash_aceito() {
+        // Documento sem <ans:hash> é válido (concatena tudo, sem erro).
+        let xml = b"<?xml version='1.0' encoding='utf-8'?>\
+            <ans:mensagemTISS xmlns:ans=\"http://www.ans.gov.br/padroes/tiss/schemas\">\
+            <ans:guia><ans:valor>42</ans:valor></ans:guia>\
+            </ans:mensagemTISS>";
+        assert!(hash_tiss(xml).is_ok());
+    }
+
+    #[test]
+    fn bom_utf16_le_rejeitado() {
+        assert_eq!(
+            detect_unsupported_bom(&[0xFF, 0xFE, 0x3C, 0x00]),
+            Some("UTF-16")
+        );
+        let r = hash_tiss(&[0xFF, 0xFE, 0x3C, 0x00]);
+        assert!(matches!(r, Err(TissHashError::InvalidXml(_))));
+    }
+
+    #[test]
+    fn bom_utf16_be_rejeitado() {
+        assert_eq!(
+            detect_unsupported_bom(&[0xFE, 0xFF, 0x00, 0x3C]),
+            Some("UTF-16")
+        );
+        let r = hash_tiss(&[0xFE, 0xFF, 0x00, 0x3C]);
+        assert!(matches!(r, Err(TissHashError::InvalidXml(_))));
+    }
+
+    #[test]
+    fn bom_utf32_le_rejeitado() {
+        // FF FE 00 00 deve classificar como UTF-32, não UTF-16 (ordem!).
+        assert_eq!(
+            detect_unsupported_bom(&[0xFF, 0xFE, 0x00, 0x00]),
+            Some("UTF-32")
+        );
+    }
+
+    #[test]
+    fn bom_utf32_be_rejeitado() {
+        assert_eq!(
+            detect_unsupported_bom(&[0x00, 0x00, 0xFE, 0xFF]),
+            Some("UTF-32")
+        );
+    }
+
+    #[test]
+    fn sem_bom_passa() {
+        // UTF-8 BOM (EF BB BF) NÃO é fora de escopo; tratado em decode.
+        assert_eq!(detect_unsupported_bom(&[0xEF, 0xBB, 0xBF, 0x3C]), None);
+        assert_eq!(detect_unsupported_bom(b"<a/>"), None);
     }
 
     #[test]

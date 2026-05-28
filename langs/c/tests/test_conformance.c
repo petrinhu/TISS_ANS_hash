@@ -1,6 +1,11 @@
 /*
- * test_conformance.c - roda os 15 vetores canonicos de conformance
- *                       contra tiss_hash_file() e compara byte-a-byte.
+ * test_conformance.c - roda os vetores canonicos de conformance contra
+ *                       tiss_hash_file().
+ *
+ * Vetores POSITIVOS (expect_error=0): compara o hash byte-a-byte com
+ * expected_md5. Vetores NEGATIVOS (expect_error=1): asevera que a funcao
+ * sinaliza ERRO (rc != TISS_HASH_OK) e NAO produz hash — entrada fora do
+ * escopo TISS (multiplos <ans:hash>, encoding UTF-16/UTF-32).
  *
  * Uso:
  *   test_conformance [inputs_dir]
@@ -36,6 +41,21 @@ static int run_one(const char *inputs_dir, const tiss_vector_t *v)
 
     char out[TISS_HASH_HEX_LEN];
     tiss_hash_status_t rc = tiss_hash_file(path, out);
+
+    if (v->expect_error) {
+        /* Vetor NEGATIVO: deve sinalizar erro, nao produzir hash. */
+        if (rc == TISS_HASH_OK) {
+            fprintf(stderr,
+                "[FAIL] %-32s esperava REJEICAO, mas obteve hash: %s\n",
+                v->id, out);
+            return 0;
+        }
+        fprintf(stdout, "[PASS] %-32s rejeitado: %s\n",
+                v->id, tiss_hash_strerror(rc));
+        return 1;
+    }
+
+    /* Vetor POSITIVO: deve calcular e bater com expected_md5. */
     if (rc != TISS_HASH_OK) {
         fprintf(stderr, "[FAIL] %-32s erro: %s (path=%s)\n",
                 v->id, tiss_hash_strerror(rc), path);

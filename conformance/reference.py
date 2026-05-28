@@ -23,13 +23,33 @@ from lxml import etree
 NS = {"ans": "http://www.ans.gov.br/padroes/tiss/schemas"}
 
 
+class InvalidTissXml(ValueError):
+    """Entrada fora do contrato do hash TISS (rejeitada antes do calculo)."""
+
+
+def _reject_unsupported_encoding(raw: bytes) -> None:
+    """Escopo de encoding = ISO-8859-1 + UTF-8. UTF-16/UTF-32 fora de escopo.
+
+    Detecta por BOM no inicio dos bytes (caso tipico). UTF-32 antes de UTF-16
+    porque o BOM UTF-32-LE (FF FE 00 00) tem o BOM UTF-16-LE (FF FE) como prefixo.
+    """
+    if raw[:4] in (b"\xff\xfe\x00\x00", b"\x00\x00\xfe\xff"):
+        raise InvalidTissXml("encoding UTF-32 nao suportado (escopo: ISO-8859-1, UTF-8)")
+    if raw[:2] in (b"\xff\xfe", b"\xfe\xff"):
+        raise InvalidTissXml("encoding UTF-16 nao suportado (escopo: ISO-8859-1, UTF-8)")
+
+
 def hash_tiss_bytes(raw: bytes) -> str:
+    _reject_unsupported_encoding(raw)
+
     parser = etree.XMLParser(resolve_entities=False, recover=False)
     root = etree.parse(io.BytesIO(raw), parser).getroot()
 
-    hash_el = root.find(".//ans:hash", NS)
-    if hash_el is not None:
-        hash_el.text = ""
+    hashes = root.findall(".//ans:hash", NS)
+    if len(hashes) > 1:
+        raise InvalidTissXml("multiplos <ans:hash> no documento (esperado no maximo 1)")
+    if hashes:
+        hashes[0].text = ""
 
     partes = [(el.text or "") for el in root.iter() if len(el) == 0]
     valores = "".join(partes)

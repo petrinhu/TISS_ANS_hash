@@ -1,6 +1,12 @@
-//! Teste de conformidade: roda os 15 vetores sintéticos em
+//! Teste de conformidade: roda os vetores sintéticos em
 //! `conformance/vectors.json` e compara com `expected_md5` da referência
 //! Python.
+//!
+//! Cada vetor tem um campo opcional `expect`:
+//! - ausente ou `"hash"` → POSITIVO: `hash_tiss` deve `Ok` e bater com
+//!   `expected_md5`.
+//! - `"error"` → NEGATIVO: `hash_tiss` deve `Err` (e `expected_md5` é
+//!   `null`).
 //!
 //! Localização dos artefatos: `../../conformance/` (relativo a este arquivo,
 //! que vive em `langs/rust/tests/`). Resolução é feita via
@@ -19,10 +25,22 @@ struct Manifest {
 struct Vector {
     id: String,
     input: String,
-    expected_md5: String,
+    /// `null` em vetores negativos (`expect == "error"`).
+    #[serde(default)]
+    expected_md5: Option<String>,
+    /// Ausente/`"hash"` = positivo; `"error"` = negativo.
+    #[serde(default)]
+    expect: Option<String>,
     #[serde(default)]
     #[allow(dead_code)]
     desc: String,
+}
+
+impl Vector {
+    /// `true` se o vetor é negativo (port deve rejeitar com `Err`).
+    fn is_error(&self) -> bool {
+        self.expect.as_deref() == Some("error")
+    }
 }
 
 fn conformance_dir() -> PathBuf {
@@ -58,15 +76,37 @@ fn todos_vetores_passam() {
                 continue;
             }
         };
-        match tiss_hash::hash_tiss(&raw) {
-            Ok(got) if got == v.expected_md5 => {
-                println!("[OK]   {:35} {}", v.id, got);
+        let result = tiss_hash::hash_tiss(&raw);
+
+        if v.is_error() {
+            // NEGATIVO: deve rejeitar.
+            match result {
+                Err(e) => println!("[OK-ERR] {:33} rejeitado: {e}", v.id),
+                Ok(got) => fails.push(format!(
+                    "[SHOULD-ERR] {:29} esperado Err, obteve Ok({got})",
+                    v.id
+                )),
+            }
+            continue;
+        }
+
+        // POSITIVO: deve casar com expected_md5.
+        let expected = match v.expected_md5.as_deref() {
+            Some(e) => e,
+            None => {
+                fails.push(format!(
+                    "[BAD-VEC] {:32} vetor positivo sem expected_md5",
+                    v.id
+                ));
+                continue;
+            }
+        };
+        match result {
+            Ok(got) if got == expected => {
+                println!("[OK]   {:35} {got}", v.id);
             }
             Ok(got) => {
-                fails.push(format!(
-                    "[DIFF] {:35} got={} expected={}",
-                    v.id, got, v.expected_md5
-                ));
+                fails.push(format!("[DIFF] {:35} got={got} expected={expected}", v.id));
             }
             Err(e) => {
                 fails.push(format!("[ERR]  {:35} {e}", v.id));

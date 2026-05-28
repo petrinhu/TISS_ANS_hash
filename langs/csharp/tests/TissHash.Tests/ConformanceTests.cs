@@ -2,8 +2,14 @@
 // Copyright (c) 2026 Petrus Silva Costa
 //
 // Suite de conformidade do port C#/.NET — carrega vectors.json e roda os
-// 15 vetores de conformancia compartilhados, comparando byte-a-byte com o
-// expected_md5 produzido pela referencia Python.
+// 20 vetores de conformancia compartilhados.
+//
+// Cada vetor e POSITIVO ou NEGATIVO conforme o campo `expect`:
+//   - ausente ou "hash" => POSITIVO: comparar byte-a-byte com expected_md5.
+//   - "error"           => NEGATIVO: o port DEVE lancar InvalidTissXmlException
+//                          (nunca produzir hash). expected_md5 e null.
+// Negativos atuais: syn_multi_hash.xml (>1 <ans:hash>, A-COV2),
+//                   syn_utf16.xml (encoding fora de escopo, A-COV5).
 
 using System.IO;
 using System.Reflection;
@@ -64,8 +70,18 @@ public sealed class ConformanceTests
     {
         [JsonPropertyName("id")] public string Id { get; set; } = "";
         [JsonPropertyName("input")] public string Input { get; set; } = "";
-        [JsonPropertyName("expected_md5")] public string ExpectedMd5 { get; set; } = "";
+
+        // null nos vetores negativos (expect == "error").
+        [JsonPropertyName("expected_md5")] public string? ExpectedMd5 { get; set; }
+
+        // Ausente/"hash" => positivo; "error" => negativo (deve rejeitar).
+        [JsonPropertyName("expect")] public string? Expect { get; set; }
+
         [JsonPropertyName("desc")] public string Desc { get; set; } = "";
+
+        /// <summary>True se o vetor exige que o port lance excecao.</summary>
+        public bool IsError => string.Equals(Expect, "error",
+            StringComparison.Ordinal);
     }
 
     private sealed class Manifest
@@ -101,8 +117,20 @@ public sealed class ConformanceTests
             $"input ausente: {inputPath} (vetor {vec.Id})");
 
         var bytes = File.ReadAllBytes(inputPath);
-        var got = TissHashLib.HashTiss(bytes);
 
+        if (vec.IsError)
+        {
+            // Vetor NEGATIVO: o port deve rejeitar a entrada com a excecao
+            // de contrato — nunca produzir hash de um documento invalido.
+            Assert.Throws<InvalidTissXmlException>(
+                () => TissHashLib.HashTiss(bytes));
+            return;
+        }
+
+        // Vetor POSITIVO: hash deve bater byte-a-byte com a referencia.
+        Assert.False(string.IsNullOrEmpty(vec.ExpectedMd5),
+            $"vetor positivo {vec.Id} sem expected_md5 no manifesto");
+        var got = TissHashLib.HashTiss(bytes);
         Assert.Equal(vec.ExpectedMd5, got);
     }
 

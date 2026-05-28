@@ -4,7 +4,13 @@ gen_test_vectors.py - gera tests/test_vectors.hpp a partir de
 conformance/vectors.json.
 
 Le o manifesto canonico de vetores e emite um header C++ com std::array
-de structs {id, expected_md5} pra incluir em tests/test_conformance.cpp.
+de structs {id, expected_md5, expect_error} pra incluir em
+tests/test_conformance.cpp.
+
+Campo `expect` no manifesto:
+  - ausente ou "hash" -> vetor POSITIVO: compara contra expected_md5.
+  - "error"           -> vetor NEGATIVO: o port DEVE lancar excecao
+                         (expected_md5 e null).
 
 Uso:
     python3 tools/gen_test_vectors.py                 # gera tests/test_vectors.hpp
@@ -40,7 +46,8 @@ HEADER_TEMPLATE = """\
 
 struct TissVector {{
     std::string_view id;
-    std::string_view expected_md5;
+    std::string_view expected_md5;  // vazio quando expect_error == true
+    bool expect_error;
 }};
 
 inline constexpr std::array<TissVector, {count}> kTissVectors {{{{
@@ -56,8 +63,18 @@ def render(vectors_json: Path) -> str:
     rows = []
     for v in vectors:
         vid = v["id"].replace('"', '\\"')
-        exp = v["expected_md5"].replace('"', '\\"')
-        rows.append(f'    TissVector{{"{vid}", "{exp}"}},')
+        expect_error = v.get("expect") == "error"
+        if expect_error:
+            exp = ""
+        else:
+            md5 = v["expected_md5"]
+            if md5 is None:
+                raise ValueError(
+                    f"vetor positivo '{vid}' sem expected_md5 (expect != 'error')"
+                )
+            exp = md5.replace('"', '\\"')
+        flag = "true" if expect_error else "false"
+        rows.append(f'    TissVector{{"{vid}", "{exp}", {flag}}},')
     body = "\n".join(rows)
     return HEADER_TEMPLATE.format(count=len(vectors), rows=body)
 

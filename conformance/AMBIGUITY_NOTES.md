@@ -138,13 +138,15 @@ o `<ans:cabecalho>` tem `.text == "\n  "` e `.tail == "\n"`, mas como tem filho,
 
 ---
 
-## 9. Múltiplos `<ans:hash>` no documento: comportamento NÃO fixado
+## 9. Múltiplos `<ans:hash>` no documento: REJEITAR (fixado em 2026-05-28)
 
-**Comportamento atual da referência:** `root.find(".//ans:hash", NS)` retorna apenas o **primeiro** match. Se houver outros, eles **não** são zerados e seu conteúdo entra no concat normalmente.
+**Comportamento fixado:** `reference.py` faz `root.findall(".//ans:hash", NS)`; se houver **mais de um** match, **rejeita** a entrada (`raise InvalidTissXml`). O padrão TISS prevê exatamente um `<ans:hash>` (no `<ans:epilogo>`); múltiplos = documento inválido.
 
-**Status:** caso patológico. O padrão TISS só prevê um `<ans:hash>` (no `<ans:epilogo>`). **NÃO há vetor de teste** pra esse cenário; comportamento é considerado não-fixado.
+**Status:** FIXADO (auditoria bigtech A-COV2). Antes era não-fixado (a referência zerava só o primeiro). Decisão do líder: tratar como erro, não adivinhar intenção.
 
-**Recomendação para ports:** seguir a referência (zerar só o primeiro). Documentar.
+**Vetor negativo:** `syn_multi_hash.xml` (`expect: "error"` no `vectors.json`). Todo port deve **falhar/erro** nesse vetor (não produzir hash).
+
+**Recomendação para ports:** contar os `<ans:hash>` do namespace TISS; se `> 1`, lançar o erro de XML inválido do port (ex: `InvalidTissXml`, exceção, `Result::Err`, retorno de erro).
 
 ---
 
@@ -176,6 +178,20 @@ o `<ans:cabecalho>` tem `.text == "\n  "` e `.tail == "\n"`, mas como tem filho,
 **Implicação para ports:**
 - Se o parser do port aceitar BOM (caso comum em Java, .NET, Node.js) e produzir o mesmo hash, ok.
 - Se rejeitar, é aceitável documentar e marcar este vetor como "skip por design" — mas o ideal é reproduzir.
+
+---
+
+## 11b. UTF-16 / UTF-32: REJEITAR (fixado em 2026-05-28)
+
+**Escopo de encoding:** o algoritmo suporta **ISO-8859-1** e **UTF-8**. UTF-16/UTF-32 estão **fora de escopo** e devem ser **rejeitados**, não processados (poderiam produzir hash silenciosamente errado em ports com detecção manual de encoding — Rust/Node/Go).
+
+**Comportamento fixado:** `reference.py` detecta BOM UTF-16 (`FF FE` / `FE FF`) e UTF-32 (`FF FE 00 00` / `00 00 FE FF`) no início dos bytes e **rejeita** (`raise InvalidTissXml`). Checagem de UTF-32 antes de UTF-16 (o BOM UTF-32-LE tem o UTF-16-LE como prefixo).
+
+**Status:** FIXADO (auditoria bigtech A-COV5). TISS na prática nunca emite UTF-16.
+
+**Vetor negativo:** `syn_utf16.xml` (`expect: "error"`). Todo port deve **falhar/erro**.
+
+**Recomendação para ports:** checar os 2–4 primeiros bytes por BOM UTF-16/UTF-32 **antes** de parsear; se bater, lançar o erro de XML inválido do port. Barato e uniforme (não exige detecção completa de encoding).
 
 ---
 

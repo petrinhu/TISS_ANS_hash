@@ -12,7 +12,7 @@ import json
 import os
 import shutil
 
-from reference import hash_tiss_bytes
+from reference import InvalidTissXml, hash_tiss_bytes
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 INPUTS = os.path.join(AQUI, "inputs")
@@ -208,6 +208,40 @@ SINTETICOS = [
     <ans:hash></ans:hash>
   </ans:epilogo>
 </ans:mensagemTISS>"""),
+
+    # ---- Cobertura de namespace / estrutura (auditoria A-COV1, A-COV3, A-COV4) ----
+    ("syn_default_ns.xml",
+     "namespace TISS como DEFAULT (xmlns= sem prefixo ans:); ports devem casar <hash> pela URI, nao pelo prefixo literal",
+     """<?xml version='1.0' encoding='iso-8859-1'?>
+<mensagemTISS xmlns="http://www.ans.gov.br/padroes/tiss/schemas">
+  <cabecalho>
+    <campo>VALOR_SEM_PREFIXO</campo>
+  </cabecalho>
+  <epilogo>
+    <hash></hash>
+  </epilogo>
+</mensagemTISS>"""),
+
+    ("syn_sem_hash.xml",
+     "documento SEM <ans:hash>: caminho 'hash ausente' deve concatenar tudo sem erro",
+     f"""<?xml version='1.0' encoding='iso-8859-1'?>
+<ans:mensagemTISS {NS}>
+  <ans:cabecalho>
+    <ans:campo>SEM_EPILOGO_HASH</ans:campo>
+  </ans:cabecalho>
+</ans:mensagemTISS>"""),
+
+    ("syn_entidade_numerica.xml",
+     "entidades de caractere numericas (&#xE9; hex e &#231; &#227; dec) devem ser decodificadas pelo parser",
+     f"""<?xml version='1.0' encoding='iso-8859-1'?>
+<ans:mensagemTISS {NS}>
+  <ans:cabecalho>
+    <ans:nome>caf&#xE9; fei&#231;&#227;o</ans:nome>
+  </ans:cabecalho>
+  <ans:epilogo>
+    <ans:hash></ans:hash>
+  </ans:epilogo>
+</ans:mensagemTISS>"""),
 ]
 
 
@@ -264,6 +298,36 @@ SINTETICOS_RAW = [
             "  </ans:epilogo>\n"
             "</ans:mensagemTISS>\n"
         ).encode("utf-8"),
+    ),
+]
+
+
+# Vetores NEGATIVOS: entrada que DEVE ser rejeitada (erro), nao produz hash.
+# No vectors.json saem com "expect": "error" e "expected_md5": null.
+# (nome, descricao, raw_bytes)
+NEGATIVOS = [
+    (
+        "syn_multi_hash.xml",
+        "INVALIDO: multiplos <ans:hash> (TISS tem exatamente 1); ports devem rejeitar (A-COV2)",
+        (
+            "<?xml version='1.0' encoding='iso-8859-1'?>\n"
+            f"<ans:mensagemTISS {NS}>\n"
+            "  <ans:epilogo>\n"
+            "    <ans:hash></ans:hash>\n"
+            "    <ans:hash></ans:hash>\n"
+            "  </ans:epilogo>\n"
+            "</ans:mensagemTISS>"
+        ).encode("iso-8859-1"),
+    ),
+    (
+        "syn_utf16.xml",
+        "INVALIDO: encoding UTF-16 fora de escopo (TISS usa ISO-8859-1/UTF-8); ports devem rejeitar (A-COV5)",
+        (
+            "<?xml version='1.0' encoding='utf-16'?>\n"
+            f"<ans:mensagemTISS {NS}>\n"
+            "  <ans:epilogo><ans:hash></ans:hash></ans:epilogo>\n"
+            "</ans:mensagemTISS>"
+        ).encode("utf-16"),  # encode utf-16 emite BOM (FF FE em LE)
     ),
 ]
 
@@ -332,6 +396,27 @@ def main():
             "desc": desc,
         })
 
+    # negativos: a referencia DEVE rejeitar (InvalidTissXml). Vao pro manifesto
+    # com expect="error" e expected_md5=null; todo port deve falhar/erro neles.
+    for nome, desc, raw in NEGATIVOS:
+        dst = os.path.join(INPUTS, nome)
+        with open(dst, "wb") as fh:
+            fh.write(raw)
+        try:
+            hash_tiss_bytes(raw)
+        except InvalidTissXml:
+            pass
+        else:
+            raise SystemExit(f"ERRO: vetor negativo {nome} NAO foi rejeitado pela referencia")
+        vetores.append({
+            "id": nome,
+            "input": f"inputs/{nome}",
+            "expect": "error",
+            "expected_md5": None,
+            "source": "derived",
+            "desc": desc,
+        })
+
     manifesto = {
         "algorithm": {
             "name": "TISS/ANS epilogo MD5",
@@ -345,6 +430,14 @@ def main():
             "encoding_bytes_md5": "utf-8",
             "namespace": "http://www.ans.gov.br/padroes/tiss/schemas",
             "note": "encoding dos bytes do MD5 e UTF-8, NAO ISO-8859-1 (apesar do manual)",
+            "encodings_suportados": ["ISO-8859-1", "UTF-8"],
+            "rejeicoes": [
+                "multiplos <ans:hash> (esperado no maximo 1)",
+                "UTF-16 / UTF-32 (fora de escopo)",
+            ],
+        },
+        "schema": {
+            "expect": "ausente ou 'hash' = vetor positivo (compara expected_md5); 'error' = vetor negativo (port deve rejeitar/erro, expected_md5 null)",
         },
         "vectors": vetores,
     }
@@ -352,10 +445,13 @@ def main():
         json.dump(manifesto, fh, ensure_ascii=False, indent=2)
         fh.write("\n")
 
-    print(f"OK: {len(vetores)} vetores ({sum(v['source']=='real' for v in vetores)} reais, "
+    n_err = sum(v.get("expect") == "error" for v in vetores)
+    n_pos = len(vetores) - n_err
+    print(f"OK: {len(vetores)} vetores ({n_pos} positivos, {n_err} negativos; "
+          f"{sum(v['source']=='real' for v in vetores)} reais, "
           f"{sum(v['source']=='derived' for v in vetores)} sinteticos)")
     for v in vetores:
-        print(f"  {v['expected_md5']}  {v['id']}  [{v['source']}]")
+        print(f"  {v['expected_md5'] or '(erro)':32}  {v['id']}  [{v['source']}{'/error' if v.get('expect')=='error' else ''}]")
 
 
 if __name__ == "__main__":

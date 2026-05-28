@@ -30,7 +30,11 @@ final class ConformanceTest extends TestCase
     /**
      * Carrega `vectors.json` e expoe cada vetor como dataset PHPUnit.
      *
-     * @return iterable<string, array{string, string}>
+     * Campo `expect` (ver schema do manifesto):
+     * - ausente ou `"hash"` => vetor POSITIVO (compara `expected_md5`).
+     * - `"error"`           => vetor NEGATIVO (port deve lancar excecao).
+     *
+     * @return iterable<string, array{string, ?string, string}>
      */
     public static function vectorsProvider(): iterable
     {
@@ -48,21 +52,47 @@ final class ConformanceTest extends TestCase
         $vectors = $manifest['vectors'] ?? [];
 
         foreach ($vectors as $v) {
-            yield $v['id'] => [$v['input'], $v['expected_md5']];
+            $expect = $v['expect'] ?? 'hash';
+            yield $v['id'] => [$v['input'], $v['expected_md5'] ?? null, $expect];
         }
     }
 
     /**
-     * Cada vetor: le o XML do disco, calcula o hash, compara com o esperado.
+     * Cada vetor:
+     * - POSITIVO (`expect` ausente/`"hash"`): calcula o hash e compara.
+     * - NEGATIVO (`expect === "error"`): deve lancar InvalidTissXmlException.
      */
     #[DataProvider('vectorsProvider')]
-    public function testVectorMatchesExpected(string $inputRel, string $expectedMd5): void
+    public function testVector(string $inputRel, ?string $expectedMd5, string $expect): void
     {
         $inputPath = self::conformanceDir() . '/' . $inputRel;
         $this->assertFileExists($inputPath, "input ausente: $inputPath");
 
         $raw = \file_get_contents($inputPath);
         $this->assertIsString($raw);
+
+        if ($expect === 'error') {
+            try {
+                $got = TissHash::hashTiss($raw);
+                $this->fail(\sprintf(
+                    'esperado InvalidTissXmlException para vetor negativo %s, '
+                    . 'mas obteve hash %s',
+                    $inputRel,
+                    $got
+                ));
+            } catch (InvalidTissXmlException $e) {
+                // Esperado: vetor negativo rejeitado. Mensagem nao deve
+                // vazar o XML original (PII).
+                $this->assertNotEmpty($e->getMessage());
+                $this->addToAssertionCount(1);
+            }
+            return;
+        }
+
+        $this->assertNotNull(
+            $expectedMd5,
+            "vetor positivo $inputRel sem expected_md5 no manifesto"
+        );
 
         $got = TissHash::hashTiss($raw);
 
@@ -96,7 +126,66 @@ final class ConformanceTest extends TestCase
         foreach ($nucleo as $id) {
             $this->assertContains($id, $ids, "vetor nucleo ausente: $id");
         }
-        $this->assertGreaterThanOrEqual(15, \count($ids), 'esperado >= 15 vetores no manifesto');
+        $this->assertGreaterThanOrEqual(20, \count($ids), 'esperado >= 20 vetores no manifesto');
+    }
+
+    /**
+     * Vetor negativo: >1 <ans:hash> do namespace TISS deve ser rejeitado
+     * (AMBIGUITY_NOTES.md §9 / A-COV2).
+     */
+    public function testMultipleHashRaisesInvalidTissXmlException(): void
+    {
+        $xml = "<?xml version='1.0' encoding='iso-8859-1'?>"
+            . '<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">'
+            . '<ans:epilogo><ans:hash></ans:hash><ans:hash></ans:hash></ans:epilogo>'
+            . '</ans:mensagemTISS>';
+        $this->expectException(InvalidTissXmlException::class);
+        TissHash::hashTiss($xml);
+    }
+
+    /**
+     * Vetor negativo: BOM UTF-16 (FF FE) deve ser rejeitado (fora de escopo;
+     * AMBIGUITY_NOTES.md §11b / A-COV5).
+     */
+    public function testUtf16BomRaisesInvalidTissXmlException(): void
+    {
+        $this->expectException(InvalidTissXmlException::class);
+        TissHash::hashTiss("\xFF\xFE<\x00");
+    }
+
+    /**
+     * Vetor negativo: BOM UTF-32-LE (FF FE 00 00) deve ser rejeitado ANTES de
+     * ser confundido com UTF-16-LE (FF FE), que e seu prefixo.
+     */
+    public function testUtf32BomRaisesInvalidTissXmlException(): void
+    {
+        $this->expectException(InvalidTissXmlException::class);
+        TissHash::hashTiss("\xFF\xFE\x00\x00<\x00\x00\x00");
+    }
+
+    /**
+     * Namespace TISS como DEFAULT (xmlns= sem prefixo): <hash> deve casar
+     * pela URI, nao pelo prefixo literal.
+     */
+    public function testDefaultNamespaceMatchesByUri(): void
+    {
+        $path = self::conformanceDir() . '/inputs/syn_default_ns.xml';
+        $this->assertFileExists($path);
+        $got = TissHash::hashTiss(\file_get_contents($path));
+        // Sanidade: o <hash> default-ns foi zerado (VALOR_SEM_PREFIXO
+        // continua no concat; hash diferiria se nao casasse a URI).
+        $this->assertSame('3ad92bd5ebbf35364433b897d08bf23a', $got);
+    }
+
+    /**
+     * Documento SEM <ans:hash> e VALIDO: concatena tudo, sem erro.
+     */
+    public function testMissingHashElementIsValid(): void
+    {
+        $path = self::conformanceDir() . '/inputs/syn_sem_hash.xml';
+        $this->assertFileExists($path);
+        $got = TissHash::hashTiss(\file_get_contents($path));
+        $this->assertSame('710a997000c9780901be02fafe449c64', $got);
     }
 
     /**

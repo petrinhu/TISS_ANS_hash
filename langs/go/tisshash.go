@@ -24,9 +24,17 @@ const Namespace = "http://www.ans.gov.br/padroes/tiss/schemas"
 // Version desta implementacao.
 const Version = "0.1.0"
 
+// ErrInvalidTissXML eh o erro sentinel base de todas as rejeicoes de
+// conformidade (XML mal-formado, encoding fora de escopo, multiplos
+// <ans:hash>). Permite ao chamador testar `errors.Is(err, ErrInvalidTissXML)`
+// sem depender do tipo concreto nem da causa raiz especifica.
+var ErrInvalidTissXML = errors.New("tisshash: XML invalido")
+
 // InvalidTissXMLError sinaliza que o XML eh mal-formado ou nao pode ser
 // decodificado/parseado para calcular o hash. Preserva a causa raiz via
 // Unwrap() para inspecao por errors.Is/As.
+//
+// Sempre satisfaz errors.Is(err, ErrInvalidTissXML).
 type InvalidTissXMLError struct {
 	Err error
 }
@@ -34,9 +42,9 @@ type InvalidTissXMLError struct {
 // Error implementa error.
 func (e *InvalidTissXMLError) Error() string {
 	if e == nil || e.Err == nil {
-		return "tisshash: XML invalido"
+		return ErrInvalidTissXML.Error()
 	}
-	return "tisshash: XML invalido: " + e.Err.Error()
+	return ErrInvalidTissXML.Error() + ": " + e.Err.Error()
 }
 
 // Unwrap permite errors.Is/As atravessar para a causa raiz do parser.
@@ -45,6 +53,12 @@ func (e *InvalidTissXMLError) Unwrap() error {
 		return nil
 	}
 	return e.Err
+}
+
+// Is faz qualquer InvalidTissXMLError satisfazer errors.Is(err,
+// ErrInvalidTissXML), independente de ter ou nao causa raiz envelopada.
+func (e *InvalidTissXMLError) Is(target error) bool {
+	return target == ErrInvalidTissXML
 }
 
 // HashTiss calcula o hash MD5 canonico do epilogo TISS/ANS a partir dos bytes
@@ -75,6 +89,18 @@ func (e *InvalidTissXMLError) Unwrap() error {
 // decisoes canonicas (comentario entra, atributo nao entra, CDATA literal,
 // prefixo de namespace irrelevante, bytes UTF-8 nao ISO-8859-1, etc.).
 func HashTiss(xmlBytes []byte) (string, error) {
+	// Rejeicao de escopo de encoding ANTES de qualquer tentativa de decodificar:
+	// o escopo canonico do hash TISS eh ISO-8859-1 + UTF-8. Um BOM UTF-16/UTF-32
+	// no inicio dos bytes denuncia um documento fora de escopo. Detectamos pelo
+	// BOM (nao pela declaracao encoding=) porque o BOM eh autoridade de fato e a
+	// deteccao manual de charset roda depois — entao falhamos cedo aqui.
+	//
+	// Ordem importa: UTF-32 LE (FF FE 00 00) compartilha o prefixo com UTF-16 LE
+	// (FF FE), entao a checagem de 4 bytes precisa vir ANTES da de 2 bytes.
+	if err := rejectUTFWideBOM(xmlBytes); err != nil {
+		return "", err
+	}
+
 	// Strip BOM UTF-8 (TISS proibe, mas a referencia aceita).
 	raw := stripBOM(xmlBytes)
 
@@ -102,7 +128,7 @@ func HashTiss(xmlBytes []byte) (string, error) {
 	var (
 		stack     []*elemState
 		concat    strings.Builder
-		foundHash bool // ja zeramos o primeiro <ans:hash>? (politica: so o primeiro)
+		hashCount int // quantos <ans:hash> do namespace TISS ja vimos
 	)
 
 	// markParentStructured: quando ha um filho do tipo Element/Comment/PI/
@@ -127,14 +153,22 @@ func HashTiss(xmlBytes []byte) (string, error) {
 		case xml.StartElement:
 			// Antes de empilhar o novo elemento, marca pai como estruturado.
 			markParentStructured()
-			es := &elemState{
-				name: t.Name,
-				isAnsHash: t.Name.Space == Namespace &&
-					t.Name.Local == "hash" &&
-					!foundHash,
+			// Casamos <ans:hash> por URI do namespace + local name, NUNCA pelo
+			// prefixo literal (encoding/xml ja resolve xml.Name.Space para a URI).
+			isHash := t.Name.Space == Namespace && t.Name.Local == "hash"
+			if isHash {
+				hashCount++
+				// Conformidade TISS: o epilogo tem EXATAMENTE 1 <ans:hash>.
+				// >1 eh documento mal-formado por contrato -> rejeitar (A-COV2).
+				if hashCount > 1 {
+					return "", &InvalidTissXMLError{
+						Err: errors.New("multiplos <ans:hash> do namespace TISS (esperado no maximo 1)"),
+					}
+				}
 			}
-			if es.isAnsHash {
-				foundHash = true
+			es := &elemState{
+				name:      t.Name,
+				isAnsHash: isHash,
 			}
 			stack = append(stack, es)
 
@@ -215,6 +249,35 @@ func HashTissFile(path string) (string, error) {
 }
 
 // -- Internos -------------------------------------------------------------
+
+// rejectUTFWideBOM rejeita documentos cujo inicio carrega um BOM UTF-16 ou
+// UTF-32, que estao FORA do escopo do hash TISS (ISO-8859-1 + UTF-8).
+//
+// Invariante de ordem: UTF-32 LE (FF FE 00 00) tem como prefixo o BOM UTF-16
+// LE (FF FE). Por isso testamos as marcas de 4 bytes ANTES das de 2 bytes,
+// senao um UTF-32 LE seria classificado erroneamente como UTF-16 LE (o erro
+// final seria o mesmo, mas a mensagem ficaria imprecisa).
+func rejectUTFWideBOM(b []byte) error {
+	// UTF-32 (4 bytes) primeiro.
+	if len(b) >= 4 {
+		if b[0] == 0xFF && b[1] == 0xFE && b[2] == 0x00 && b[3] == 0x00 {
+			return &InvalidTissXMLError{Err: errors.New("BOM UTF-32 LE detectado: encoding fora de escopo (ISO-8859-1/UTF-8)")}
+		}
+		if b[0] == 0x00 && b[1] == 0x00 && b[2] == 0xFE && b[3] == 0xFF {
+			return &InvalidTissXMLError{Err: errors.New("BOM UTF-32 BE detectado: encoding fora de escopo (ISO-8859-1/UTF-8)")}
+		}
+	}
+	// UTF-16 (2 bytes).
+	if len(b) >= 2 {
+		if b[0] == 0xFF && b[1] == 0xFE {
+			return &InvalidTissXMLError{Err: errors.New("BOM UTF-16 LE detectado: encoding fora de escopo (ISO-8859-1/UTF-8)")}
+		}
+		if b[0] == 0xFE && b[1] == 0xFF {
+			return &InvalidTissXMLError{Err: errors.New("BOM UTF-16 BE detectado: encoding fora de escopo (ISO-8859-1/UTF-8)")}
+		}
+	}
+	return nil
+}
 
 // stripBOM remove o BOM UTF-8 (EF BB BF) se presente no inicio dos bytes.
 //

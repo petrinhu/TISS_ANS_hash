@@ -44,6 +44,7 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <initializer_list>
 #include <ios>
 #include <memory>
 #include <string>
@@ -61,6 +62,45 @@
 namespace tiss_hash {
 
 namespace {
+
+// ----------------------------------------------------------------------------
+// Rejeicao de BOM UTF-16 / UTF-32.
+//
+// Escopo do algoritmo TISS = ISO-8859-1 + UTF-8 (ver SPEC.md §7 e
+// AMBIGUITY_NOTES.md §11b). Documentos UTF-16/UTF-32 estao fora de escopo e
+// DEVEM ser rejeitados ANTES de chegar ao pugixml (que poderia transcodificar
+// silenciosamente e produzir um hash espurio).
+//
+// Deteccao por BOM nos primeiros bytes. ATENCAO a ordem: o BOM UTF-32 LE
+// (FF FE 00 00) tem como prefixo o BOM UTF-16 LE (FF FE). Por isso testamos
+// UTF-32 ANTES de UTF-16 — caso contrario um arquivo UTF-32 LE seria
+// classificado como UTF-16.
+// ----------------------------------------------------------------------------
+void RejectUtf16Utf32Bom(std::span<const std::byte> in) {
+    constexpr auto B = [](unsigned v) { return std::byte{static_cast<unsigned char>(v)}; };
+
+    const auto starts_with = [&](std::initializer_list<std::byte> bom) {
+        if (in.size() < bom.size()) {
+            return false;
+        }
+        return std::equal(bom.begin(), bom.end(), in.begin());
+    };
+
+    // UTF-32 primeiro (prefixo compartilhado com UTF-16 LE).
+    if (starts_with({B(0xFF), B(0xFE), B(0x00), B(0x00)})) {
+        throw InvalidTissXml{"encoding UTF-32 LE fora de escopo (BOM FF FE 00 00); TISS usa ISO-8859-1/UTF-8"};
+    }
+    if (starts_with({B(0x00), B(0x00), B(0xFE), B(0xFF)})) {
+        throw InvalidTissXml{"encoding UTF-32 BE fora de escopo (BOM 00 00 FE FF); TISS usa ISO-8859-1/UTF-8"};
+    }
+    // UTF-16 depois.
+    if (starts_with({B(0xFF), B(0xFE)})) {
+        throw InvalidTissXml{"encoding UTF-16 LE fora de escopo (BOM FF FE); TISS usa ISO-8859-1/UTF-8"};
+    }
+    if (starts_with({B(0xFE), B(0xFF)})) {
+        throw InvalidTissXml{"encoding UTF-16 BE fora de escopo (BOM FE FF); TISS usa ISO-8859-1/UTF-8"};
+    }
+}
 
 // ----------------------------------------------------------------------------
 // Strip de BOM UTF-8 (EF BB BF) — pugixml aceita, mas explicitamos pra
@@ -174,6 +214,25 @@ pugi::xml_node FindFirstTissHash(pugi::xml_node node) {
         }
     }
     return pugi::xml_node{};
+}
+
+// ----------------------------------------------------------------------------
+// Conta TODOS os <ans:hash> do namespace TISS na arvore (DFS pre-order).
+//
+// O Padrao TISS tem exatamente 1 <ans:hash> no epilogo. Mais de um e
+// documento invalido (ambiguidade A-COV2 / AMBIGUITY_NOTES §9): qual zerar?
+// Rejeitamos em vez de adivinhar. Match por URI de namespace + local "hash",
+// independente do prefixo declarado (consistente com IsTissHashElement).
+// ----------------------------------------------------------------------------
+std::size_t CountTissHash(pugi::xml_node node) {
+    std::size_t count = 0;
+    for (pugi::xml_node n = node; n; n = n.next_sibling()) {
+        if (IsTissHashElement(n)) {
+            ++count;
+        }
+        count += CountTissHash(n.first_child());
+    }
+    return count;
 }
 
 // ----------------------------------------------------------------------------
@@ -304,6 +363,9 @@ std::string HashTiss(std::span<const std::byte> xml) {
         throw InvalidTissXml{"XML excede limite de 2 GiB"};
     }
 
+    // Rejeitar UTF-16/UTF-32 (fora de escopo) antes de qualquer parsing.
+    RejectUtf16Utf32Bom(xml);
+
     const auto stripped = StripUtf8Bom(xml);
 
     pugi::xml_document doc;
@@ -337,20 +399,26 @@ std::string HashTiss(std::span<const std::byte> xml) {
         throw InvalidTissXml{"XML sem elemento raiz"};
     }
 
-    // 1) Localizar e zerar o primeiro <ans:hash> (DFS pre-order).
-    //    Multiplos <ans:hash> = comportamento NAO fixado (ambiguidade #9);
-    //    seguimos a referencia e zeramos apenas o primeiro.
+    // 1) Rejeitar documento com >1 <ans:hash> do namespace TISS (A-COV2).
+    //    O Padrao tem exatamente 1; mais de um e ambiguo (qual zerar?).
+    //    Documento SEM <ans:hash> e VALIDO (concatena tudo; hash_node nulo).
+    if (CountTissHash(root) > 1) {
+        throw InvalidTissXml{
+            "documento invalido: multiplos elementos <ans:hash> do namespace TISS (esperado no maximo 1)"};
+    }
+
+    // 2) Localizar e zerar o (unico) <ans:hash> (DFS pre-order). Ausente => ok.
     pugi::xml_node hash_node = FindFirstTissHash(root);
     if (hash_node) {
         ClearNodeChildren(hash_node);
     }
 
-    // 2) Walker em ordem de documento, acumulando texto das folhas em UTF-8.
+    // 3) Walker em ordem de documento, acumulando texto das folhas em UTF-8.
     std::string concat;
     concat.reserve(8192);  // capacidade inicial confortavel (~8 KiB).
     Walk(root, concat, hash_node);
 
-    // 3) MD5 dos bytes UTF-8 (pugixml ja entregou em UTF-8).
+    // 4) MD5 dos bytes UTF-8 (pugixml ja entregou em UTF-8).
     return Md5HexLower(concat);
 }
 

@@ -12,11 +12,6 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 
 | ID | Onda | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| A-COV1 | W2 | Conformance | Vetor `syn_default_ns.xml` (namespace default sem prefixo `ans:`) — risco ALTO: ports que casam `<ans:hash>` por string de prefixo falham; gerador TISS pode emitir sem prefixo | Alta | — | Baixa | ⏳ Pendente | — |
-| A-COV2 | W2 | Conformance | Decidir comportamento + vetor `syn_multi_hash.xml` (múltiplos `<ans:hash>`) — AMBIGUITY_NOTES §9 "não-fixado"; ports divergem silenciosos | Média | — | Baixa | ⏳ Pendente | — |
-| A-COV3 | W2 | Conformance | Vetor `syn_sem_hash.xml` (documento sem `<ans:hash>`) — caminho "hash ausente" não exercitado; ports podem dar NPE/panic | Média | — | Baixa | ⏳ Pendente | — |
-| A-COV4 | W2 | Conformance | Vetor `syn_entidade_numerica.xml` (`&#xE9;`/`&#233;` → `é`) — entidade de caractere numérica não coberta | Baixa | — | Baixa | ⏳ Pendente | — |
-| A-COV5 | W2 | Conformance | Decidir suporte UTF-16 (vetor ou rejeição documentada) — ports com detecção manual de encoding (Rust/Node/Go) só tratam iso/utf-8 | Baixa | — | Baixa | ⏳ Pendente | — |
 | A-DOC5 | W3 | Docs | README raiz tabela de status: 9 ports prontos marcados "planejado"; "6 ports" deveria ser "9 ports". Subvende o projeto | Média | — | Baixa | ⏳ Pendente | — |
 | A-DOC6 | W3 | Docs | README raiz: caminho `langs/nodejs/` quebrado (real = `langs/node/`); árvore "Estrutura" lista só python/; "LICENSE (a criar inline)" desatualizado | Média | — | Baixa | ⏳ Pendente | — |
 | A-DOC7 | W3 | Docs | README badges: badge Codeberg/Woodpecker tende 404 (CI real é Forgejo Actions, sem .woodpecker.yml); GitHub badge aponta só python.yml de 9 | Média | F4.9 | Baixa | ⏳ Pendente | — |
@@ -113,20 +108,26 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | F1.10 | — | Setup | Atualizar langs/python/README.md (MIT + URLs) — fechado via A-DOC4 | Média | F1.8 | Baixa | ✅ Concluído | ✓ |
 | A-LEG1 | — | Legal | Criado `THIRD_PARTY_LICENSES.md` (atribuição 3rd-party por port; runtime vs test-only; doctest versionado atribuído). Nome escolhido sobre `NOTICE` (semântica Apache-2.0) | Alta | — | Baixa | ✅ Concluído | ✓ |
 | A-LEG4 | — | Legal | vendor/ node_modules/ .venv/ NÃO no índice git — git ls-files limpo | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-COV1 | — | Conformance | Vetor `syn_default_ns.xml` (namespace default `xmlns=` sem prefixo). Todos os 9 ports já casam `<hash>` por URI → PASS sem fix | Alta | — | Baixa | ✅ Concluído | ✓ |
+| A-COV2 | — | Conformance | Multi-hash FIXADO = **rejeitar** (decisão líder). reference.py `findall`+raise; 9 ports rejeitam via erro de XML inválido; vetor negativo `syn_multi_hash.xml` (`expect:error`); AMBIGUITY §9 reescrito | Média | — | Baixa | ✅ Concluído | ✓ |
+| A-COV3 | — | Conformance | Vetor `syn_sem_hash.xml` (sem `<ans:hash>` = VÁLIDO, concatena tudo). 9 ports PASS sem erro | Média | — | Baixa | ✅ Concluído | ✓ |
+| A-COV4 | — | Conformance | Vetor `syn_entidade_numerica.xml` (`&#xE9;` hex + `&#231;&#227;` dec). 9 ports PASS (parser decodifica) | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-COV5 | — | Conformance | UTF-16/UTF-32 FIXADO = **rejeitar** (escopo ISO-8859-1+UTF-8). reference + 9 ports detectam BOM e rejeitam; vetor negativo `syn_utf16.xml`; AMBIGUITY §11b + SPEC §2/§7 | Baixa | — | Baixa | ✅ Concluído | ✓ |
 
 ---
 
 ## Resumo
 
-- **Concluído:** 54 itens (algoritmo, fixture, 9 ports 15/15 byte-a-byte, 18 jobs CI verdes GitHub+Codeberg, repos públicos dual-push, docs, ADRs, SEO Tier 1+2, A-SEC1 XXE, **W1 inteira: A-DOC1/2/3/4 + A-LEG1 + F1.10**, A-LEG4).
-- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO). 31 achados; **A-SEC1 + W1 (5) + A-LEG4 = 7 fechados**; 24 abertos. **Nenhum CRÍTICO restante** — v0.1.0 desbloqueada por W1.
+- **Concluído:** 59 itens (algoritmo, fixture **20 vetores** [18 positivos + 2 negativos], 9 ports byte-a-byte + rejeições, 18 jobs CI verdes GitHub+Codeberg, repos públicos dual-push, docs, ADRs, SEO Tier 1+2, A-SEC1 XXE, **W1: A-DOC1/2/3/4+A-LEG1+F1.10**, **W2: A-COV1-5**, A-LEG4).
+- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO). 31 achados; **A-SEC1 + W1 (5) + W2 (5) + A-LEG4 = 12 fechados**; 19 abertos. **Nenhum CRÍTICO restante** — v0.1.0 desbloqueada.
+- **W2 (2026-05-28):** contrato estendido com vetores negativos (`expect:"error"`). 2 decisões do líder: multi-hash → rejeita; UTF-16/32 → rejeita (escopo ISO-8859-1+UTF-8). reference.py + 9 ports + AMBIGUITY §9/§11b + SPEC §2/§7/§8. Verificado: C 20/20+XXE+valgrind, C++ ctest, Go, Python 24, Rust 21, Node 29, PHP 32, Java 28, C# 26.
 
 ### Ondas de execução (paralelizáveis dentro da onda)
 
 | Onda | Foco | Itens | Gate |
 | :--- | :--- | :--- | :--- |
 | ~~**W1**~~ | ~~CRÍTICOS doc/legal~~ | ✅ A-DOC1, A-LEG1, A-DOC4/F1.10, A-DOC3, A-DOC2 | **FECHADA** |
-| **W2** | Robustez conformance — redução de risco cross-port | A-COV1 (ALTO) → A-COV2/3/4/5 | vetores faltantes |
+| ~~**W2**~~ | ~~Robustez conformance~~ | ✅ A-COV1-5 (3 vetores positivos + 2 negativos; reject multi-hash + UTF-16) | **FECHADA** |
 | **W3** | Precisão de docs + atribuição legal — antes do anúncio | A-DOC5/6/7/8/9/10/12/13/14, A-LEG2/3 | README/CHANGELOG/ADR honestos |
 | **W4** | Hardening CI + supply-chain | A-CI1/2/3/4/5, A-SUP1/2/3, A-QA1 | sanitizer, lint, CVE, dependabot |
 | **W5** | Release v0.1.0 | F7.1 → F4.4 → F7.2 → A-REL1 | PyPI + GitHub/Codeberg + SBOM |

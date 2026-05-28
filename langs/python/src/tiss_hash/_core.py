@@ -78,6 +78,28 @@ def hash_tiss(xml: bytes) -> str:
             f"hash_tiss espera bytes-like, recebeu {type(xml).__name__}"
         )
 
+    raw = bytes(xml)
+
+    # Rejeição por BOM de encoding fora de escopo. O escopo suportado é
+    # ISO-8859-1 + UTF-8 (ver SPEC.md §7 / AMBIGUITY_NOTES.md §11b). UTF-16
+    # e UTF-32 são proibidos pelo padrão TISS. Detectamos pelo BOM nos bytes
+    # de entrada e rejeitamos antes de parsear (o parser XML aceitaria
+    # UTF-16/32 silenciosamente, produzindo um hash inválido).
+    #
+    # ORDEM IMPORTA: o BOM UTF-32 LE (FF FE 00 00) tem como prefixo o BOM
+    # UTF-16 LE (FF FE); por isso checamos UTF-32 (4 bytes) ANTES de UTF-16
+    # (2 bytes), senão um arquivo UTF-32 seria classificado errado.
+    if raw[:4] in (b"\xff\xfe\x00\x00", b"\x00\x00\xfe\xff"):
+        raise InvalidTissXml(
+            "encoding UTF-32 fora de escopo (BOM detectado): "
+            "TISS suporta apenas ISO-8859-1 e UTF-8"
+        )
+    if raw[:2] in (b"\xff\xfe", b"\xfe\xff"):
+        raise InvalidTissXml(
+            "encoding UTF-16 fora de escopo (BOM detectado): "
+            "TISS suporta apenas ISO-8859-1 e UTF-8"
+        )
+
     # Parser configurado com ``insert_comments=True`` no TreeBuilder para
     # reproduzir o comportamento da implementação de referência (lxml),
     # onde nós-comentário são filhos do elemento pai, têm ``len(el) == 0``
@@ -88,7 +110,7 @@ def hash_tiss(xml: bytes) -> str:
         parser = DefusedXMLParser(
             target=TreeBuilder(insert_comments=True),
         )
-        tree = _safe_parse(io.BytesIO(bytes(xml)), parser=parser)
+        tree = _safe_parse(io.BytesIO(raw), parser=parser)
     except DefusedXmlException as exc:
         # XXE / DTD externo / entidade proibida / billion-laughs.
         raise InvalidTissXml(
@@ -99,10 +121,26 @@ def hash_tiss(xml: bytes) -> str:
 
     root = tree.getroot()
 
-    # Zera o conteúdo do elemento <ans:hash> antes de calcular.
-    hash_el = root.find(f".//{_HASH_TAG}")
-    if hash_el is not None:
-        hash_el.text = ""
+    # Localiza TODOS os elementos <ans:hash> do namespace TISS, casando por
+    # URI + nome local (notação Clark ``{uri}hash``) — nunca pelo prefixo
+    # literal. Isso cobre tanto o caso ``ans:hash`` quanto o namespace TISS
+    # declarado como default (``xmlns=...``), pois ElementTree expande ambos
+    # para a mesma tag Clark.
+    #
+    # O padrão TISS define exatamente um <ans:hash> por mensagem. Mais de um
+    # é documento inválido (A-COV2): rejeitamos em vez de adivinhar qual zerar.
+    # ``root.iter(tag)`` percorre a árvore inteira incluindo a própria raiz.
+    hash_els = list(root.iter(_HASH_TAG))
+    if len(hash_els) > 1:
+        raise InvalidTissXml(
+            f"documento contém {len(hash_els)} elementos <ans:hash>; "
+            "o padrão TISS define exatamente 1"
+        )
+
+    # Zera o conteúdo do elemento <ans:hash> antes de calcular (se existir;
+    # documento sem <ans:hash> é válido e concatena tudo).
+    if hash_els:
+        hash_els[0].text = ""
 
     # Concatena .text de cada elemento-folha (len(el) == 0) em ordem documental.
     partes = [(el.text or "") for el in root.iter() if len(el) == 0]

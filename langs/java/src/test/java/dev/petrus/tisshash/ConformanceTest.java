@@ -22,13 +22,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Suite de conformidade do port Java — roda os 15 vetores de
+ * Suite de conformidade do port Java — roda os vetores de
  * {@code conformance/vectors.json} e compara byte-a-byte com
  * {@code expected_md5} produzido pela referência Python
  * ({@code conformance/reference.py}).
  *
  * <p>Cada vetor vira um caso parametrizado; falha individual aparece
- * no relatório com o id do vetor.</p>
+ * no relatório com o id do vetor. Vetores com {@code expect == "error"}
+ * (negativos) exigem que {@link TissHash#hashTiss(byte[])} lance
+ * {@link InvalidTissXmlException} em vez de produzir hash.</p>
  */
 class ConformanceTest {
 
@@ -41,6 +43,15 @@ class ConformanceTest {
     @MethodSource("vectors")
     void conformance(String id, VectorsLoader.Vector v) throws IOException {
         byte[] bytes = Files.readAllBytes(v.inputPath);
+        if (v.isNegative()) {
+            // Negativo: o port DEVE rejeitar (não produzir hash).
+            assertThrows(
+                    InvalidTissXmlException.class,
+                    () -> TissHash.hashTiss(bytes),
+                    () -> "vetor negativo " + id + " (" + v.desc
+                            + ") deveria lançar InvalidTissXmlException");
+            return;
+        }
         String got = TissHash.hashTiss(bytes);
         assertEquals(
                 v.expectedMd5,

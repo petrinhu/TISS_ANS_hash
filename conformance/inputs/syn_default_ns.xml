@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<mensagemTISS xmlns="http://www.ans.gov.br/padroes/tiss/schemas">
+  <cabecalho>
+    <campo>VALOR_SEM_PREFIXO</campo>
+  </cabecalho>
+  <epilogo>
+    <hash></hash>
+  </epilogo>
+</mensagemTISS>

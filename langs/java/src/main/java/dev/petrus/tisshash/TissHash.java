@@ -115,6 +115,8 @@ public final class TissHash {
     public static String hashTiss(byte[] xmlBytes) {
         Objects.requireNonNull(xmlBytes, "xmlBytes não pode ser null");
 
+        rejectUtf16Utf32Bom(xmlBytes);
+
         byte[] cleaned = stripBomUtf8(xmlBytes);
 
         Document doc = parseSecure(cleaned);
@@ -124,7 +126,7 @@ public final class TissHash {
                     "XML sem documentElement (raiz ausente)");
         }
 
-        Element hashEl = findFirstHash(root);
+        Element hashEl = findSingleHash(doc);
 
         StringBuilder concat = new StringBuilder(estimateInitialCapacity(cleaned.length));
         walkInOrder(root, hashEl, concat);
@@ -222,6 +224,53 @@ public final class TissHash {
     }
 
     /**
+     * Rejeita entrada cujo BOM indica UTF-16 ou UTF-32 — encodings
+     * <strong>fora de escopo</strong> do Padrão TISS (apenas ISO-8859-1 e
+     * UTF-8 são suportados; ver {@code conformance/AMBIGUITY_NOTES.md} §11b).
+     *
+     * <p>A ordem de checagem importa: UTF-32 LE ({@code FF FE 00 00}) começa
+     * com o mesmo par {@code FF FE} de UTF-16 LE — por isso UTF-32 é testado
+     * <strong>antes</strong> de UTF-16 para não classificar errado.</p>
+     *
+     * <p>BOMs detectados:</p>
+     * <ul>
+     *   <li>UTF-32 LE: {@code FF FE 00 00}</li>
+     *   <li>UTF-32 BE: {@code 00 00 FE FF}</li>
+     *   <li>UTF-16 LE: {@code FF FE}</li>
+     *   <li>UTF-16 BE: {@code FE FF}</li>
+     * </ul>
+     *
+     * @throws InvalidTissXmlException se o BOM for UTF-16/UTF-32
+     */
+    private static void rejectUtf16Utf32Bom(byte[] bytes) {
+        // UTF-32 antes de UTF-16: FF FE 00 00 colide com o prefixo FF FE.
+        if (bytes.length >= 4) {
+            int b0 = bytes[0] & 0xFF;
+            int b1 = bytes[1] & 0xFF;
+            int b2 = bytes[2] & 0xFF;
+            int b3 = bytes[3] & 0xFF;
+            boolean utf32le = b0 == 0xFF && b1 == 0xFE && b2 == 0x00 && b3 == 0x00;
+            boolean utf32be = b0 == 0x00 && b1 == 0x00 && b2 == 0xFE && b3 == 0xFF;
+            if (utf32le || utf32be) {
+                throw new InvalidTissXmlException(
+                        "encoding UTF-32 fora de escopo (TISS suporta apenas "
+                                + "ISO-8859-1 e UTF-8); BOM UTF-32 detectado");
+            }
+        }
+        if (bytes.length >= 2) {
+            int b0 = bytes[0] & 0xFF;
+            int b1 = bytes[1] & 0xFF;
+            boolean utf16le = b0 == 0xFF && b1 == 0xFE;
+            boolean utf16be = b0 == 0xFE && b1 == 0xFF;
+            if (utf16le || utf16be) {
+                throw new InvalidTissXmlException(
+                        "encoding UTF-16 fora de escopo (TISS suporta apenas "
+                                + "ISO-8859-1 e UTF-8); BOM UTF-16 detectado");
+            }
+        }
+    }
+
+    /**
      * Strip do BOM UTF-8 (3 bytes {@code EF BB BF}) no início, se presente.
      * Operação O(1) na maioria dos casos (sem BOM = retorna o próprio array).
      */
@@ -238,24 +287,33 @@ public final class TissHash {
     }
 
     /**
-     * Busca DFS pre-order do primeiro {@link Element} cujo local name é
-     * {@code "hash"} e namespace URI é {@link #TISS_NAMESPACE}.
-     * Retorna {@code null} se não houver.
+     * Localiza o único {@code <ans:hash>} do namespace TISS (URI
+     * {@link #TISS_NAMESPACE}, local name {@code "hash"}), casando por
+     * <strong>URI</strong> e não por prefixo — assim o namespace TISS como
+     * default ({@code xmlns="..."} sem prefixo {@code ans:}) também casa.
+     *
+     * <p>Invariante TISS: o documento tem <strong>no máximo um</strong>
+     * {@code <ans:hash>}. Se houver mais de um, a entrada é inválida e
+     * rejeitada (ambiguidade #9 / A-COV2). Documento <strong>sem</strong>
+     * hash é válido: retorna {@code null} e o concat percorre tudo.</p>
+     *
+     * @return o elemento hash, ou {@code null} se não houver nenhum
+     * @throws InvalidTissXmlException se houver mais de um {@code <ans:hash>}
      */
-    private static Element findFirstHash(Node node) {
-        if (node.getNodeType() == Node.ELEMENT_NODE
-                && HASH_LOCAL_NAME.equals(localNameOf(node))
-                && TISS_NAMESPACE.equals(node.getNamespaceURI())) {
-            return (Element) node;
+    private static Element findSingleHash(Document doc) {
+        NodeList hashes =
+                doc.getElementsByTagNameNS(TISS_NAMESPACE, HASH_LOCAL_NAME);
+        int count = hashes.getLength();
+        if (count == 0) {
+            return null;
         }
-        NodeList kids = node.getChildNodes();
-        for (int i = 0; i < kids.getLength(); i++) {
-            Element r = findFirstHash(kids.item(i));
-            if (r != null) {
-                return r;
-            }
+        if (count > 1) {
+            throw new InvalidTissXmlException(
+                    "documento TISS inválido: esperado no máximo um "
+                            + "<ans:hash> (namespace " + TISS_NAMESPACE
+                            + "), encontrados " + count);
         }
-        return null;
+        return (Element) hashes.item(0);
     }
 
     /**
@@ -353,24 +411,6 @@ public final class TissHash {
             }
         }
         return sb.toString();
-    }
-
-    /**
-     * Local name robusto: prefere {@link Node#getLocalName()} (presente
-     * quando o documento foi parseado namespace-aware) e cai para
-     * {@link Node#getNodeName()} caso contrário.
-     */
-    private static String localNameOf(Node n) {
-        String ln = n.getLocalName();
-        if (ln != null) {
-            return ln;
-        }
-        String name = n.getNodeName();
-        if (name == null) {
-            return "";
-        }
-        int colon = name.indexOf(':');
-        return colon >= 0 ? name.substring(colon + 1) : name;
     }
 
     /**

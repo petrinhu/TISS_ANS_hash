@@ -1,5 +1,9 @@
-// test_conformance.cpp - roda os 15 vetores canonicos contra HashTissFile()
-// e compara byte-a-byte com o hash esperado de conformance/vectors.json.
+// test_conformance.cpp - roda os vetores canonicos contra HashTissFile().
+//
+// Vetores POSITIVOS (expect_error == false): compara byte-a-byte com o hash
+// esperado de conformance/vectors.json.
+// Vetores NEGATIVOS (expect_error == true): o port DEVE lancar
+// tiss_hash::InvalidTissXml (ex: multiplos <ans:hash>, encoding UTF-16/32).
 //
 // Uso:
 //   test_conformance --inputs <dir>     # custom inputs dir
@@ -47,7 +51,7 @@ std::filesystem::path ResolveInputsDir(int argc, const char* const* argv) {
 
 }  // namespace
 
-TEST_CASE("conformance: 15 vetores TISS/ANS batem byte-a-byte com a referencia") {
+TEST_CASE("conformance: vetores TISS/ANS (positivos batem hash; negativos rejeitam)") {
     REQUIRE_MESSAGE(std::filesystem::is_directory(g_inputs_dir),
                     "inputs dir nao existe: " << g_inputs_dir.string());
 
@@ -60,11 +64,17 @@ TEST_CASE("conformance: 15 vetores TISS/ANS batem byte-a-byte com a referencia")
 
         SUBCASE(std::string{v.id}.c_str()) {
             CAPTURE(path.string());
-            CAPTURE(v.expected_md5);
 
-            std::string got;
-            REQUIRE_NOTHROW(got = tiss_hash::HashTissFile(path));
-            CHECK_EQ(got, std::string{v.expected_md5});
+            if (v.expect_error) {
+                // Vetor NEGATIVO: deve lancar InvalidTissXml, nao hashear.
+                CHECK_THROWS_AS((void)tiss_hash::HashTissFile(path),
+                                tiss_hash::InvalidTissXml);
+            } else {
+                CAPTURE(v.expected_md5);
+                std::string got;
+                REQUIRE_NOTHROW(got = tiss_hash::HashTissFile(path));
+                CHECK_EQ(got, std::string{v.expected_md5});
+            }
         }
     }
 }

@@ -94,6 +94,13 @@ export function hashTiss(xmlBytes) {
 
   // Buffer estende Uint8Array, então a conversão é barata e segura.
   const buf = Buffer.isBuffer(xmlBytes) ? xmlBytes : Buffer.from(xmlBytes);
+
+  // Escopo de encoding = ISO-8859-1 + UTF-8. UTF-16/UTF-32 ficam FORA de
+  // escopo e devem ser REJEITADOS antes de qualquer decode (detecção manual
+  // de encoding poderia produzir hash silenciosamente errado).
+  // Ver AMBIGUITY_NOTES.md §11b (auditoria A-COV5).
+  rejectUnsupportedEncoding(buf);
+
   const xmlStr = decodeXmlBytes(buf);
 
   let doc;
@@ -122,7 +129,16 @@ export function hashTiss(xmlBytes) {
     throw new InvalidTissXmlError('XML não tem documentElement');
   }
 
-  const hashNode = findFirstHash(root);
+  // O Padrão TISS prevê no máximo UM <ans:hash> (no <ans:epilogo>).
+  // Múltiplos = documento inválido → rejeitar (não adivinhar qual zerar).
+  // Ver AMBIGUITY_NOTES.md §9 (auditoria A-COV2).
+  const hashNodes = findAllHash(root);
+  if (hashNodes.length > 1) {
+    throw new InvalidTissXmlError(
+      `múltiplos <ans:hash> no documento (encontrados ${hashNodes.length}, esperado no máximo 1)`,
+    );
+  }
+  const hashNode = hashNodes.length === 1 ? hashNodes[0] : null;
 
   // Concat dos textos de folhas em ordem de documento, zerando <ans:hash>.
   let buffer = '';
@@ -187,27 +203,62 @@ function isLeafForHash(node) {
 }
 
 /**
- * Localiza o primeiro `<ans:hash>` (qualquer prefixo, namespace TISS) em
- * busca depth-first/document-order.
+ * Coleta TODOS os `<ans:hash>` (namespace TISS, localName `hash` — casa por
+ * URI/localName, nunca por prefixo) em ordem de documento (depth-first,
+ * pre-order). Espelha o `root.findall(".//ans:hash", NS)` da referência.
  *
  * @param {Node} node Raiz a partir da qual buscar.
- * @returns {Node | null}
+ * @returns {Node[]} Lista em ordem de documento (vazia se nenhum).
  */
-function findFirstHash(node) {
+function findAllHash(node) {
+  const out = [];
+  walkInOrder(node, (n) => {
+    if (
+      n.nodeType === 1
+      && n.localName === 'hash'
+      && n.namespaceURI === TISS_NAMESPACE
+    ) {
+      out.push(n);
+    }
+  });
+  return out;
+}
+
+/**
+ * Rejeita encodings fora de escopo (UTF-16 / UTF-32) por detecção de BOM nos
+ * bytes crus, ANTES de qualquer decode. Escopo suportado = ISO-8859-1 + UTF-8.
+ *
+ * UTF-32 é checado ANTES de UTF-16 porque o BOM UTF-32-LE (`FF FE 00 00`) tem
+ * o BOM UTF-16-LE (`FF FE`) como prefixo. Ver AMBIGUITY_NOTES.md §11b.
+ *
+ * @param {Buffer} buf
+ * @throws {InvalidTissXmlError} Se os bytes iniciarem com BOM UTF-16/UTF-32.
+ */
+function rejectUnsupportedEncoding(buf) {
+  // UTF-32 BOM: FF FE 00 00 (LE) ou 00 00 FE FF (BE).
   if (
-    node.nodeType === 1
-    && node.localName === 'hash'
-    && node.namespaceURI === TISS_NAMESPACE
+    buf.length >= 4
+    && (
+      (buf[0] === 0xFF && buf[1] === 0xFE && buf[2] === 0x00 && buf[3] === 0x00)
+      || (buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0xFE && buf[3] === 0xFF)
+    )
   ) {
-    return node;
+    throw new InvalidTissXmlError(
+      'encoding UTF-32 não suportado (escopo: ISO-8859-1, UTF-8)',
+    );
   }
-  const kids = node.childNodes;
-  if (!kids) return null;
-  for (let i = 0; i < kids.length; i++) {
-    const r = findFirstHash(kids[i]);
-    if (r) return r;
+  // UTF-16 BOM: FF FE (LE) ou FE FF (BE).
+  if (
+    buf.length >= 2
+    && (
+      (buf[0] === 0xFF && buf[1] === 0xFE)
+      || (buf[0] === 0xFE && buf[1] === 0xFF)
+    )
+  ) {
+    throw new InvalidTissXmlError(
+      'encoding UTF-16 não suportado (escopo: ISO-8859-1, UTF-8)',
+    );
   }
-  return null;
 }
 
 /**

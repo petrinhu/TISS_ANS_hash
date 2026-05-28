@@ -32,9 +32,23 @@ const manifestRaw = readFileSync(vectorsPath, 'utf8');
 const manifest = JSON.parse(manifestRaw);
 
 for (const vec of manifest.vectors) {
+  // Campo `expect`: ausente ou "hash" = POSITIVO (compara expected_md5);
+  // "error" = NEGATIVO (port DEVE rejeitar, não produzir hash).
+  const isNegative = vec.expect === 'error';
+
   test(`conformance ${vec.id} — ${vec.desc}`, async () => {
     const inputPath = join(conformanceDir, vec.input);
     const bytes = await readFileAsync(inputPath);
+
+    if (isNegative) {
+      assert.throws(
+        () => hashTiss(bytes),
+        (err) => err instanceof InvalidTissXmlError,
+        `vetor negativo ${vec.id} deveria lançar InvalidTissXmlError`,
+      );
+      return;
+    }
+
     const got = hashTiss(bytes);
     assert.equal(
       got,

@@ -40,13 +40,29 @@ def test_vector_matches_expected(
     vector: dict[str, Any],
     conformance_dir: Path,
 ) -> None:
-    """Cada vetor: lê o XML do disco, calcula o hash, compara."""
+    """Cada vetor: lê o XML do disco e verifica conforme o tipo.
+
+    O campo ``expect`` do manifesto define o tipo do vetor:
+    - ausente ou ``"hash"``: vetor POSITIVO — calcula e compara com
+      ``expected_md5``.
+    - ``"error"``: vetor NEGATIVO — ``hash_tiss`` DEVE rejeitar o input
+      lançando ``InvalidTissXml`` (nunca retornar um hash).
+    """
     input_path = conformance_dir / vector["input"]
     assert input_path.is_file(), f"input ausente: {input_path}"
 
     raw = input_path.read_bytes()
-    got = hash_tiss(raw)
+    expect = vector.get("expect", "hash")
 
+    if expect == "error":
+        assert vector["expected_md5"] is None, (
+            f"vetor negativo {vector['id']} não deveria ter expected_md5"
+        )
+        with pytest.raises(InvalidTissXml):
+            hash_tiss(raw)
+        return
+
+    got = hash_tiss(raw)
     assert got == vector["expected_md5"], (
         f"hash divergente para {vector['id']}: "
         f"obtido {got!r}, esperado {vector['expected_md5']!r}"

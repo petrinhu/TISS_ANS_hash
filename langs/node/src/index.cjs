@@ -32,6 +32,11 @@ function hashTiss(xmlBytes) {
   }
 
   const buf = Buffer.isBuffer(xmlBytes) ? xmlBytes : Buffer.from(xmlBytes);
+
+  // UTF-16/UTF-32 fora de escopo: rejeitar por BOM antes do decode.
+  // Ver AMBIGUITY_NOTES.md §11b (A-COV5).
+  rejectUnsupportedEncoding(buf);
+
   const xmlStr = decodeXmlBytes(buf);
 
   let doc;
@@ -58,7 +63,15 @@ function hashTiss(xmlBytes) {
     throw new InvalidTissXmlError('XML não tem documentElement');
   }
 
-  const hashNode = findFirstHash(root);
+  // Múltiplos <ans:hash> = inválido (TISS tem no máximo 1).
+  // Ver AMBIGUITY_NOTES.md §9 (A-COV2).
+  const hashNodes = findAllHash(root);
+  if (hashNodes.length > 1) {
+    throw new InvalidTissXmlError(
+      `múltiplos <ans:hash> no documento (encontrados ${hashNodes.length}, esperado no máximo 1)`,
+    );
+  }
+  const hashNode = hashNodes.length === 1 ? hashNodes[0] : null;
 
   let buffer = '';
   walkInOrder(root, (node) => {
@@ -88,21 +101,45 @@ function isLeafForHash(node) {
   return true;
 }
 
-function findFirstHash(node) {
+function findAllHash(node) {
+  const out = [];
+  walkInOrder(node, (n) => {
+    if (
+      n.nodeType === 1
+      && n.localName === 'hash'
+      && n.namespaceURI === TISS_NAMESPACE
+    ) {
+      out.push(n);
+    }
+  });
+  return out;
+}
+
+function rejectUnsupportedEncoding(buf) {
+  // UTF-32 BOM (checar antes de UTF-16: FF FE 00 00 contém FF FE).
   if (
-    node.nodeType === 1
-    && node.localName === 'hash'
-    && node.namespaceURI === TISS_NAMESPACE
+    buf.length >= 4
+    && (
+      (buf[0] === 0xFF && buf[1] === 0xFE && buf[2] === 0x00 && buf[3] === 0x00)
+      || (buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0xFE && buf[3] === 0xFF)
+    )
   ) {
-    return node;
+    throw new InvalidTissXmlError(
+      'encoding UTF-32 não suportado (escopo: ISO-8859-1, UTF-8)',
+    );
   }
-  const kids = node.childNodes;
-  if (!kids) return null;
-  for (let i = 0; i < kids.length; i++) {
-    const r = findFirstHash(kids[i]);
-    if (r) return r;
+  // UTF-16 BOM: FF FE (LE) ou FE FF (BE).
+  if (
+    buf.length >= 2
+    && (
+      (buf[0] === 0xFF && buf[1] === 0xFE)
+      || (buf[0] === 0xFE && buf[1] === 0xFF)
+    )
+  ) {
+    throw new InvalidTissXmlError(
+      'encoding UTF-16 não suportado (escopo: ISO-8859-1, UTF-8)',
+    );
   }
-  return null;
 }
 
 function walkInOrder(node, visit) {

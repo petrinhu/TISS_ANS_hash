@@ -71,10 +71,15 @@ final class VectorsLoader {
             JSONObject v = arr.getJSONObject(i);
             String id = v.getString("id");
             String inputRel = v.getString("input");
-            String expected = v.getString("expected_md5");
+            // Negativos têm expected_md5 = null; isNull evita exceção do getString.
+            String expected = v.isNull("expected_md5")
+                    ? null
+                    : v.getString("expected_md5");
+            // expect: ausente ou "hash" = positivo; "error" = negativo.
+            String expect = v.optString("expect", "hash");
             String desc = v.optString("desc", "");
             Path inputPath = dir.resolve(inputRel).normalize();
-            out.add(new Vector(id, inputPath, expected, desc));
+            out.add(new Vector(id, inputPath, expect, expected, desc));
         }
         return out;
     }
@@ -83,14 +88,34 @@ final class VectorsLoader {
     static final class Vector {
         final String id;
         final Path inputPath;
+        /** {@code "error"} = negativo (deve rejeitar); senão positivo. */
+        final String expect;
+        /** Hash esperado em positivos; {@code null} em negativos. */
         final String expectedMd5;
         final String desc;
 
-        Vector(String id, Path inputPath, String expectedMd5, String desc) {
+        Vector(String id, Path inputPath, String expect,
+                String expectedMd5, String desc) {
             this.id = Objects.requireNonNull(id);
             this.inputPath = Objects.requireNonNull(inputPath);
-            this.expectedMd5 = requireMd5Hex(expectedMd5);
+            this.expect = expect == null ? "hash" : expect;
             this.desc = desc == null ? "" : desc;
+            if (isNegative()) {
+                // Negativo: expected_md5 deve ser null (não há hash a comparar).
+                if (expectedMd5 != null) {
+                    throw new IllegalArgumentException(
+                            "vetor negativo " + id
+                                    + " não deveria ter expected_md5");
+                }
+                this.expectedMd5 = null;
+            } else {
+                this.expectedMd5 = requireMd5Hex(expectedMd5);
+            }
+        }
+
+        /** {@code true} se o port DEVE rejeitar a entrada (lançar exceção). */
+        boolean isNegative() {
+            return "error".equals(expect);
         }
 
         private static String requireMd5Hex(String s) {

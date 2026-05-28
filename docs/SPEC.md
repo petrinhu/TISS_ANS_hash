@@ -24,8 +24,8 @@ Fora de escopo: validação contra XSD, assinatura, transmissão, persistência,
 
 ## 2. Entradas e saída
 
-- Entrada: bytes do XML completo, na codificação declarada no `<?xml encoding="..."?>` (na prática `iso-8859-1`, mas qualquer encoding suportado pelo parser XML serve).
-- Saída: string ASCII de exatamente 32 caracteres, dígitos hex `0-9a-f`.
+- Entrada: bytes do XML completo, na codificação declarada no `<?xml encoding="..."?>`. **Escopo de encoding: ISO-8859-1 (na prática) e UTF-8.** UTF-16/UTF-32 estão fora de escopo e devem ser **rejeitados** (ver §7 e AMBIGUITY_NOTES §11b).
+- Saída: string ASCII de exatamente 32 caracteres, dígitos hex `0-9a-f`. Entrada inválida (ver §7) **não** produz hash: o port deve sinalizar erro.
 
 Exemplo (saída do vetor sintético `syn_minimal.xml`):
 ```
@@ -132,13 +132,16 @@ Observações:
 
 ## 7. Pré-requisito de localização do `<ans:hash>`
 
-O algoritmo procura **o primeiro** elemento `<ans:hash>` em qualquer profundidade da árvore. No TISS canônico ele fica em `/ans:mensagemTISS/ans:epilogo/ans:hash`, mas a busca não impõe esse caminho (alguns ports de teste usam estruturas reduzidas).
+O algoritmo localiza o elemento `<ans:hash>` (pela URI do namespace TISS + nome local `hash`, **não** pelo prefixo literal). No TISS canônico ele fica em `/ans:mensagemTISS/ans:epilogo/ans:hash`, mas a busca não impõe esse caminho (alguns ports de teste usam estruturas reduzidas).
 
-Se houver múltiplos `<ans:hash>` no documento (não conforme), apenas o primeiro é zerado. Os demais contribuem com seu texto original. Esse caso não tem vetor de conformidade e é considerado entrada inválida.
+**Casos fixados (rejeição):**
+- **Múltiplos `<ans:hash>`** (não conforme; TISS prevê exatamente um) → **rejeitar** (erro). Não tentar adivinhar qual zerar. Vetor negativo `syn_multi_hash.xml`.
+- **Encoding fora de escopo** (UTF-16/UTF-32, detectado por BOM) → **rejeitar** (erro). Vetor negativo `syn_utf16.xml`.
+- **Ausência de `<ans:hash>`** é válida: o documento é concatenado normalmente, sem zeragem. Vetor `syn_sem_hash.xml`.
 
 ## 8. Vetores de conformidade
 
-Suíte oficial em `conformance/vectors.json` + `conformance/inputs/`. Todo port deve passar nos **15 vetores** byte a byte.
+Suíte oficial em `conformance/vectors.json` + `conformance/inputs/`. **18 vetores positivos** (comparam hash byte a byte) + **2 vetores negativos** (entrada que o port deve rejeitar). Campo `expect` no manifesto: ausente/`"hash"` = positivo; `"error"` = negativo.
 
 **O conjunto público de conformidade é 100% sintético** (`source = derived`). Nenhum XML real de paciente e nenhum hash derivado de XML real é distribuído no repositório, por LGPD. Os três XMLs reais usados para descobrir e validar o algoritmo vivem em diretório privado do mantenedor, fora do repo, e nunca entram no manifesto público (ver `conformance/build_fixture.py`, variável `TISS_PRIVATE_XMLS`).
 
@@ -161,6 +164,18 @@ A tabela abaixo é gerada a partir de `conformance/vectors.json` (fonte de verda
 | `syn_iso8859_simbolos.xml`  | `f17145d66f22e7641a4ea466e4b8024b`     | derivado  | símbolos ISO-8859-1 puros (grau, parágrafo, etc.)  |
 | `syn_perf_grande.xml`       | `4ea0da5e9916827df848a3fcf661d3d7`     | derivado  | performance: documento grande, muitas guias        |
 | `syn_bom_utf8.xml`          | `47d20fe3f5bb21cba74e54e5292170ab`     | derivado  | BOM UTF-8 aceito pela referência                   |
+| `syn_default_ns.xml`        | `3ad92bd5ebbf35364433b897d08bf23a`     | derivado  | namespace TISS default (`xmlns=` sem prefixo `ans:`) |
+| `syn_sem_hash.xml`          | `710a997000c9780901be02fafe449c64`     | derivado  | documento sem `<ans:hash>`: concatena tudo, sem erro |
+| `syn_entidade_numerica.xml` | `aefea736f666cc84a68da21ff699dadc`     | derivado  | entidades de caractere numéricas (`&#xE9;`/`&#231;`) |
+
+### 8.1 Vetores negativos (rejeição)
+
+Entrada que **não** produz hash; o port deve sinalizar erro. No manifesto têm `expect: "error"` e `expected_md5: null`.
+
+| ID                     | Cobre                                                       |
+|------------------------|-------------------------------------------------------------|
+| `syn_multi_hash.xml`   | múltiplos `<ans:hash>` → rejeitar (ver §7, AMBIGUITY §9)     |
+| `syn_utf16.xml`        | encoding UTF-16 (BOM) → rejeitar (ver §7, AMBIGUITY §11b)    |
 
 `source = derived`: XML sintético construído para cobrir um caso de borda; hash calculado pela referência e congelado no manifesto. Os hashes acima são reproduzidos por todos os 9 ports atuais.
 

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">
+  <ans:cabecalho>
+    <ans:campo>SEM_EPILOGO_HASH</ans:campo>
+  </ans:cabecalho>
+</ans:mensagemTISS>

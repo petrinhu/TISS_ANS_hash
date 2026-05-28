@@ -117,6 +117,23 @@ final class TissHash
     private const UTF8_BOM = "\xEF\xBB\xBF";
 
     /**
+     * BOMs UTF-32 (`FF FE 00 00` LE / `00 00 FE FF` BE).
+     *
+     * Escopo de encoding do algoritmo = ISO-8859-1 + UTF-8 (ver
+     * `conformance/AMBIGUITY_NOTES.md` §11b). UTF-32 esta FORA de escopo
+     * e deve ser REJEITADO. Conferido ANTES de UTF-16 porque o BOM
+     * UTF-32-LE (`FF FE 00 00`) tem o BOM UTF-16-LE (`FF FE`) como prefixo.
+     */
+    private const UTF32_BOM_LE = "\xFF\xFE\x00\x00";
+    private const UTF32_BOM_BE = "\x00\x00\xFE\xFF";
+
+    /**
+     * BOMs UTF-16 (`FF FE` LE / `FE FF` BE). Tambem fora de escopo: REJEITAR.
+     */
+    private const UTF16_BOM_LE = "\xFF\xFE";
+    private const UTF16_BOM_BE = "\xFE\xFF";
+
+    /**
      * Bloqueia construcao: classe e puramente estatica.
      *
      * @codeCoverageIgnore
@@ -156,6 +173,13 @@ final class TissHash
             );
         }
 
+        // Escopo de encoding = ISO-8859-1 + UTF-8. UTF-16/UTF-32 fora de
+        // escopo: REJEITAR (ver AMBIGUITY_NOTES.md §11b / A-COV5). Detectado
+        // por BOM nos bytes BRUTOS, antes de qualquer strip. UTF-32 antes de
+        // UTF-16 porque o BOM UTF-32-LE (FF FE 00 00) tem o UTF-16-LE
+        // (FF FE) como prefixo.
+        self::rejectUnsupportedEncoding($xmlBytes);
+
         // Strip BOM UTF-8 se presente (defensivo; libxml as vezes engasga).
         if (\str_starts_with($xmlBytes, self::UTF8_BOM)) {
             $xmlBytes = \substr($xmlBytes, \strlen(self::UTF8_BOM));
@@ -163,14 +187,21 @@ final class TissHash
 
         $dom = self::parseHardened($xmlBytes);
 
-        // Zerar o conteudo do primeiro <ans:hash>. Comportamento da
-        // referencia: `root.find(".//ans:hash", NS)` pega o primeiro.
-        // Multiplos <ans:hash> = comportamento NAO fixado (ambiguidade #9).
+        // Localizar TODOS os <hash> do namespace TISS por URI+localname
+        // (independe do prefixo: `ans:hash` ou `hash` em namespace default).
+        // Multiplos <ans:hash> = documento INVALIDO -> rejeitar
+        // (AMBIGUITY_NOTES.md §9 / A-COV2). TISS preve exatamente 1.
         $hashNodes = $dom->getElementsByTagNameNS(self::TISS_NAMESPACE, 'hash');
-        if ($hashNodes->length > 0) {
+        if ($hashNodes->length > 1) {
+            throw new InvalidTissXmlException(
+                'XML invalido para hash TISS: multiplos <ans:hash> no documento '
+                . '(esperado no maximo 1).'
+            );
+        }
+        if ($hashNodes->length === 1) {
             $hashEl = $hashNodes->item(0);
-            // Substituir conteudo por string vazia. Remover todos filhos
-            // (que podem ser text node com o hash antigo, ou ate elementos).
+            // Zerar conteudo: remover todos filhos (text node com o hash
+            // antigo, ou ate elementos).
             while ($hashEl->firstChild !== null) {
                 $hashEl->removeChild($hashEl->firstChild);
             }
@@ -214,6 +245,40 @@ final class TissHash
     // -----------------------------------------------------------------------
     // Internos
     // -----------------------------------------------------------------------
+
+    /**
+     * Rejeita encodings fora de escopo (UTF-16 / UTF-32) detectados por BOM
+     * nos bytes brutos.
+     *
+     * O algoritmo suporta apenas ISO-8859-1 e UTF-8. UTF-16/UTF-32 produziriam
+     * hash silenciosamente errado se processados; melhor falhar cedo
+     * (fail-fast). Espelha `_reject_unsupported_encoding` da referencia.
+     *
+     * UTF-32 e conferido ANTES de UTF-16: o BOM UTF-32-LE (`FF FE 00 00`)
+     * comeca com o BOM UTF-16-LE (`FF FE`), entao a ordem importa para nao
+     * classificar um UTF-32-LE como UTF-16.
+     *
+     * @throws InvalidTissXmlException
+     */
+    private static function rejectUnsupportedEncoding(string $xmlBytes): void
+    {
+        if (\str_starts_with($xmlBytes, self::UTF32_BOM_LE)
+            || \str_starts_with($xmlBytes, self::UTF32_BOM_BE)
+        ) {
+            throw new InvalidTissXmlException(
+                'XML invalido para hash TISS: encoding UTF-32 nao suportado '
+                . '(escopo: ISO-8859-1, UTF-8).'
+            );
+        }
+        if (\str_starts_with($xmlBytes, self::UTF16_BOM_LE)
+            || \str_starts_with($xmlBytes, self::UTF16_BOM_BE)
+        ) {
+            throw new InvalidTissXmlException(
+                'XML invalido para hash TISS: encoding UTF-16 nao suportado '
+                . '(escopo: ISO-8859-1, UTF-8).'
+            );
+        }
+    }
 
     /**
      * Faz o parse seguro do XML com DOMDocument.

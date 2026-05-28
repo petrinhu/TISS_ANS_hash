@@ -4,7 +4,11 @@ gen_test_vectors.py - gera tests/test_vectors.h a partir de conformance/vectors.
 
 Le o manifesto canonico de vetores em ../../../conformance/vectors.json
 (relativo a langs/c/tools/) e emite um header C com array estatico de structs
-{id, expected_md5} pronto pra incluir em tests/test_conformance.c.
+{id, expected_md5, expect_error} pronto pra incluir em tests/test_conformance.c.
+
+Campo `expect` do manifesto: ausente/"hash" = vetor POSITIVO (compara
+expected_md5); "error" = vetor NEGATIVO (o port deve sinalizar erro). Para
+negativos, expected_md5 e null e vira NULL no header (expect_error=1).
 
 Uso:
     python3 tools/gen_test_vectors.py            # gera tests/test_vectors.h
@@ -36,9 +40,12 @@ HEADER_TEMPLATE = """\
 #ifndef TISS_TEST_VECTORS_H
 #define TISS_TEST_VECTORS_H
 
+#include <stddef.h> /* NULL */
+
 typedef struct {{
     const char *id;
-    const char *expected_md5;
+    const char *expected_md5; /* NULL em vetores negativos (expect_error=1) */
+    int         expect_error; /* 0 = positivo (compara hash); 1 = deve rejeitar */
 }} tiss_vector_t;
 
 static const tiss_vector_t TISS_VECTORS[] = {{
@@ -59,8 +66,19 @@ def render() -> str:
     rows = []
     for v in vectors:
         vid = v["id"].replace('"', '\\"')
-        exp = v["expected_md5"].replace('"', '\\"')
-        rows.append(f'    {{ "{vid}", "{exp}" }},')
+        # expect: ausente ou "hash" = positivo; "error" = negativo.
+        expect_error = 1 if v.get("expect") == "error" else 0
+        exp_raw = v.get("expected_md5")
+        if expect_error:
+            # Negativo: expected_md5 e null no manifesto -> NULL no C.
+            rows.append(f'    {{ "{vid}", NULL, 1 }},')
+        else:
+            if exp_raw is None:
+                raise ValueError(
+                    f"vetor positivo '{vid}' sem expected_md5 no manifesto"
+                )
+            exp = exp_raw.replace('"', '\\"')
+            rows.append(f'    {{ "{vid}", "{exp}", 0 }},')
     body = "\n".join(rows)
     return HEADER_TEMPLATE.format(rows=body)
 

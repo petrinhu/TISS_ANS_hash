@@ -42,13 +42,21 @@ extern "C" {
 /* Tamanho do buffer de saida: 32 hex + '\0'. */
 #define TISS_HASH_HEX_LEN 33
 
-/* Codigos de retorno. */
+/* Codigos de retorno.
+ *
+ * Os codigos >= 5 sao rejeicoes SEMANTICAS de conformidade TISS (entrada
+ * sintaticamente parseavel, porem fora do escopo do Padrao). Sao distintos
+ * de TISS_HASH_ERR_INVALID_XML (mal-formado/rejeitado pelo parser) pra dar
+ * contexto de causa raiz ao caller — nao mascarar "documento nao conforme"
+ * como "XML quebrado". Todos sinalizam erro: NAO produzem hash. */
 typedef enum {
     TISS_HASH_OK              = 0, /* sucesso */
     TISS_HASH_ERR_INVALID_XML = 1, /* XML mal-formado / rejeitado pelo parser */
     TISS_HASH_ERR_IO          = 2, /* falha de I/O ao ler arquivo */
     TISS_HASH_ERR_ALLOC       = 3, /* malloc/realloc falhou */
-    TISS_HASH_ERR_ARG         = 4  /* argumento invalido (ex.: NULL) */
+    TISS_HASH_ERR_ARG         = 4, /* argumento invalido (ex.: NULL) */
+    TISS_HASH_ERR_MULTI_HASH  = 5, /* >1 <ans:hash> do namespace TISS (deve ser 1) */
+    TISS_HASH_ERR_ENCODING    = 6  /* encoding fora de escopo (BOM UTF-16/UTF-32) */
 } tiss_hash_status_t;
 
 /*

@@ -10,7 +10,18 @@
     ],
     "encoding_bytes_md5": "utf-8",
     "namespace": "http://www.ans.gov.br/padroes/tiss/schemas",
-    "note": "encoding dos bytes do MD5 e UTF-8, NAO ISO-8859-1 (apesar do manual)"
+    "note": "encoding dos bytes do MD5 e UTF-8, NAO ISO-8859-1 (apesar do manual)",
+    "encodings_suportados": [
+      "ISO-8859-1",
+      "UTF-8"
+    ],
+    "rejeicoes": [
+      "multiplos <ans:hash> (esperado no maximo 1)",
+      "UTF-16 / UTF-32 (fora de escopo)"
+    ]
+  },
+  "schema": {
+    "expect": "ausente ou 'hash' = vetor positivo (compara expected_md5); 'error' = vetor negativo (port deve rejeitar/erro, expected_md5 null)"
   },
   "vectors": [
     {
@@ -105,6 +116,27 @@
       "desc": "simbolos ISO-8859-1 puros (grau, paragrafo, meio, micro) — todos validos no encoding declarado"
     },
     {
+      "id": "syn_default_ns.xml",
+      "input": "inputs/syn_default_ns.xml",
+      "expected_md5": "3ad92bd5ebbf35364433b897d08bf23a",
+      "source": "derived",
+      "desc": "namespace TISS como DEFAULT (xmlns= sem prefixo ans:); ports devem casar <hash> pela URI, nao pelo prefixo literal"
+    },
+    {
+      "id": "syn_sem_hash.xml",
+      "input": "inputs/syn_sem_hash.xml",
+      "expected_md5": "710a997000c9780901be02fafe449c64",
+      "source": "derived",
+      "desc": "documento SEM <ans:hash>: caminho 'hash ausente' deve concatenar tudo sem erro"
+    },
+    {
+      "id": "syn_entidade_numerica.xml",
+      "input": "inputs/syn_entidade_numerica.xml",
+      "expected_md5": "aefea736f666cc84a68da21ff699dadc",
+      "source": "derived",
+      "desc": "entidades de caractere numericas (&#xE9; hex e &#231; &#227; dec) devem ser decodificadas pelo parser"
+    },
+    {
       "id": "syn_perf_grande.xml",
       "input": "inputs/syn_perf_grande.xml",
       "expected_md5": "4ea0da5e9916827df848a3fcf661d3d7",
@@ -117,6 +149,22 @@
       "expected_md5": "47d20fe3f5bb21cba74e54e5292170ab",
       "source": "derived",
       "desc": "BOM UTF-8 + declaracao encoding='utf-8': TISS proibe BOM, mas a referencia aceita; valor extraido normal"
+    },
+    {
+      "id": "syn_multi_hash.xml",
+      "input": "inputs/syn_multi_hash.xml",
+      "expect": "error",
+      "expected_md5": null,
+      "source": "derived",
+      "desc": "INVALIDO: multiplos <ans:hash> (TISS tem exatamente 1); ports devem rejeitar (A-COV2)"
+    },
+    {
+      "id": "syn_utf16.xml",
+      "input": "inputs/syn_utf16.xml",
+      "expect": "error",
+      "expected_md5": null,
+      "source": "derived",
+      "desc": "INVALIDO: encoding UTF-16 fora de escopo (TISS usa ISO-8859-1/UTF-8); ports devem rejeitar (A-COV5)"
     }
   ]
 }

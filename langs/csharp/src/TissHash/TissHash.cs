@@ -44,6 +44,9 @@
 //  - Atributos NAO entram (#5).
 //  - Prefixo de namespace irrelevante; apenas URI conta (#6).
 //  - Encoding dos bytes do MD5 = UTF-8 (NAO ISO-8859-1 — manual erra) (#1).
+//  - REJEITAR >1 <ans:hash> do namespace TISS (#9 / A-COV2).
+//  - REJEITAR BOM UTF-16/UTF-32 (fora de escopo) (#11b / A-COV5).
+//  - Documento SEM <ans:hash> e VALIDO (concatena tudo).
 
 using System.IO;
 using System.Security.Cryptography;
@@ -105,6 +108,13 @@ public static class TissHash
     {
         ArgumentNullException.ThrowIfNull(xml);
 
+        // Rejeitar encodings fora de escopo (UTF-16 / UTF-32) por BOM, ANTES
+        // de qualquer parsing. O algoritmo so suporta ISO-8859-1 e UTF-8
+        // (ver AMBIGUITY_NOTES.md #11b / auditoria A-COV5). Checagem por BOM
+        // e barata e uniforme; UTF-32 antes de UTF-16 porque o BOM UTF-32-LE
+        // (FF FE 00 00) tem o BOM UTF-16-LE (FF FE) como prefixo.
+        RejectOutOfScopeEncoding(xml);
+
         // Strip BOM UTF-8 se presente, ANTES de entregar ao XmlReader.
         // Motivo: alguns paths do reader sao sensiveis a BOM + encoding
         // declaration; strippar simplifica e nao perde info (BOM == marker).
@@ -162,8 +172,19 @@ public static class TissHash
             throw new InvalidTissXmlException("XML sem elemento raiz");
         }
 
-        // Localiza o primeiro <ans:hash> em ordem de documento.
-        var hashNode = doc.Descendants(HashElementName).FirstOrDefault();
+        // Localiza os <ans:hash> do namespace TISS (por URI via XName, nao
+        // por prefixo literal). O Padrao TISS preve EXATAMENTE um <ans:hash>
+        // no <ans:epilogo>. Mais de um = documento invalido: rejeitar, nao
+        // adivinhar qual zerar (ver AMBIGUITY_NOTES.md #9 / auditoria A-COV2).
+        // Documento SEM <ans:hash> e VALIDO (hashNode null -> concatena tudo).
+        var hashNodes = doc.Descendants(HashElementName).ToList();
+        if (hashNodes.Count > 1)
+        {
+            throw new InvalidTissXmlException(
+                $"XML invalido: encontrados {hashNodes.Count} elementos " +
+                $"<ans:hash> (esperado no maximo 1)");
+        }
+        var hashNode = hashNodes.Count == 1 ? hashNodes[0] : null;
 
         // Concat dos textContents das folhas, em ordem de documento.
         var buffer = new StringBuilder(capacity: 4096);
@@ -257,6 +278,51 @@ public static class TissHash
             }
         }
         return true;
+    }
+
+    /// <summary>
+    /// Rejeita encodings fora de escopo (UTF-16 / UTF-32) detectados por BOM
+    /// no inicio dos bytes. O algoritmo so suporta ISO-8859-1 e UTF-8.
+    /// Checa UTF-32 ANTES de UTF-16: o BOM UTF-32-LE (<c>FF FE 00 00</c>)
+    /// tem o BOM UTF-16-LE (<c>FF FE</c>) como prefixo; checar UTF-16 primeiro
+    /// classificaria erroneamente um UTF-32-LE.
+    /// </summary>
+    /// <exception cref="InvalidTissXmlException">BOM UTF-16 ou UTF-32 presente.</exception>
+    private static void RejectOutOfScopeEncoding(byte[] bytes)
+    {
+        // UTF-32 (4 bytes) primeiro.
+        if (bytes.Length >= 4)
+        {
+            // UTF-32-LE: FF FE 00 00
+            if (bytes[0] == 0xFF && bytes[1] == 0xFE
+                && bytes[2] == 0x00 && bytes[3] == 0x00)
+            {
+                throw new InvalidTissXmlException(
+                    "XML invalido: BOM UTF-32-LE detectado; encoding fora de " +
+                    "escopo (suportados: ISO-8859-1, UTF-8)");
+            }
+            // UTF-32-BE: 00 00 FE FF
+            if (bytes[0] == 0x00 && bytes[1] == 0x00
+                && bytes[2] == 0xFE && bytes[3] == 0xFF)
+            {
+                throw new InvalidTissXmlException(
+                    "XML invalido: BOM UTF-32-BE detectado; encoding fora de " +
+                    "escopo (suportados: ISO-8859-1, UTF-8)");
+            }
+        }
+
+        // UTF-16 (2 bytes) depois.
+        if (bytes.Length >= 2)
+        {
+            // UTF-16-LE: FF FE  |  UTF-16-BE: FE FF
+            if ((bytes[0] == 0xFF && bytes[1] == 0xFE)
+                || (bytes[0] == 0xFE && bytes[1] == 0xFF))
+            {
+                throw new InvalidTissXmlException(
+                    "XML invalido: BOM UTF-16 detectado; encoding fora de " +
+                    "escopo (suportados: ISO-8859-1, UTF-8)");
+            }
+        }
     }
 
     /// <summary>
