@@ -1,0 +1,122 @@
+{
+  "algorithm": {
+    "name": "TISS/ANS epilogo MD5",
+    "steps": [
+      "parse XML",
+      "zerar conteudo de <ans:hash>",
+      "concatenar .text de cada elemento-folha (sem filhos) em ordem de documento",
+      "MD5 dos bytes UTF-8 da string concatenada",
+      "hexdigest minusculo (32 chars)"
+    ],
+    "encoding_bytes_md5": "utf-8",
+    "namespace": "http://www.ans.gov.br/padroes/tiss/schemas",
+    "note": "encoding dos bytes do MD5 e UTF-8, NAO ISO-8859-1 (apesar do manual)"
+  },
+  "vectors": [
+    {
+      "id": "syn_minimal.xml",
+      "input": "inputs/syn_minimal.xml",
+      "expected_md5": "3aa0c578c95cdb861a125f480a8a4de5",
+      "source": "derived",
+      "desc": "minimo: cabecalho + epilogo, poucos valores"
+    },
+    {
+      "id": "syn_acento.xml",
+      "input": "inputs/syn_acento.xml",
+      "expected_md5": "a20afc9a89aadaa2179d03d225337662",
+      "source": "derived",
+      "desc": "acentuacao: testa encoding UTF-8 dos bytes do MD5"
+    },
+    {
+      "id": "syn_empty.xml",
+      "input": "inputs/syn_empty.xml",
+      "expected_md5": "e43622c19cad903e2abd678330b9d7ca",
+      "source": "derived",
+      "desc": "campos vazios: <x></x> e self-closing <y/> contribuem string vazia"
+    },
+    {
+      "id": "syn_crlf_value.xml",
+      "input": "inputs/syn_crlf_value.xml",
+      "expected_md5": "4df6fcedd9ed44aa9741d70e10f06746",
+      "source": "derived",
+      "desc": "CR/LF dentro de um valor deve ser preservado literalmente"
+    },
+    {
+      "id": "syn_multi_guia.xml",
+      "input": "inputs/syn_multi_guia.xml",
+      "expected_md5": "0e1339fa27441b62c28e38267f10632d",
+      "source": "derived",
+      "desc": "multiplas guias: concatenacao em ordem de documento"
+    },
+    {
+      "id": "syn_entidades_xml.xml",
+      "input": "inputs/syn_entidades_xml.xml",
+      "expected_md5": "b0d587961802b967dd4e6033dc659625",
+      "source": "derived",
+      "desc": "entidades XML predefinidas (&amp; &lt; &gt; &quot; &apos;) devem ser DEcodificadas pelo parser antes do concat"
+    },
+    {
+      "id": "syn_cdata.xml",
+      "input": "inputs/syn_cdata.xml",
+      "expected_md5": "9fe56c6419fc78dd26313d63834b877f",
+      "source": "derived",
+      "desc": "secao CDATA deve ser entregue como texto literal (parser remove os delimitadores)"
+    },
+    {
+      "id": "syn_comentario.xml",
+      "input": "inputs/syn_comentario.xml",
+      "expected_md5": "2c934218fab50edb83f9c8902f30cdfd",
+      "source": "derived",
+      "desc": "AMBIGUIDADE FIXADA: comentario XML <!--...--> ENTRA no concat na referencia atual (lxml Comment satisfaz len(el)==0); ver AMBIGUITY_NOTES.md"
+    },
+    {
+      "id": "syn_atributo_folha.xml",
+      "input": "inputs/syn_atributo_folha.xml",
+      "expected_md5": "7a811223bea501d2b307c9181de25fb3",
+      "source": "derived",
+      "desc": "atributos em elemento-folha NAO entram no concat; apenas o .text do elemento entra"
+    },
+    {
+      "id": "syn_namespace_xsi.xml",
+      "input": "inputs/syn_namespace_xsi.xml",
+      "expected_md5": "7691354564876cbd1f105bf85cb9abd0",
+      "source": "derived",
+      "desc": "namespace diferente em atributo (xsi:type) NAO altera o concat; ports devem ignorar prefixo de namespace"
+    },
+    {
+      "id": "syn_whitespace_puro.xml",
+      "input": "inputs/syn_whitespace_puro.xml",
+      "expected_md5": "4b09417e46d92615764c81b434e3dd58",
+      "source": "derived",
+      "desc": "valor contendo apenas espacos (<x>   </x>) deve preservar os 3 espacos literais no concat"
+    },
+    {
+      "id": "syn_leading_zero.xml",
+      "input": "inputs/syn_leading_zero.xml",
+      "expected_md5": "a258e0ce23d683450961493351fa21b8",
+      "source": "derived",
+      "desc": "valor numerico com zeros a esquerda (00123) NAO deve ser normalizado: string literal entra no concat"
+    },
+    {
+      "id": "syn_iso8859_simbolos.xml",
+      "input": "inputs/syn_iso8859_simbolos.xml",
+      "expected_md5": "f17145d66f22e7641a4ea466e4b8024b",
+      "source": "derived",
+      "desc": "simbolos ISO-8859-1 puros (grau, paragrafo, meio, micro) — todos validos no encoding declarado"
+    },
+    {
+      "id": "syn_perf_grande.xml",
+      "input": "inputs/syn_perf_grande.xml",
+      "expected_md5": "4ea0da5e9916827df848a3fcf661d3d7",
+      "source": "derived",
+      "desc": "performance: documento sintetico ~600KB, ~1500 guias, multi-folha em ordem de documento"
+    },
+    {
+      "id": "syn_bom_utf8.xml",
+      "input": "inputs/syn_bom_utf8.xml",
+      "expected_md5": "47d20fe3f5bb21cba74e54e5292170ab",
+      "source": "derived",
+      "desc": "BOM UTF-8 + declaracao encoding='utf-8': TISS proibe BOM, mas a referencia aceita; valor extraido normal"
+    }
+  ]
+}

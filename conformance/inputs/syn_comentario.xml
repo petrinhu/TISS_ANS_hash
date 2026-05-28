@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">
+  <ans:cabecalho>
+    <!-- COMENTARIO_QUE_ENTRA -->
+    <ans:campo>valor1</ans:campo>
+  </ans:cabecalho>
+  <ans:epilogo>
+    <ans:hash></ans:hash>
+  </ans:epilogo>
+</ans:mensagemTISS>

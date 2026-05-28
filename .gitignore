@@ -1,0 +1,167 @@
+# =============================================================================
+# .gitignore — TISS_ANS_hash
+# =============================================================================
+# Regra crítica de segurança: NUNCA commitar XML real com PII de pacientes.
+# Padrão `real_*` bloqueado em qualquer lugar do repo.
+# Vetores sintéticos vivem em conformance/inputs/syn_*.xml (permitidos).
+# =============================================================================
+
+# ----- LGPD: bloqueio de dados reais de pacientes -----
+**/real_envio*.xml
+**/real_*.xml
+_private_*/
+.private/
+*.pii.xml
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtualenvs
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# pytest / coverage / mypy / ruff
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.cache
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+
+# tox / hatch
+.hatch/
+
+# ----- Node.js -----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+package-lock.json.bak
+
+# ----- Rust -----
+target/
+Cargo.lock
+**/*.rs.bk
+
+# ----- C / C++ -----
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.gcda
+*.gcno
+*.gcov
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile.local
+
+# ----- PHP -----
+vendor/
+composer.lock
+composer.phar
+.phpunit.result.cache
+
+# ----- Java / Kotlin -----
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+target/
+.gradle/
+build/
+.kotlin/
+.idea/
+*.iml
+
+# ----- C# / .NET -----
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+.vs/
+[Dd]ebug/
+[Rr]elease/
+
+# ----- Go -----
+*.test
+*.prof
+go.sum.bak
+
+# ----- WASM -----
+*.wasm
+pkg/
+
+# ----- IDE / Editor -----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.vim/
+.helix/
+.zed/
+
+# ----- Logs / temp -----
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+
+# ----- OS -----
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+desktop.ini
+
+# ----- Claude Code (manter settings.local fora) -----
+.claude/settings.local.json
+.claude/.cache/

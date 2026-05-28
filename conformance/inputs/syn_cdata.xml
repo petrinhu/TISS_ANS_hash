@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">
+  <ans:cabecalho>
+    <ans:observacao><![CDATA[a < b & c]]></ans:observacao>
+  </ans:cabecalho>
+  <ans:epilogo>
+    <ans:hash></ans:hash>
+  </ans:epilogo>
+</ans:mensagemTISS>

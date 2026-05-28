@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">
+  <ans:loteGuias>
+    <ans:guia>
+      <ans:numeroGuia>111</ans:numeroGuia>
+      <ans:valor>10.00</ans:valor>
+    </ans:guia>
+    <ans:guia>
+      <ans:numeroGuia>222</ans:numeroGuia>
+      <ans:valor>20.50</ans:valor>
+    </ans:guia>
+  </ans:loteGuias>
+  <ans:epilogo>
+    <ans:hash></ans:hash>
+  </ans:epilogo>
+</ans:mensagemTISS>

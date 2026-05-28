@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tiss-hash"
+version = "0.1.0"
+description = "Hash MD5 do epílogo TISS/ANS (Padrão TISS) — implementação portável zero-dep."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Petrus", email = "petrinhu@yahoo.com.br" },
+]
+keywords = ["tiss", "ans", "saude-suplementar", "md5", "hash", "xml", "brasil"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: XML",
+    "Typing :: Typed",
+]
+
+# Dependência runtime obrigatória: defusedxml.
+# Justificativa: parsers XML da stdlib são vulneráveis a XXE e
+# billion-laughs. defusedxml é pure-Python, sem deps próprias, mantido
+# pelo PSF; o custo de adicionar é mínimo e o ganho de segurança é
+# mandatório para uma lib que processa XML potencialmente externo.
+dependencies = [
+    "defusedxml>=0.7.1",
+]
+
+[project.optional-dependencies]
+# Extra opcional para parsing mais rápido em arquivos grandes (futuro).
+# Atualmente o core usa stdlib; este extra está reservado para uma
+# implementação alternativa baseada em lxml caso surja necessidade.
+lxml = ["lxml>=4.9"]
+# Conjunto para desenvolvimento/teste.
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/petrinhu/TISS_ANS_hash"
+Repository = "https://github.com/petrinhu/TISS_ANS_hash"
+"Mirror (Codeberg)" = "https://codeberg.org/petrinhu/TISS_ANS_hash"
+Issues = "https://github.com/petrinhu/TISS_ANS_hash/issues"
+Changelog = "https://github.com/petrinhu/TISS_ANS_hash/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/USAGE.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tiss_hash"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/tiss_hash",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+    "tests",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

@@ -1,0 +1,13 @@
+# FUNDING.yml
+# Habilita o botão "Sponsor" no GitHub.
+# Documentação: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+#
+# Atualmente o projeto NÃO possui canal de patrocínio ativo.
+# Preencher quando houver Open Collective, GitHub Sponsors, Liberapay, etc.
+#
+# Exemplo (descomentar e preencher quando aplicável):
+# github: [petrinhu]
+# open_collective: tiss-ans-hash
+# liberapay: petrinhu
+# ko_fi: petrinhu
+# custom: ["https://example.com/donate"]

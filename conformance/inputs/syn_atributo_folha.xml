@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">
+  <ans:cabecalho>
+    <ans:campo attr="IGNORE_ME_PLEASE" outro="TAMBEM_IGNORADO">VALOR_DO_ELEMENTO</ans:campo>
+  </ans:cabecalho>
+  <ans:epilogo>
+    <ans:hash></ans:hash>
+  </ans:epilogo>
+</ans:mensagemTISS>

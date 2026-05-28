@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Codeberg mirror (issues)
+    url: https://codeberg.org/petrinhu/TISS_ANS_hash/issues
+    about: Prefere abrir issue no Codeberg? Pode ser, o mantenedor monitora os dois mirrors.
+  - name: Política de segurança
+    url: https://github.com/petrinhu/TISS_ANS_hash/blob/main/SECURITY.md
+    about: Vulnerabilidades NÃO devem ser abertas como issue pública. Use o canal por e-mail descrito em SECURITY.md.
+  - name: Pergunta de uso ou dúvida geral
+    url: https://github.com/petrinhu/TISS_ANS_hash/discussions
+    about: Para dúvidas de uso, dicas, ou discussões em aberto, prefira Discussions (se habilitado) em vez de issue.

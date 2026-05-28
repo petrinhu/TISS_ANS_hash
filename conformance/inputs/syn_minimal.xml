@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">
+  <ans:cabecalho>
+    <ans:tipoTransacao>ENVIO_LOTE_GUIAS</ans:tipoTransacao>
+    <ans:sequencialTransacao>1</ans:sequencialTransacao>
+  </ans:cabecalho>
+  <ans:epilogo>
+    <ans:hash>LIXO_DEVE_SER_IGNORADO</ans:hash>
+  </ans:epilogo>
+</ans:mensagemTISS>
