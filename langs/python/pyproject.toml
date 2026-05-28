@@ -12,7 +12,7 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Petrus", email = "petrinhu@yahoo.com.br" },
 ]
-keywords = ["tiss", "ans", "saude-suplementar", "md5", "hash", "xml", "brasil"]
+keywords = ["tiss", "ans", "hash", "md5", "xml", "epilogo", "padrao-tiss", "saude-suplementar", "brasil", "healthcare"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Healthcare Industry",

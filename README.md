@@ -29,15 +29,24 @@ Todas as implementações reproduzem **byte a byte** o mesmo algoritmo, validado
 
 Você passa bytes de XML, recebe 32 caracteres hex. Fim.
 
-## Por que existe
+## Por que existe (história)
 
-O algoritmo do hash foi reverse-engineered porque:
+Se você procurou por "hash TISS não bate", "hash tiss rejeitado pela ANS", "MD5 epílogo divergente", "ans:hash errado" ou similar, este projeto foi feito exatamente pra isso.
 
-- O manual oficial TISS é ambíguo sobre o encoding usado no MD5 (diz "ISO-8859-1", mas o que funciona é UTF-8; ver [SPEC §4](docs/SPEC.md#4-caveat-crítica-encoding-do-md5-é-utf-8-não-iso-8859-1)).
-- Implementações existentes erram silenciosamente, produzindo hashes que a ANS rejeita.
-- XMLs reais com hashes confirmados pela ANS serviram de ground truth durante a engenharia reversa.
+**O problema:** o manual oficial do Padrão TISS (Componente Organizacional, ANS) diz textualmente que o encoding usado no cálculo do hash MD5 é **ISO-8859-1**. Implementar literalmente essa instrução produz hashes que a ANS **rejeita**. O encoding correto, na prática, é **UTF-8**. Essa divergência custou anos de retrabalho a vários fornecedores TISS (busque "hash tiss errado" em fóruns de saúde suplementar e veja).
 
-Este projeto deriva de um editor desktop legado (arquivado) que foi descontinuado. Apenas o algoritmo de hash foi preservado e empacotado como biblioteca multi-linguagem para uso por qualquer fornecedor TISS.
+**A engenharia reversa:** o algoritmo correto foi extraído de **três XMLs reais com hashes confirmados pela ANS** (golden vectors). Validação por bisseção: somente a combinação `concat-de-folhas + UTF-8 + MD5` reproduz os três hashes; toda outra falha. Detalhes da reversão e da divergência ISO vs UTF-8 em [`docs/SPEC.md §4 e §9`](docs/SPEC.md).
+
+**A garantia:** 15 vetores sintéticos públicos travam todos os casos de borda (acentuação, CR/LF dentro de valor, CDATA, entidades XML, comentários, atributos, namespaces, BOM UTF-8, whitespace puro, leading zeros, símbolos ISO-8859-1, multi-guia, documento grande). Cada port em cada linguagem **tem que** bater byte-a-byte contra os 15 antes de qualquer release.
+
+**Origem:** algoritmo extraído de um editor desktop legado (TISSGama, arquivado) que foi descontinuado junto com o contexto cliente original. O algoritmo sobreviveu porque o Padrão TISS continua sendo usado por toda a saúde suplementar brasileira, e qualquer fornecedor TISS tem o mesmo problema de encoding enquanto a ANS não corrigir o manual.
+
+**O que esta lib oferece de diferente** vs reinventar a roda:
+
+- Algoritmo validado contra hashes aceitos pela ANS (não contra interpretação literal do manual).
+- 6 ports independentes (Python, Rust, C, C++, Node.js, PHP), pega errado em um, não pega nos outros (cross-port equivalence é parte da CI).
+- Fixture de conformidade portável: mesmo `vectors.json` roda em todos os ports.
+- Documentação explícita das pegadinhas (encoding, comentários XML que entram no concat, CDATA tratado como texto, etc).
 
 ## Linguagens-alvo
 
