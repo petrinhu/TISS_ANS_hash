@@ -29,12 +29,12 @@ Uso:
 from tiss_hash import hash_tiss, hash_tiss_file
 
 # A partir de bytes
-with open("padrao_gama_Lote_envio1.xml", "rb") as fh:
+with open("lote_tiss_exemplo.xml", "rb") as fh:
     digest = hash_tiss(fh.read())
-print(digest)  # 'adc506a9374e05c8a8525a11a50d37ee'
+print(digest)  # hex MD5 de 32 chars, ex.: '3aa0c578c95cdb861a125f480a8a4de5'
 
 # A partir de um caminho de arquivo
-digest = hash_tiss_file("padrao_gama_Lote_envio1.xml")
+digest = hash_tiss_file("lote_tiss_exemplo.xml")
 ```
 
 Tratamento de erro:

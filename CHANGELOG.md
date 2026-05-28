@@ -81,9 +81,8 @@ Primeiro release público. Algoritmo extraído, especificado, validado e empacot
 
 ### Notes
 
-- **Predecessor arquivado**: o projeto `TISSGama` (editor desktop específico para a operadora Gama Saúde) foi arquivado nos dois mirrors em 2026-05-27, dado que a operadora deixou de existir. O algoritmo de hash MD5 foi extraído e migrou para este projeto. Repositórios originais permanecem privados e arquivados (read-only).
+- **Predecessor arquivado**: o projeto `TISSGama` (editor desktop legado) foi arquivado nos dois mirrors em 2026-05-27, dado que o contexto de uso original foi descontinuado. O algoritmo de hash MD5 foi extraído e migrou para este projeto. Repositórios originais permanecem privados e arquivados (read-only).
 - **XMLs reais removidos** do repositório: durante a engenharia reversa do algoritmo, 3 XMLs reais com hashes confirmados pela ANS serviram como ground truth. Esses arquivos contêm PII de pacientes e **não estão no repositório público** (LGPD, Lei 13.709/2018, art. 5º, II). Permanecem em diretório privado do mantenedor e são usados apenas como validação pré-release adicional. A suíte pública de 15 vetores sintéticos é suficiente para garantir conformidade byte-a-byte.
-- **Versão do padrão TISS** coberta: 4.01.00.
 - **Cobertura de port**: apenas Python neste release. C, C++, Rust, PHP, Node.js e demais linguagens estão planejados (ver [`README.md`](README.md#linguagens-alvo)).
 
 ---

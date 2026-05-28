@@ -168,7 +168,7 @@ port-runner --vectors conformance/vectors.json --inputs conformance/inputs
 
 ## 9. Histórico e justificativa
 
-O algoritmo foi **reverse-engineered** a partir de três XMLs reais transmitidos pela operadora **Gama Saúde** (extinta em 2026). A documentação oficial do TISS é ambígua quanto ao encoding (ver seção 4) e o código legado interno do TISSGama aplicava ISO-8859-1, produzindo hashes que a ANS rejeitava.
+O algoritmo foi **reverse-engineered** a partir de três XMLs reais com hashes confirmados pela ANS, em um contexto de uso descontinuado. A documentação oficial do TISS é ambígua quanto ao encoding (ver seção 4) e o código legado interno (TISSGama, hoje arquivado) aplicava ISO-8859-1, produzindo hashes que a ANS rejeitava.
 
 Linha do tempo resumida:
 - Manual TISS / Componente Organizacional descreve "encoding ISO-8859-1" sem desambiguar arquivo vs hash.
@@ -176,9 +176,9 @@ Linha do tempo resumida:
 - Recuperação dos três XMLs envio1/envio2/envio3 com seus hashes corretos (aceitos pela ANS) permite construir oráculo.
 - Validação por bisseção: leaf-concat + UTF-8 reproduz os três goldens. Toda outra combinação falha.
 - Cinco vetores sintéticos adicionados para travar casos de borda (vazio, acento, CR/LF, multi-guia, mínimo).
-- Projeto Gama Saúde encerrado. Algoritmo extraído para `lib_hash_ans` como base canônica de ports multi-linguagem.
+- Contexto de uso original descontinuado. Algoritmo extraído para `lib_hash_ans` como base canônica de ports multi-linguagem.
 
-A operadora cliente original não existe mais. O algoritmo permanece porque o padrão TISS continua sendo usado por toda a saúde suplementar brasileira e qualquer fornecedor terá o mesmo problema de encoding até a ANS corrigir o texto do manual.
+O contexto cliente original não existe mais. O algoritmo permanece porque o padrão TISS continua sendo usado por toda a saúde suplementar brasileira e qualquer fornecedor terá o mesmo problema de encoding até a ANS corrigir o texto do manual.
 
 ## 10. Versionamento
 

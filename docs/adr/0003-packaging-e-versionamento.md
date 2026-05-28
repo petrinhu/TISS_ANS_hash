@@ -40,7 +40,7 @@ Para registries com convenção própria, transliterar:
 | PyPI                  | `tiss-hash`                             | hyphen aceito; import como `tiss_hash`                       |
 | crates.io             | `tiss-hash`                             | hyphen aceito; uso como `tiss_hash::`                        |
 | npm                   | `tiss-hash`                             | hyphen idiomático em npm                                     |
-| Packagist (PHP)       | `tissgama/tiss-hash` (ou vendor próprio) | vendor obrigatório; trocar `tissgama` por vendor real        |
+| Packagist (PHP)       | `petrinhu/tiss-hash`                    | vendor obrigatório no Packagist                              |
 | Maven Central         | `br.dev.petrus:tiss-hash` (groupId real do autor) | reverse-DNS obrigatório                              |
 | NuGet                 | `TissHash`                              | PascalCase idiomático .NET                                   |
 | pub.dev (Dart/Flutter)| `tiss_hash`                             | snake_case obrigatório                                       |
@@ -63,7 +63,7 @@ Para registries com convenção própria, transliterar:
 | Python         | `tiss_hash`             | `tiss_hash.hash_tiss_bytes(b)`  |
 | Rust           | `tiss_hash`             | `tiss_hash::hash_tiss_bytes(&[u8])` |
 | Node/TS        | `tiss-hash`             | `hashTissBytes(buf: Buffer)`    |
-| PHP            | `TissGama\TissHash`     | `TissHash::hashTissBytes(string)`|
+| PHP            | `TissHash\TissHash`     | `TissHash::hashTissBytes(string)`|
 | C              | header `tiss_hash.h`    | `tiss_hash_bytes(const uint8_t*, size_t, char out[33])` |
 | C++            | `tiss_hash::`           | `tiss_hash::hash_tiss_bytes(std::span<const std::byte>) -> std::string` |
 | Go             | package `tisshash`      | `tisshash.HashTissBytes([]byte) string` |
@@ -159,8 +159,7 @@ existir (npm `--tag next`, PyPI implícito via PEP 440, crates.io implícito).
 Decidir **no momento de publicar primeiro pacote PHP/Java**. Sugestões
 provisórias:
 
-- Packagist: `tissgama/tiss-hash` ou `petrinhu/tiss-hash` (autor já tem
-  conta GitHub `petrinhu`).
+- Packagist: `petrinhu/tiss-hash` (autor já tem conta GitHub `petrinhu`).
 - Maven groupId: `br.dev.petrus` (reverse-DNS de domínio próprio se
   existir) ou `io.github.petrinhu`.
 

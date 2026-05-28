@@ -273,7 +273,7 @@ Passe os bytes que serão efetivamente enviados à ANS. Nada mais.
 
 ### 5.4 Não confie no hash gravado dentro do arquivo
 
-XMLs legados (incluindo os do TISSGama original) frequentemente têm um valor **errado** dentro de `<ans:hash>` (gravado com encoding ISO-8859-1, gerando hash que a ANS rejeita). Sempre recalcule com esta lib antes de enviar.
+XMLs legados frequentemente têm um valor **errado** dentro de `<ans:hash>` (gravado com encoding ISO-8859-1, gerando hash que a ANS rejeita). Sempre recalcule com esta lib antes de enviar.
 
 ## 6. API de referência (Python)
 

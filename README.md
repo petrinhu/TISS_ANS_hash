@@ -1,7 +1,7 @@
 # TISS_ANS_hash · lib hash TISS / ANS
 
-> **Biblioteca multi-linguagem (Python, Rust, C, C++, Node.js, PHP) para gerar o hash MD5 do epílogo XML do Padrão TISS/ANS 4.01.00 (saúde suplementar Brasil).**
-> Multi-language library (Python, Rust, C, C++, Node.js, PHP) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard, 4.01.00).
+> **Biblioteca multi-linguagem (Python, Rust, C, C++, Node.js, PHP) para gerar o hash MD5 do epílogo XML do Padrão TISS/ANS (saúde suplementar Brasil).**
+> Multi-language library (Python, Rust, C, C++, Node.js, PHP) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Codeberg CI](https://ci.codeberg.org/api/badges/petrinhu/TISS_ANS_hash/status.svg)](https://ci.codeberg.org/petrinhu/TISS_ANS_hash)
@@ -9,7 +9,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/tiss-hash.svg)](https://pypi.org/project/tiss-hash/)
 [![Spec](https://img.shields.io/badge/spec-v1.0.0-blue)](docs/SPEC.md)
 [![Conformance Vectors](https://img.shields.io/badge/conformance-15%20vectors-success)](conformance/vectors.json)
-[![TISS Standard](https://img.shields.io/badge/TISS-4.01.00-blue)](docs/SPEC.md)
+[![TISS Standard](https://img.shields.io/badge/Padr%C3%A3o-TISS-blue)](docs/SPEC.md)
 [![Codeberg](https://img.shields.io/badge/mirror-Codeberg-2185D0)](https://codeberg.org/petrinhu/TISS_ANS_hash)
 [![GitHub](https://img.shields.io/badge/mirror-GitHub-181717)](https://github.com/petrinhu/TISS_ANS_hash)
 
@@ -37,7 +37,7 @@ O algoritmo do hash foi reverse-engineered porque:
 - Implementações existentes erram silenciosamente, produzindo hashes que a ANS rejeita.
 - XMLs reais com hashes confirmados pela ANS serviram de ground truth durante a engenharia reversa.
 
-Este projeto **substitui** o TISSGama (arquivado), editor desktop para a operadora Gama Saúde (extinta). Apenas o algoritmo de hash foi preservado e empacotado como biblioteca multi-linguagem para uso por qualquer fornecedor TISS.
+Este projeto deriva de um editor desktop legado (arquivado) que foi descontinuado. Apenas o algoritmo de hash foi preservado e empacotado como biblioteca multi-linguagem para uso por qualquer fornecedor TISS.
 
 ## Linguagens-alvo
 
@@ -175,7 +175,7 @@ lib_hash_ans/
 
 ## Histórico
 
-- 2026-05-27: projeto criado. Algoritmo extraído do TISSGama. 15 vetores sintéticos travados. Port Python liberado (19 testes passando). XMLs reais retirados do repo (LGPD). Repos públicos novos: GitHub `petrinhu/TISS_ANS_hash` + Codeberg `petrinhu/TISS_ANS_hash`. Predecessor TISSGama arquivado.
+- 2026-05-27: projeto criado. Algoritmo extraído de um editor desktop legado descontinuado. 15 vetores sintéticos travados. Port Python liberado (19 testes passando). XMLs reais retirados do repo (LGPD). Repos públicos: GitHub `petrinhu/TISS_ANS_hash` + Codeberg `petrinhu/TISS_ANS_hash`. Predecessor arquivado.
 
 ## Termos relacionados (busca / SEO)
 
@@ -184,7 +184,7 @@ Se você procurou por algum dos termos abaixo e chegou aqui, é exatamente este 
 - hash TISS, hash ANS, hash TISS ANS, hash MD5 TISS, hash MD5 ANS
 - lib hash ANS, lib hash TISS, biblioteca hash TISS, biblioteca hash ANS
 - cálculo hash Padrão TISS, cálculo hash epílogo TISS, MD5 epílogo TISS
-- Padrão TISS 4.01.00, TISS 401, padrao TISS hash, epilogo TISS hash
+- Padrão TISS, padrao TISS, padrao TISS hash, epilogo TISS hash
 - hash XML ANS, XML TISS hash, ans:hash, &lt;ans:hash&gt;
 - saúde suplementar Brasil hash, operadora hash TISS, prestador hash TISS
 - tiss-hash Python, tiss-hash Rust, tiss-hash Node, tiss-hash PHP, tiss-hash C, tiss-hash C++
