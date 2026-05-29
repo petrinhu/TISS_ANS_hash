@@ -37,7 +37,7 @@ Esta seção define os termos técnicos uma única vez. Se você já é da área
 Cada uma das 13 linguagens tem uma seção própria, sempre com os mesmos 5 passos, nesta ordem:
 
 1. **Instalar a toolchain** (a linguagem em si), com link oficial e comando para conferir a versão.
-2. **Obter a lib** a partir do checkout do repositório (os pacotes ainda não foram publicados nos registries, por isso ainda não dá para baixar com um simples `install` da internet; o placeholder mostra como vai ser quando publicarem).
+2. **Obter a lib**. O port **Python** já está publicado no PyPI: instala com um `pip install tiss-hash` direto da internet. Para os demais, o registry de cada linguagem ainda está em preparação, então a obtenção é a partir do **checkout** do repositório (a cópia local que você baixa com `git clone`); o placeholder "quando publicado" mostra como vai ser o comando assim que o pacote for ao ar.
 3. **Snippet mínimo** (pedaço de código) que você pode copiar e colar.
 4. **Saída esperada** (um hash sintético, só para ilustrar).
 5. **Como tratar erro** (o tipo de erro que a lib usa naquela linguagem).
@@ -60,9 +60,9 @@ Cada uma das 13 linguagens tem uma seção própria, sempre com os mesmos 5 pass
 
 > **Importante (vale para as 13 linguagens):** todas produzem **o mesmo hash, byte a byte**, para o mesmo XML de entrada. São validadas contra os mesmos 20 vetores de conformidade (18 positivos, que devem dar certo, e 2 negativos, que devem dar erro de propósito). Não existe diferença de resultado entre as linguagens. Cada port é autossuficiente e tem o seu próprio README com a referência de API completa.
 
-> **Sobre instalar pela internet:** os pacotes ainda não foram publicados nos repositórios públicos de cada linguagem (PyPI para Python, crates.io para Rust, npm para Node.js e WASM, Packagist para PHP, Maven Central para Java/Kotlin, NuGet para C#, pub.dev para Dart). Até lá, instale a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
+> **Sobre instalar pela internet:** o port **Python** já está no PyPI (`pip install tiss-hash`), e o port **Go** é resolvido pelo `go get` na tag de versão (proxy do Go / pkg.go.dev). Os demais registries seguem **em preparação** (crates.io para Rust, npm para Node.js e WASM, Packagist para PHP, Maven Central para Java/Kotlin, NuGet para C#, pub.dev para Dart); até subirem, instale a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
 
-**O primeiro passo, comum a quase todas as linguagens, é baixar o repositório:**
+**Para todas as linguagens cujo registry ainda está em preparação, o primeiro passo é baixar o repositório:**
 
 ```bash
 git clone https://github.com/petrinhu/TISS_ANS_hash.git
@@ -85,18 +85,24 @@ python3 --version
 
 ### b. Obter a lib
 
-A partir do checkout (a partir da raiz do repositório que você clonou):
+O port Python está publicado no PyPI ([pypi.org/project/tiss-hash](https://pypi.org/project/tiss-hash/)). Via primária, instale direto da internet:
 
 ```bash
-cd langs/python
-pip install -e .
+pip install tiss-hash
 ```
 
-(`pip` é o instalador de pacotes do Python. O `-e .` instala a pasta atual em "modo editável".)
-
-> **Quando publicado:** `pip install tiss-hash`
+(`pip` é o instalador de pacotes do Python; ele baixa o pacote do PyPI, o repositório oficial de pacotes Python.)
 
 A única dependência é `defusedxml`, uma biblioteca que protege contra ataques via XML malicioso. O `pip install` cuida dela sozinho.
+
+> **Alternativa: instalar do fonte (a partir do checkout).** Se você clonou o repositório e quer usar o código local (por exemplo, para mexer na lib), instale em "modo editável" a partir da raiz do checkout:
+>
+> ```bash
+> cd langs/python
+> pip install -e .
+> ```
+>
+> O `-e .` instala a pasta atual em modo editável (aponta para os arquivos locais em vez de copiá-los).
 
 ### c. Snippet mínimo
 
@@ -645,16 +651,20 @@ go version
 
 ### b. Obter a lib
 
-A partir do checkout, dentro da pasta do port, resolva as dependências:
+O módulo Go é resolvido direto pela tag de versão (via proxy do Go / pkg.go.dev). No seu projeto, dentro de um módulo Go já iniciado (`go mod init ...`), adicione a dependência:
 
 ```bash
-cd langs/go
-go mod tidy
+go get github.com/petrinhu/TISS_ANS_hash/langs/go@v0.2.1
 ```
 
-> **Quando publicado (com tag de versão):** `go get github.com/petrinhu/TISS_ANS_hash/langs/go`
+A única dependência externa é `golang.org/x/text` (para decodificar ISO-8859-1); o `go get` cuida dela.
 
-A única dependência externa é `golang.org/x/text` (para decodificar ISO-8859-1). O `go mod tidy` cuida dela.
+> **Alternativa: a partir do checkout.** Se você clonou o repositório e quer trabalhar com o código local, resolva as dependências dentro da pasta do port:
+>
+> ```bash
+> cd langs/go
+> go mod tidy
+> ```
 
 ### c. Snippet mínimo
 

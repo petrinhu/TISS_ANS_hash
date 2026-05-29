@@ -49,19 +49,19 @@ que baixa bibliotecas Python) vem junto com o Python.
 Uma **dependência** é uma biblioteca de terceiros que o seu código usa. O `pip`
 baixa e instala dependências para você.
 
-> Instalação via PyPI (o repositório oficial de pacotes Python) ainda não
-> publicada. Por enquanto, instale a partir do checkout do repositório (isto é,
-> da pasta que você baixou com `git clone`):
-
-```bash
-pip install ./langs/python
-```
-
-Quando publicada, bastará:
+A lib está publicada no PyPI (o repositório oficial de pacotes Python), em
+[pypi.org/project/tiss-hash](https://pypi.org/project/tiss-hash/). Instale com:
 
 ```bash
 pip install tiss-hash
 ```
+
+> **Alternativa: instalar do fonte.** Se você clonou o repositório e quer usar o
+> código local (a pasta que você baixou com `git clone`):
+>
+> ```bash
+> pip install ./langs/python
+> ```
 
 Uso:
 

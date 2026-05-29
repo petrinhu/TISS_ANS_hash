@@ -78,26 +78,25 @@ O que esperar ver: o seu prompt do terminal passa a começar com `(.venv)`. Isso
 
 > Para sair do venv mais tarde, digite `deactivate`. Para voltar a usá-lo numa nova sessão de terminal, rode o comando `source` (ou o `Activate.ps1`) de novo.
 
-### 2.3 Baixar o repositório e instalar a lib
+### 2.3 Instalar a lib
 
-Com o venv ativo, baixe o código do projeto. **Clonar** um repositório significa copiar para a sua máquina todos os arquivos do projeto que estão no servidor (aqui, o GitHub). A ferramenta usada é o `git`:
-
-```bash
-git clone https://github.com/petrinhu/TISS_ANS_hash.git
-cd TISS_ANS_hash/langs/python
-```
-
-> Se você não tem o `git`, baixe em <https://git-scm.com/downloads>. Alternativa sem git: o GitHub permite baixar um `.zip` pelo botão "Code" e descompactar.
-
-Agora instale a lib a partir desse código baixado:
+Com o venv ativo, instale a lib `tiss-hash`. Ela está publicada no **PyPI** (o repositório oficial de pacotes Python), então o `pip` baixa tudo da internet com um único comando:
 
 ```bash
-pip install -e .
+pip install tiss-hash
 ```
-
-O `-e` quer dizer "editável": instala apontando para os arquivos que você baixou, em vez de copiar. Para um tutorial dá no mesmo; só saiba que o `.` no fim significa "a pasta atual" (você está dentro de `langs/python`, que tem o arquivo de configuração da lib).
 
 O que esperar ver: várias linhas de progresso terminando com algo como `Successfully installed tiss-hash-0.1.0 defusedxml-...`. O `defusedxml` é a única dependência da lib (uma proteção de segurança na leitura do XML); o `pip` a instala sozinho.
+
+> **Alternativa: instalar do código-fonte.** Se você preferir baixar o repositório (por exemplo, para também ver os exemplos e mexer no código), **clonar** significa copiar para a sua máquina todos os arquivos do projeto que estão no servidor (aqui, o GitHub), usando o `git`:
+>
+> ```bash
+> git clone https://github.com/petrinhu/TISS_ANS_hash.git
+> cd TISS_ANS_hash/langs/python
+> pip install -e .
+> ```
+>
+> O `-e` quer dizer "editável": instala apontando para os arquivos baixados, em vez de copiar. Se você não tem o `git`, baixe em <https://git-scm.com/downloads> (ou baixe o `.zip` pelo botão "Code" do GitHub e descompacte).
 
 Confirme que deu certo:
 
