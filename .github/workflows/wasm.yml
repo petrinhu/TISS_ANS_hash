@@ -1,0 +1,88 @@
+name: wasm
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/wasm/**'
+      - 'langs/rust/**'
+      - 'conformance/**'
+      - '.github/workflows/wasm.yml'
+  pull_request:
+    paths:
+      - 'langs/wasm/**'
+      - 'langs/rust/**'
+      - 'conformance/**'
+      - '.github/workflows/wasm.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wasm-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  # wasm-bindgen-cli DEVE casar com a dep `wasm-bindgen = "=0.2.122"` do
+  # Cargo.toml. Drift de versão quebra o glue JS/WASM.
+  WASM_BINDGEN_VERSION: '0.2.122'
+
+jobs:
+  test:
+    name: wasm32 + wasm-bindgen + node harness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # Rust stable + target WebAssembly. O crate é cdylib p/ wasm32.
+      - name: Install Rust (stable + wasm32 target)
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add wasm32-unknown-unknown
+
+      - name: Setup Node
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '20'
+
+      # Cache pesado: registry/git do cargo, o binário wasm-bindgen-cli
+      # (~/.cargo/bin) e os targets de build do crate wasm + do core rust.
+      # Chave inclui a versão do wasm-bindgen e o lock do crate wasm.
+      - name: Cache cargo + wasm-bindgen
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            langs/wasm/target
+            langs/rust/target
+          key: wasm-${{ env.WASM_BINDGEN_VERSION }}-${{ hashFiles('langs/wasm/Cargo.lock') }}
+          restore-keys: |
+            wasm-${{ env.WASM_BINDGEN_VERSION }}-
+
+      # wasm-bindgen-cli na versão pinada. --locked = build reprodutível.
+      # Se o cache já trouxe o binário na versão certa, pula a compilação.
+      - name: Install wasm-bindgen-cli ${{ env.WASM_BINDGEN_VERSION }}
+        run: |
+          set -euo pipefail
+          if wasm-bindgen --version 2>/dev/null | grep -q "${WASM_BINDGEN_VERSION}"; then
+            echo "wasm-bindgen ${WASM_BINDGEN_VERSION} já presente (cache)."
+          else
+            cargo install wasm-bindgen-cli --version "${WASM_BINDGEN_VERSION}" --locked --force
+          fi
+
+      # build.sh: cargo build --target wasm32 + wasm-bindgen (pkg/web e pkg/node).
+      - name: Build (build.sh)
+        working-directory: langs/wasm
+        run: bash build.sh
+
+      # npm test = node test/conformance.mjs: carrega pkg/node e roda os 20
+      # vetores sintéticos. Goldens reais são privados (fora do CI) → SKIP.
+      - name: Test (node harness, 20 vetores)
+        working-directory: langs/wasm
+        run: npm test

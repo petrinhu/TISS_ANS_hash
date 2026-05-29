@@ -1,7 +1,7 @@
 # TISS_ANS_hash · lib hash TISS / ANS
 
-> **Biblioteca multi-linguagem (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#) para gerar o hash MD5 do epílogo XML do Padrão TISS/ANS (saúde suplementar Brasil).**
-> Multi-language library (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard).
+> **Biblioteca multi-linguagem (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM) para gerar o hash MD5 do epílogo XML do Padrão TISS/ANS (saúde suplementar Brasil).**
+> Multi-language library (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WebAssembly) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions%20%2B%20Forgejo%20Actions-success)](https://github.com/petrinhu/TISS_ANS_hash/actions)
@@ -12,7 +12,7 @@
 [![Codeberg](https://img.shields.io/badge/mirror-Codeberg-2185D0)](https://codeberg.org/petrinhu/TISS_ANS_hash)
 [![GitHub](https://img.shields.io/badge/mirror-GitHub-181717)](https://github.com/petrinhu/TISS_ANS_hash)
 
-> CI: cada um dos 9 ports roda em duas plataformas, **GitHub Actions** (`.github/workflows/<lang>.yml`) e **Forgejo Actions** no Codeberg (`.forgejo/workflows/<lang>.yml`).
+> CI: cada um dos 13 ports roda em duas plataformas, **GitHub Actions** (`.github/workflows/<lang>.yml`) e **Forgejo Actions** no Codeberg (`.forgejo/workflows/<lang>.yml`).
 
 ## O que é
 
@@ -20,7 +20,7 @@ No Brasil, planos de saúde (as operadoras) e clínicas/hospitais (os prestadore
 
 `lib_hash_ans` é uma coleção de **bibliotecas** (uma biblioteca é um pacote de código pronto que você instala e chama no seu programa, em vez de reescrever tudo do zero), uma para cada linguagem de programação, que calculam exatamente esse hash MD5 do epílogo TISS/ANS. Você entrega o conteúdo do arquivo XML, a lib devolve os 32 caracteres. Só isso.
 
-Todas as 9 implementações produzem **o mesmo resultado byte a byte** (um byte é a menor unidade de informação que o computador guarda; "byte a byte" significa que o resultado é idêntico até no menor detalhe, sem nenhuma diferença). O algoritmo foi conferido contra exemplos reais já aprovados pela ANS (guardados em segredo, fora deste repositório, por conterem dados de pacientes) e contra 20 casos de teste públicos e inventados (18 que devem dar certo + 2 que devem dar errado de propósito, para garantir que a lib rejeita entrada inválida). Esses casos de teste são os **vetores de conformidade**: "conformidade" aqui quer dizer "provar que a lib segue a regra exata". Definição técnica completa em [`docs/SPEC.md`](docs/SPEC.md); os testes públicos ficam em [`conformance/`](conformance/).
+Todas as 13 implementações produzem **o mesmo resultado byte a byte** (um byte é a menor unidade de informação que o computador guarda; "byte a byte" significa que o resultado é idêntico até no menor detalhe, sem nenhuma diferença). O algoritmo foi conferido contra exemplos reais já aprovados pela ANS (guardados em segredo, fora deste repositório, por conterem dados de pacientes) e contra 20 casos de teste públicos e inventados (18 que devem dar certo + 2 que devem dar errado de propósito, para garantir que a lib rejeita entrada inválida). Esses casos de teste são os **vetores de conformidade**: "conformidade" aqui quer dizer "provar que a lib segue a regra exata". Definição técnica completa em [`docs/SPEC.md`](docs/SPEC.md); os testes públicos ficam em [`conformance/`](conformance/).
 
 ### Novo por aqui?
 
@@ -28,7 +28,7 @@ Comece pelo documento que combina com o seu momento:
 
 - **Quer entender o que é isto e para que serve, sem código?** Leia [`docs/CONCEITOS.md`](docs/CONCEITOS.md) (explicação do problema, do XML TISS e do hash, em linguagem de iniciante).
 - **Quer pôr a mão na massa e ver um hash sair na tela em poucos minutos?** Siga o [`docs/TUTORIAL.md`](docs/TUTORIAL.md) (passo a passo guiado, do zero ao primeiro resultado).
-- **Já sabe o que quer e só precisa usar na sua linguagem?** Vá direto ao [`docs/USAGE.md`](docs/USAGE.md) (instalação, exemplos e receitas para Python, Rust, C, C++, Node.js, PHP, Java, Go e C#).
+- **Já sabe o que quer e só precisa usar na sua linguagem?** Vá direto ao [`docs/USAGE.md`](docs/USAGE.md) (instalação, exemplos e receitas para Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart e WASM).
 
 Se a dúvida for "por que existe e por que UTF-8 e não ISO-8859-1?", veja a seção [Por que existe](#por-que-existe-história) abaixo e a [`docs/SPEC.md`](docs/SPEC.md).
 
@@ -50,47 +50,42 @@ Se você procurou por "hash TISS não bate", "hash tiss rejeitado pela ANS", "MD
 
 **A engenharia reversa:** o algoritmo correto foi extraído de **três XMLs reais com hashes confirmados pela ANS** (golden vectors). Validação por bisseção: somente a combinação `concat-de-folhas + UTF-8 + MD5` reproduz os três hashes; toda outra falha. Detalhes da reversão e da divergência ISO vs UTF-8 em [`docs/SPEC.md §4 e §9`](docs/SPEC.md).
 
-**A garantia:** 20 vetores de conformidade públicos (18 positivos + 2 negativos) travam todos os casos de borda (acentuação, CR/LF dentro de valor, CDATA, entidades XML, comentários, atributos, namespaces, BOM UTF-8, whitespace puro, leading zeros, símbolos ISO-8859-1, multi-guia, documento grande). Cada port em cada linguagem **tem que** bater byte-a-byte contra os 20 antes de qualquer release.
+**A garantia:** 20 vetores de conformidade públicos (18 positivos + 2 negativos) travam todos os casos de borda (acentuação, CR/LF dentro de valor, CDATA, entidades XML, comentários, atributos, namespaces, BOM UTF-8, whitespace puro, leading zeros, símbolos ISO-8859-1, multi-guia, documento grande). Cada port em cada linguagem **tem que** bater byte-a-byte contra os 20 antes de qualquer release. Além dos 20 públicos, cada port valida 3 goldens reais (XMLs de produção com hashes confirmados pela ANS, mantidos fora do repo por LGPD): os 13 ports passam os 20 vetores (20/20) e os 3 goldens (3/3).
 
 **Origem:** algoritmo extraído de um editor desktop legado (TISSGama, arquivado) que foi descontinuado junto com o contexto cliente original. O algoritmo sobreviveu porque o Padrão TISS continua sendo usado por toda a saúde suplementar brasileira, e qualquer fornecedor TISS tem o mesmo problema de encoding enquanto a ANS não corrigir o manual.
 
 **O que esta lib oferece de diferente** vs reinventar a roda:
 
 - Algoritmo validado contra hashes aceitos pela ANS (não contra interpretação literal do manual).
-- 9 ports independentes (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#), pega errado em um, não pega nos outros (cross-port equivalence é parte da CI).
+- 13 ports independentes (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM), pega errado em um, não pega nos outros (cross-port equivalence é parte da CI).
 - Fixture de conformidade portável: mesmo `vectors.json` roda em todos os ports.
 - Documentação explícita das pegadinhas (encoding, comentários XML que entram no concat, CDATA tratado como texto, etc).
 
 ## Linguagens-alvo
 
-### Ports prontos (9)
+### Ports prontos (13)
 
-Todos passam a suíte de conformidade byte-a-byte (20 vetores) na CI das duas plataformas.
+Todos passam a suíte de conformidade byte-a-byte (20 vetores) na CI das duas plataformas, além dos 3 goldens reais privados.
 
-| Linguagem | Status     | Pasta             | Notas                                |
-|-----------|------------|-------------------|--------------------------------------|
-| Python    | ✅ pronto  | `langs/python/`   | lib `tiss-hash`, 24 testes (20 vetores de conformidade + 4 de API) |
-| Rust      | ✅ pronto  | `langs/rust/`     | crate                                |
-| C         | ✅ pronto  | `langs/c/`        | base p/ FFI, core comum              |
-| C++       | ✅ pronto  | `langs/cpp/`      | header-friendly                      |
-| Node.js   | ✅ pronto  | `langs/node/`     | package npm, TypeScript types        |
-| PHP       | ✅ pronto  | `langs/php/`      | composer package                     |
-| Java      | ✅ pronto  | `langs/java/`     | ERP/hospitalar enterprise            |
-| Go        | ✅ pronto  | `langs/go/`       | backend, microsserviços              |
-| C# / .NET | ✅ pronto  | `langs/csharp/`   | desktop de clínica                   |
+| Linguagem               | Status     | Pasta             | Notas                                |
+|-------------------------|------------|-------------------|--------------------------------------|
+| Python                  | ✅ pronto  | `langs/python/`   | lib `tiss-hash`, 24 testes (20 vetores de conformidade + 4 de API) |
+| Rust                    | ✅ pronto  | `langs/rust/`     | crate; também é o core do port WASM  |
+| C                       | ✅ pronto  | `langs/c/`        | base p/ FFI, core comum              |
+| C++                     | ✅ pronto  | `langs/cpp/`      | header-friendly                      |
+| Node.js                 | ✅ pronto  | `langs/node/`     | package npm, TypeScript types        |
+| PHP                     | ✅ pronto  | `langs/php/`      | composer package                     |
+| Java                    | ✅ pronto  | `langs/java/`     | ERP/hospitalar enterprise            |
+| Go                      | ✅ pronto  | `langs/go/`       | backend, microsserviços              |
+| C# / .NET               | ✅ pronto  | `langs/csharp/`   | desktop de clínica                   |
+| Kotlin                  | ✅ pronto  | `langs/kotlin/`   | JVM 17+ / Android; interop Java; zero dep runtime |
+| Delphi / Object Pascal  | ✅ pronto  | `langs/delphi/`   | Free Pascal (FPC); legado de faturamento médico BR |
+| Dart                    | ✅ pronto  | `langs/dart/`     | Flutter / mobile cross-platform      |
+| WASM                    | ✅ pronto  | `langs/wasm/`     | browser e Node; hash client-side, argumento LGPD (PII não trafega); reusa o core Rust via `wasm-bindgen` |
 
-### Candidatos futuros (ecossistema BR)
+O port **WASM** tem um motivo de existir próprio: calcular o hash **no navegador do usuário**, sem que o XML com dados de paciente (PII) saia da máquina. Sem upload, sem servidor, sem ponto de vazamento. É o argumento de privacidade (LGPD) mais forte do projeto e só o WASM o entrega. Decisão em [`docs/adr/0006-wasm-port.md`](docs/adr/0006-wasm-port.md).
 
-Avaliados, ainda não iniciados:
-
-| Linguagem              | Justificativa                                |
-|------------------------|----------------------------------------------|
-| Kotlin                 | Android + multiplatform                      |
-| Delphi / Object Pascal | legado massivo de faturamento médico BR      |
-| Dart / Flutter         | mobile cross-platform                        |
-| WASM                   | hash client-side no browser, argumento LGPD  |
-
-Legenda: `✅ pronto` (20/20 vetores PASS na CI + docs + packaging).
+Legenda: `✅ pronto` (20/20 vetores PASS na CI + 3/3 goldens reais + docs + packaging).
 
 ## Quickstart
 
@@ -196,16 +191,20 @@ lib_hash_ans/
 │   ├── inputs/                # XMLs sintéticos públicos (sem PII)
 │   ├── TEST_PLAN.md           # plano de teste e cobertura
 │   └── AMBIGUITY_NOTES.md     # decisões fixadas pela referência
-├── langs/                     # 9 ports independentes, um por linguagem
+├── langs/                     # 13 ports independentes, um por linguagem
 │   ├── python/                # port Python (tiss-hash)
-│   ├── rust/                  # crate Rust
+│   ├── rust/                  # crate Rust (também é o core do port WASM)
 │   ├── c/                     # port C (base p/ FFI)
 │   ├── cpp/                   # port C++
 │   ├── node/                  # package npm + TypeScript types
 │   ├── php/                   # composer package
 │   ├── java/                  # port Java
 │   ├── go/                    # port Go
-│   └── csharp/                # port C# / .NET
+│   ├── csharp/                # port C# / .NET
+│   ├── kotlin/                # port Kotlin (JVM / Android)
+│   ├── delphi/                # port Object Pascal (Free Pascal / Delphi)
+│   ├── dart/                  # port Dart (Flutter / mobile)
+│   └── wasm/                  # port WASM (browser/Node; reusa o core Rust)
 ├── .github/workflows/         # CI GitHub Actions (1 workflow por port)
 └── .forgejo/workflows/        # CI Forgejo Actions no Codeberg (1 por port)
 ```
@@ -213,6 +212,7 @@ lib_hash_ans/
 ## Histórico
 
 - 2026-05-27: projeto criado. Algoritmo extraído de um editor desktop legado descontinuado. 20 vetores de conformidade travados (18 positivos + 2 negativos). 9 ports liberados (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#), todos passando a conformidade byte-a-byte na CI das duas plataformas. XMLs reais retirados do repo (LGPD). Repos públicos: GitHub `petrinhu/TISS_ANS_hash` + Codeberg `petrinhu/TISS_ANS_hash`. Predecessor arquivado.
+- 2026-05-29: +4 ports (Kotlin, Delphi/Object Pascal via FPC, Dart, WASM), totalizando **13 ports**, todos passando os 20 vetores byte-a-byte + 3 goldens reais. O port WASM reusa o core Rust via `wasm-bindgen` (ADR-0006) e roda o hash client-side no browser (argumento LGPD). Marco do monorepo: v0.2.0.
 
 ## Termos relacionados (busca / SEO)
 
@@ -224,7 +224,8 @@ Se você procurou por algum dos termos abaixo e chegou aqui, é exatamente este 
 - Padrão TISS, padrao TISS, padrao TISS hash, epilogo TISS hash
 - hash XML ANS, XML TISS hash, ans:hash, &lt;ans:hash&gt;
 - saúde suplementar Brasil hash, operadora hash TISS, prestador hash TISS
-- tiss-hash Python, tiss-hash Rust, tiss-hash Node, tiss-hash PHP, tiss-hash C, tiss-hash C++, tiss-hash Java, tiss-hash Go, tiss-hash C#
+- tiss-hash Python, tiss-hash Rust, tiss-hash Node, tiss-hash PHP, tiss-hash C, tiss-hash C++, tiss-hash Java, tiss-hash Go, tiss-hash C#, tiss-hash Kotlin, tiss-hash Delphi, tiss-hash Object Pascal, tiss-hash Free Pascal, tiss-hash Dart, tiss-hash Flutter, tiss-hash WASM, tiss-hash WebAssembly
+- hash TISS no navegador, hash TISS client-side, hash TISS browser WASM, hash TISS sem servidor LGPD, hash TISS Android Kotlin, hash TISS Delphi faturamento médico, hash TISS Flutter mobile
 - ans hash xml utf-8, tiss hash não bate, hash tiss errado, hash tiss rejeitado, hash tiss divergente
 - ANS XML hash library, TISS supplementary health hash, Brazilian healthcare XML MD5
 

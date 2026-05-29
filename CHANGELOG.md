@@ -10,6 +10,24 @@ A versão de **cada port** é independente, declarada em seu próprio pacote (ex
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-29
+
+Expansão para **13 ports**. Quatro linguagens novas, todas passando os mesmos 20 vetores de conformidade (18 positivos + 2 negativos) byte a byte e validadas contra os 3 goldens reais (13/13 ports x 3/3 goldens PASS). Os 9 ports da 0.1.0 seguem inalterados.
+
+### Added
+
+- **Kotlin** (`langs/kotlin/`): alvo JVM (Android/multiplatform), espelha o port Java (DocumentBuilder, namespace por URI, comentários no concat). API `hashTiss`/`hashTissFile` + `InvalidTissXmlException`. Manifestos Gradle + Maven (`dev.petrus`).
+- **Object Pascal / Free Pascal** (`langs/delphi/`): para o legado de faturamento médico BR (muito Delphi). `fcl-xml` DOM, compat Delphi. API `HashTiss`/`HashTissFile` + `EInvalidTissXml`.
+- **Dart** (`langs/dart/`): mobile cross-platform (Flutter), publicável em pub.dev. `package:xml` + `package:crypto`. API `hashTiss`/`hashTissFile` + `InvalidTissXmlException`.
+- **WASM** (`langs/wasm/`): reusa o core Rust via `wasm-bindgen` (browser + Node). Argumento LGPD: o hash roda **client-side**, o XML com dados pessoais nunca sai da máquina do usuário. Ver `docs/adr/0006-wasm-port.md`.
+- **ADR-0006**: decisão de implementar o WASM reusando o core Rust (em vez de uma décima reimplementação).
+- CI (GitHub Actions + Forgejo) e workflows de release estendidos para os 4 ports novos.
+
+### Notes
+
+- Cada port novo inicia no seu próprio `0.1.0`; o monorepo marca `0.2.0` por adicionar os 4. Versão de cada port permanece independente.
+- Gotchas de toolchain documentados nos READMEs: `kotlinc` 2.1.0 não roda sob JDK 25 (CI usa JDK 21); `TEncoding.UTF8` quebrado no FPC 3.2.3 (usa `UTF8Encode`); WASM via `wasm-bindgen-cli` (não `wasm-pack`, que exige rustup).
+
 ## [0.1.0] - 2026-05-29
 
 Primeiro release público. Algoritmo do hash MD5 do epílogo do Padrão TISS/ANS extraído, especificado, validado e empacotado em **9 linguagens**, todas passando os mesmos vetores de conformidade byte-a-byte.
@@ -51,5 +69,6 @@ Primeiro release público. Algoritmo do hash MD5 do epílogo do Padrão TISS/ANS
 
 ---
 
-[Unreleased]: https://github.com/petrinhu/TISS_ANS_hash/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/petrinhu/TISS_ANS_hash/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/petrinhu/TISS_ANS_hash/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/petrinhu/TISS_ANS_hash/releases/tag/v0.1.0

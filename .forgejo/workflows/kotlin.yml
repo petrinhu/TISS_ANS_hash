@@ -1,0 +1,83 @@
+name: kotlin
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/kotlin/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/kotlin.yml'
+  pull_request:
+    paths:
+      - 'langs/kotlin/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/kotlin.yml'
+
+concurrency:
+  group: kotlin-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Alinhada ao build.gradle.kts (kotlin("jvm") 2.1.0).
+  KOTLIN_VERSION: '2.1.0'
+
+jobs:
+  test:
+    name: kotlin (jdk21 + kotlinc 2.1.0)
+    # codeberg-medium: download do kotlin-compiler.zip (~80MB) + compilar lib e
+    # harness + rodar conformance excede o timeout de 5min de codeberg-small.
+    runs-on: codeberg-medium
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # JDK 21 (LTS): sob JDK 21 o kotlinc 2.1.0 roda normal. O workaround
+      # -no-jdk do build.sh existe SÓ pela máquina de dev (JDK 25); aqui o
+      # build.sh detecta JAVA_HOME e compila normalmente.
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b # v4.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # unzip não vem garantido na imagem; o build.sh precisa de curl (já tem).
+      - name: Install unzip
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y --no-install-recommends unzip
+
+      - name: Cache Kotlin compiler + libs
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/.kotlin-compiler
+            langs/kotlin/.libs
+          key: kotlin-${{ env.KOTLIN_VERSION }}-codeberg
+
+      # kotlinc via zip oficial da release (sem sdkman/gradle). Idempotente.
+      - name: Install Kotlin compiler ${{ env.KOTLIN_VERSION }}
+        run: |
+          set -euo pipefail
+          KDIR="$HOME/.kotlin-compiler"
+          if [ ! -x "$KDIR/kotlinc/bin/kotlinc" ]; then
+            mkdir -p "$KDIR"
+            URL="https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VERSION}/kotlin-compiler-${KOTLIN_VERSION}.zip"
+            echo "Baixando $URL"
+            curl -fsSL -o /tmp/kotlin-compiler.zip "$URL"
+            unzip -q /tmp/kotlin-compiler.zip -d "$KDIR"
+          fi
+          echo "$KDIR/kotlin/bin" >> "$GITHUB_PATH"
+
+      - name: Versions
+        run: |
+          java -version
+          kotlinc -version
+
+      # build.sh: lib (explicit-api strict) + harness + 20 vetores. Goldens
+      # reais são privados (fora do CI) → harness os marca SKIP, não falha.
+      - name: Build + conformance (20 vetores)
+        working-directory: langs/kotlin
+        run: bash build.sh

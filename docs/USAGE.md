@@ -2,15 +2,15 @@
 title: Guia de uso do lib_hash_ans
 type: how-to
 audience: iniciante a intermediário (estudante de computação, dev backend, fornecedor TISS, ERP hospitalar)
-version: 0.1.0
+version: 0.2.0
 last-reviewed: 2026-05-29
 owner: petrinhu@yahoo.com.br
-status: estável (9 ports prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#)
+status: estável (13 ports prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM)
 ---
 
 # Guia de uso
 
-Este documento mostra **como usar** as bibliotecas `lib_hash_ans` no dia a dia: como instalar a linguagem, como obter a lib, um exemplo mínimo que funciona, a saída esperada e como tratar erro. Tem uma seção dedicada para cada uma das 9 linguagens, sempre na mesma ordem.
+Este documento mostra **como usar** as bibliotecas `lib_hash_ans` no dia a dia: como instalar a linguagem, como obter a lib, um exemplo mínimo que funciona, a saída esperada e como tratar erro. Tem uma seção dedicada para cada uma das 13 linguagens, sempre na mesma ordem.
 
 > **Não sabe o que é isto? Comece aqui.** Se as palavras "hash", "XML", "TISS" ou "epílogo" ainda não fazem sentido, leia primeiro o [`CONCEITOS.md`](CONCEITOS.md) (explicação sem código, em linguagem de iniciante). Para botar a mão na massa e ver um hash aparecer na tela passo a passo, siga o [`TUTORIAL.md`](TUTORIAL.md). Este guia aqui assume que você já sabe o que quer fazer e só precisa do "como".
 
@@ -34,7 +34,7 @@ Esta seção define os termos técnicos uma única vez. Se você já é da área
 
 ## 1. Visão geral por linguagem
 
-Cada uma das 9 linguagens tem uma seção própria, sempre com os mesmos 5 passos, nesta ordem:
+Cada uma das 13 linguagens tem uma seção própria, sempre com os mesmos 5 passos, nesta ordem:
 
 1. **Instalar a toolchain** (a linguagem em si), com link oficial e comando para conferir a versão.
 2. **Obter a lib** a partir do checkout do repositório (os pacotes ainda não foram publicados nos registries, por isso ainda não dá para baixar com um simples `install` da internet; o placeholder mostra como vai ser quando publicarem).
@@ -42,21 +42,25 @@ Cada uma das 9 linguagens tem uma seção própria, sempre com os mesmos 5 passo
 4. **Saída esperada** (um hash sintético, só para ilustrar).
 5. **Como tratar erro** (o tipo de erro que a lib usa naquela linguagem).
 
-| Linguagem | Pacote / módulo            | Diretório do port | Seção                       |
-|-----------|----------------------------|-------------------|-----------------------------|
-| Python    | `tiss-hash`                | `langs/python/`   | [2](#2-python)              |
-| Rust      | crate `tiss-hash`          | `langs/rust/`     | [3](#3-rust)                |
-| C         | `tiss_hash` (lib + header) | `langs/c/`        | [4](#4-c)                   |
-| C++       | `tiss_hash` (header-only)  | `langs/cpp/`      | [5](#5-c-1)                 |
-| Node.js   | `tiss-hash`                | `langs/node/`     | [6](#6-nodejs)              |
-| PHP       | `petrinhu/tiss-hash`       | `langs/php/`      | [7](#7-php)                 |
-| Java      | `tiss-hash` (jar)          | `langs/java/`     | [8](#8-java)                |
-| Go        | módulo `tisshash`          | `langs/go/`       | [9](#9-go)                  |
-| C#        | `TissHash` (.NET)          | `langs/csharp/`   | [10](#10-c-net)             |
+| Linguagem              | Pacote / módulo            | Diretório do port | Seção                       |
+|------------------------|----------------------------|-------------------|-----------------------------|
+| Python                 | `tiss-hash`                | `langs/python/`   | [2](#2-python)              |
+| Rust                   | crate `tiss-hash`          | `langs/rust/`     | [3](#3-rust)                |
+| C                      | `tiss_hash` (lib + header) | `langs/c/`        | [4](#4-c)                   |
+| C++                    | `tiss_hash` (header-only)  | `langs/cpp/`      | [5](#5-c-1)                 |
+| Node.js                | `tiss-hash`                | `langs/node/`     | [6](#6-nodejs)              |
+| PHP                    | `petrinhu/tiss-hash`       | `langs/php/`      | [7](#7-php)                 |
+| Java                   | `tiss-hash` (jar)          | `langs/java/`     | [8](#8-java)                |
+| Go                     | módulo `tisshash`          | `langs/go/`       | [9](#9-go)                  |
+| C#                     | `TissHash` (.NET)          | `langs/csharp/`   | [10](#10-c-net)             |
+| Kotlin                 | `tiss-hash-kotlin` (jar)   | `langs/kotlin/`   | [11](#11-kotlin)            |
+| Delphi / Object Pascal | unit `TissHash` (FPC)      | `langs/delphi/`   | [12](#12-delphi--object-pascal-free-pascal) |
+| Dart                   | pacote `tiss_hash`         | `langs/dart/`     | [13](#13-dart)              |
+| WASM                   | `tiss-hash-wasm` (pkg)     | `langs/wasm/`     | [14](#14-wasm-webassembly)  |
 
-> **Importante (vale para as 9 linguagens):** todas produzem **o mesmo hash, byte a byte**, para o mesmo XML de entrada. São validadas contra os mesmos 20 vetores de conformidade (18 positivos, que devem dar certo, e 2 negativos, que devem dar erro de propósito). Não existe diferença de resultado entre as linguagens. Cada port é autossuficiente e tem o seu próprio README com a referência de API completa.
+> **Importante (vale para as 13 linguagens):** todas produzem **o mesmo hash, byte a byte**, para o mesmo XML de entrada. São validadas contra os mesmos 20 vetores de conformidade (18 positivos, que devem dar certo, e 2 negativos, que devem dar erro de propósito). Não existe diferença de resultado entre as linguagens. Cada port é autossuficiente e tem o seu próprio README com a referência de API completa.
 
-> **Sobre instalar pela internet:** os pacotes ainda não foram publicados nos repositórios públicos de cada linguagem (PyPI para Python, crates.io para Rust, npm para Node.js, Packagist para PHP, Maven Central para Java, NuGet para C#). Até lá, instale a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
+> **Sobre instalar pela internet:** os pacotes ainda não foram publicados nos repositórios públicos de cada linguagem (PyPI para Python, crates.io para Rust, npm para Node.js e WASM, Packagist para PHP, Maven Central para Java/Kotlin, NuGet para C#, pub.dev para Dart). Até lá, instale a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
 
 **O primeiro passo, comum a quase todas as linguagens, é baixar o repositório:**
 
@@ -796,7 +800,372 @@ Entrada nula dispara `ArgumentNullException`.
 
 README completo do port: [`../langs/csharp/README.md`](../langs/csharp/README.md).
 
-## 11. Receitas comuns (Python, como exemplo)
+## 11. Kotlin
+
+### a. Instalar a toolchain
+
+O Kotlin roda na JVM, então você precisa de duas coisas:
+
+- **JDK** (Java Development Kit) 17 ou mais novo. Site oficial: <https://adoptium.net/> (build aberto Temurin).
+- **Compilador Kotlin** (`kotlinc`): baixe o release oficial em <https://github.com/JetBrains/kotlin/releases> e extraia (o binário fica em `kotlinc/bin/`), ou instale via [SDKMAN!](https://sdkman.io/) com `sdk install kotlin`.
+
+Conferir as versões:
+
+```bash
+java --version
+kotlinc -version
+```
+
+> **Nota sobre JDK 25.** O `kotlinc` 2.1.0 falha ao rodar **sob** JDK 25. O `build.sh` deste port contorna isso sozinho. Se você usa Gradle ou Maven, prefira um JDK 17 ou 21 LTS como toolchain de build.
+
+### b. Obter a lib
+
+A partir do checkout, compile e rode a conformidade com o script self-contained do port:
+
+```bash
+cd langs/kotlin
+./build.sh         # compila a lib + roda os 20 vetores e os goldens
+./build.sh jar     # idem + gera build/tiss-hash-kotlin-0.1.0.jar
+```
+
+> **Quando publicado (Maven Central):** adicione ao `build.gradle.kts` do seu projeto:
+>
+> ```kotlin
+> dependencies {
+>     implementation("dev.petrus:tiss-hash-kotlin:0.1.0")
+> }
+> ```
+
+A lib tem **zero dependência de runtime** além do `kotlin-stdlib`: o parser XML e o MD5 vêm da própria JDK.
+
+### c. Snippet mínimo
+
+Salve como `Exemplo.kt`:
+
+```kotlin
+import dev.petrus.tisshash.hashTiss
+import dev.petrus.tisshash.hashTissFile
+import java.nio.file.Files
+import java.nio.file.Path
+
+fun main() {
+    // A partir de bytes
+    val xml: ByteArray = Files.readAllBytes(Path.of("conformance/inputs/syn_minimal.xml"))
+    println(hashTiss(xml))   // 32 caracteres hex minúsculos
+
+    // Atalho de arquivo (recebe um Path)
+    println(hashTissFile(Path.of("conformance/inputs/syn_minimal.xml")))
+}
+```
+
+Compile e rode apontando para o jar gerado em `langs/kotlin/build/`:
+
+```bash
+kotlinc Exemplo.kt -cp langs/kotlin/build/tiss-hash-kotlin-0.1.0.jar -include-runtime -d exemplo.jar
+java -cp exemplo.jar:langs/kotlin/build/tiss-hash-kotlin-0.1.0.jar ExemploKt
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+O erro é a exceção `InvalidTissXmlException` (subclasse de `RuntimeException`, ou seja, não checada). É lançada para XML malformado, múltiplos `<ans:hash>` ou encoding UTF-16/UTF-32. Capture com `try`/`catch`:
+
+```kotlin
+import dev.petrus.tisshash.hashTiss
+import dev.petrus.tisshash.InvalidTissXmlException
+
+try {
+    hashTiss("<isto-nao-fecha".toByteArray())
+} catch (e: InvalidTissXmlException) {
+    System.err.println("XML rejeitado: ${e.message}")
+}
+```
+
+Chamando a partir de **Java** (interop): as funções top-level viram métodos estáticos da classe `dev.petrus.tisshash.TissHash` (`TissHash.hashTiss(xmlBytes)`).
+
+README completo do port: [`../langs/kotlin/README.md`](../langs/kotlin/README.md).
+
+## 12. Delphi / Object Pascal (Free Pascal)
+
+### a. Instalar a toolchain
+
+O port é escrito em `{$mode delphi}` e compila tanto no **Free Pascal (FPC)** quanto no **Delphi**. O build e os testes desta máquina rodam em FPC. Instale o Free Pascal:
+
+| Distro / sistema      | Comando / link                                                  |
+|-----------------------|-----------------------------------------------------------------|
+| Fedora / RHEL         | `sudo dnf install fpc`                                           |
+| Debian / Ubuntu       | `sudo apt install fpc`                                           |
+| Windows / macOS       | site oficial <https://www.freepascal.org/download.html> ou Lazarus (traz o FPC) <https://www.lazarus-ide.org/> |
+
+Conferir a versão (3.2 ou mais novo recomendado):
+
+```bash
+fpc -iV
+```
+
+As unidades usadas (`fcl-xml` para o DOM, `md5` para o hash, `fcl-json` para os testes) já vêm na instalação padrão do FPC: nenhuma biblioteca extra precisa ser baixada.
+
+### b. Obter a lib
+
+Não há registry para Object Pascal: a "obtenção" é compilar a partir do código-fonte. A partir do checkout:
+
+```bash
+cd langs/delphi
+make            # compila a lib + CLI + testes em build/
+make test       # roda os 20 vetores de conformidade
+```
+
+> **Quando publicado:** não se aplica. Object Pascal não tem um gerenciador de pacotes central padrão. Para usar em outro projeto, adicione `langs/delphi/src/` ao search path de units do seu compilador e dê `uses TissHash;`.
+
+Para reusar no seu código, basta colocar a unit `TissHash` (`src/TissHash.pas`) no caminho de units do seu projeto.
+
+### c. Snippet mínimo
+
+Salve como `exemplo.pas` (a unit `TissHash` precisa estar no search path; rode a partir da raiz do repositório para o caminho do arquivo bater):
+
+```pascal
+program exemplo;
+
+{$mode delphi}{$H+}
+
+uses
+  SysUtils, TissHash;
+
+begin
+  // A partir de um arquivo (caminho do disco):
+  Writeln(HashTissFile('conformance/inputs/syn_minimal.xml'));  // 32 chars hex minúsculos
+end.
+```
+
+Compile e rode (apontando o search path de units para `langs/delphi/src`):
+
+```bash
+fpc -O2 -Mdelphi -Fulangs/delphi/src exemplo.pas
+./exemplo
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+Object Pascal usa exceções. Entrada fora do contrato (XML malformado, encoding fora de escopo, múltiplos `<ans:hash>`, entrada vazia) lança `EInvalidTissXml` (subclasse de `Exception`). Capture com `try`/`except`:
+
+```pascal
+uses SysUtils, TissHash;
+
+try
+  HashHex := HashTiss(Bytes);
+except
+  on E: EInvalidTissXml do
+    Writeln(ErrOutput, 'XML inválido: ', E.Message);
+end;
+```
+
+`HashTissFile` ainda pode propagar `EFOpenError` / `EReadError` (falha de I/O) da RTL: capture-as separadamente se precisar distinguir I/O de XML inválido. Para usar a partir de bytes já em memória, use `HashTiss(const Bytes: TBytes)`.
+
+README completo do port (inclui a nota de compatibilidade Delphi): [`../langs/delphi/README.md`](../langs/delphi/README.md).
+
+## 13. Dart
+
+### a. Instalar a toolchain
+
+Dart 3.4 ou mais novo. Site oficial: <https://dart.dev/get-dart>. O SDK do Flutter também já inclui o Dart. O comando `dart` traz o `pub` (gerenciador de pacotes) junto.
+
+Conferir a versão:
+
+```bash
+dart --version
+```
+
+### b. Obter a lib
+
+A partir do checkout, baixe as dependências do port:
+
+```bash
+cd langs/dart
+dart pub get
+```
+
+> **Quando publicado (pub.dev):** `dart pub add tiss_hash`
+
+Para usar em outro projeto seu enquanto não há publicação, aponte para o checkout no seu `pubspec.yaml`:
+
+```yaml
+dependencies:
+  tiss_hash:
+    path: /caminho/para/TISS_ANS_hash/langs/dart
+```
+
+As dependências são `xml` (parser, pure-Dart) e `crypto` (MD5). O `dart pub get` cuida das duas.
+
+### c. Snippet mínimo
+
+Salve como `exemplo.dart` dentro de `langs/dart`:
+
+```dart
+import 'dart:io';
+import 'package:tiss_hash/tiss_hash.dart';
+
+Future<void> main() async {
+  // A partir de bytes (síncrono)
+  final md5 = hashTiss(File('../../conformance/inputs/syn_minimal.xml').readAsBytesSync());
+  print(md5);   // 32 caracteres hex minúsculos
+
+  // A partir do caminho do arquivo (assíncrono: precisa de await)
+  final md5File = await hashTissFile('../../conformance/inputs/syn_minimal.xml');
+  print(md5File);
+}
+```
+
+Rode com:
+
+```bash
+dart run exemplo.dart
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+O erro é a classe `InvalidTissXmlException` (implementa `Exception`). É lançada quando o XML é malformado, tem encoding fora de escopo, ou tem mais de um `<ans:hash>`. Capture com `try`/`on`:
+
+```dart
+import 'dart:convert';
+import 'package:tiss_hash/tiss_hash.dart';
+
+void main() {
+  try {
+    hashTiss(utf8.encode('<isto-nao-eh-xml'));
+  } on InvalidTissXmlException catch (e) {
+    print('XML rejeitado: ${e.message}');
+  }
+}
+```
+
+README completo do port: [`../langs/dart/README.md`](../langs/dart/README.md).
+
+## 14. WASM (WebAssembly)
+
+O port WASM calcula o hash **dentro do navegador do usuário** (ou no Node), sem enviar nada para servidor nenhum. Esse é o ponto: o XML TISS carrega dados pessoais de paciente (PII sob a LGPD), e mandar o arquivo para um servidor hashear criaria um ponto de vazamento. No WASM, o arquivo é selecionado, o hash é calculado localmente e **nada trafega** (nem o XML, nem o hash, nem metadado). É o argumento de privacidade mais forte do projeto, e só o WASM o entrega. Decisão em [`../docs/adr/0006-wasm-port.md`](adr/0006-wasm-port.md).
+
+O port não reimplementa o algoritmo: ele reusa o core Rust (`langs/rust/`), compilado para `wasm32-unknown-unknown` e exposto ao JavaScript via `wasm-bindgen`. O hash sai **byte a byte idêntico** ao dos outros 12 ports.
+
+### a. Instalar a toolchain
+
+Para **gerar** o módulo (a pasta `pkg/`) a partir do fonte, você precisa de:
+
+- **cargo + rustc** com o target `wasm32-unknown-unknown` (no Fedora, o target do cargo do sistema já vem instalado). Instalador Rust: <https://www.rust-lang.org/tools/install>.
+- **wasm-bindgen-cli** na versão que **casa** com a `wasm-bindgen` fixada no `Cargo.toml` (atualmente `0.2.122`). Versões diferentes quebram o glue gerado:
+
+  ```bash
+  cargo install wasm-bindgen-cli --version 0.2.122
+  ```
+
+Para apenas **consumir** o módulo já gerado, você precisa só de um navegador moderno ou do Node.js 20+ (testado em Node 22): o `pkg/` distribuído traz `.wasm` + `.js` prontos, sem toolchain Rust.
+
+### b. Obter a lib
+
+A partir do checkout, gere o `pkg/`:
+
+```bash
+cd langs/wasm
+bash build.sh      # compila + roda wasm-bindgen (gera pkg/web e pkg/node)
+```
+
+> **Quando publicado (npm):** `npm install tiss-hash-wasm`
+
+O `build.sh` gera dois bindings: `pkg/web/` (ESM, para o navegador) e `pkg/node/` (CommonJS, para o Node).
+
+### c. Snippet mínimo
+
+**No navegador (ESM).** O navegador exige servir os arquivos por HTTP (não funciona abrindo o `.html` direto com `file://`):
+
+```bash
+cd langs/wasm
+python3 -m http.server 8000
+# abra http://localhost:8000/examples/browser/
+```
+
+No seu código:
+
+```html
+<script type="module">
+  import init, { hashTiss } from './pkg/web/tiss_hash_wasm.js';
+
+  await init();   // carrega o .wasm uma vez (fetch)
+
+  const file = document.querySelector('input[type=file]').files[0];
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const md5 = hashTiss(bytes);   // 32 caracteres hex minúsculos
+  console.log(md5);
+</script>
+```
+
+**No Node.js.** O binding `pkg/node` é CommonJS e carrega o `.wasm` de forma síncrona ao ser importado (não precisa de `init()`). Salve como `exemplo.mjs` dentro de `langs/wasm`:
+
+```js
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+const require = createRequire(import.meta.url);
+const { hashTiss } = require('./pkg/node/tiss_hash_wasm.js');
+
+const md5 = hashTiss(new Uint8Array(readFileSync('../../conformance/inputs/syn_minimal.xml')));
+console.log(md5);   // 32 caracteres hex minúsculos
+```
+
+Rode com:
+
+```bash
+node exemplo.mjs
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`. No navegador, o valor aparece no console do desenvolvedor.)
+
+### e. Como tratar erro
+
+`hashTiss` **lança** (throw) um `Error` quando o XML é rejeitado (malformado, múltiplos `<ans:hash>`, ou encoding UTF-16/UTF-32). A mensagem vem do core Rust (diagnóstico do parser) e **não contém PII**. Capture com `try`/`catch`:
+
+```js
+try {
+  hashTiss(bytes);
+} catch (err) {
+  // err.message ex.: "XML inválido para hash TISS: ..."
+  console.error('XML rejeitado:', err.message);
+}
+```
+
+Os tipos TypeScript (`.d.ts`) são gerados automaticamente pelo `wasm-bindgen` e acompanham os bindings em `pkg/`.
+
+README completo do port: [`../langs/wasm/README.md`](../langs/wasm/README.md).
+
+## 15. Receitas comuns (Python, como exemplo)
 
 As receitas abaixo usam Python porque é o port mais maduro, mas a ideia vale para qualquer linguagem (a lib só **calcula** o hash; montar o XML, assinar e enviar é com você).
 

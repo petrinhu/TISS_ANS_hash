@@ -1,0 +1,45 @@
+name: delphi
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/delphi/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/delphi.yml'
+  pull_request:
+    paths:
+      - 'langs/delphi/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/delphi.yml'
+
+concurrency:
+  group: delphi-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: fpc (modo delphi)
+    runs-on: codeberg-small
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # fpc via apt (container roda como root, sem sudo — igual c.yml/java.yml).
+      # Traz fcl-json (fpjson/jsonparser) usado pelo conformance_test + make.
+      - name: Install Free Pascal (fpc) + make
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y --no-install-recommends fpc make
+
+      - name: Version
+        run: fpc -iV
+
+      # make test: lib + conformance_test + 20 vetores (CONF_DIR=../../conformance).
+      # Goldens reais (make goldens) são privados → NÃO rodam no CI.
+      - name: Build + conformance (20 vetores)
+        working-directory: langs/delphi
+        run: make test

@@ -1,0 +1,61 @@
+name: dart
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/dart/**'
+      - 'conformance/**'
+      - '.github/workflows/dart.yml'
+  pull_request:
+    paths:
+      - 'langs/dart/**'
+      - 'conformance/**'
+      - '.github/workflows/dart.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dart-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: dart ${{ matrix.dart-channel }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # stable: o canal de produção. pubspec exige sdk ^3.4.0; stable cobre.
+        dart-channel: [stable]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Dart (${{ matrix.dart-channel }})
+        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
+        with:
+          sdk: ${{ matrix.dart-channel }}
+
+      - name: Install deps
+        working-directory: langs/dart
+        run: dart pub get
+
+      # analyze: lints de analysis_options.yaml. --fatal-infos trava o build em
+      # qualquer info/warning (disciplina de lib publicável no pub.dev).
+      - name: Analyze (dart analyze)
+        working-directory: langs/dart
+        run: dart analyze --fatal-infos
+
+      - name: Format check
+        working-directory: langs/dart
+        run: dart format --output=none --set-exit-if-changed .
+
+      # Os 20 vetores sintéticos (conformance/vectors.json). O harness sobe a
+      # árvore até achar conformance/ — independe do CWD. Goldens reais ficam
+      # fora do CI (privados).
+      - name: Test (20 vetores)
+        working-directory: langs/dart
+        run: dart test

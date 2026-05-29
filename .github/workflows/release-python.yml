@@ -170,6 +170,46 @@ jobs:
           # Copia a .so (e variantes versionadas, se existirem).
           cp build/libtiss_hash.so* "$GITHUB_WORKSPACE/release-assets/" || true
 
+      # kotlin: .jar da lib via build.sh jar (kotlinc puro, sem Gradle). Sob o
+      # JDK Temurin 17 ja instalado (Setup Java acima), o kotlinc 2.1.0 compila
+      # normalmente — o build.sh resolve JAVA_HOME e extrai as classes do JDK.
+      # Baixa kotlinc 2.1.0 (zip oficial) e empacota build/tiss-hash-kotlin-*.jar.
+      - name: Build kotlin (.jar)
+        continue-on-error: true
+        env:
+          KOTLIN_VERSION: '2.1.0'
+        run: |
+          set -euo pipefail
+          KDIR="$HOME/.kotlin-compiler"
+          if [ ! -x "$KDIR/kotlinc/bin/kotlinc" ]; then
+            mkdir -p "$KDIR"
+            URL="https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VERSION}/kotlin-compiler-${KOTLIN_VERSION}.zip"
+            curl -fsSL -o /tmp/kotlin-compiler.zip "$URL"
+            unzip -q /tmp/kotlin-compiler.zip -d "$KDIR"
+          fi
+          export PATH="$KDIR/kotlin/bin:$PATH"
+          cd langs/kotlin
+          bash build.sh jar
+          cp build/tiss-hash-kotlin-*.jar "$GITHUB_WORKSPACE/release-assets/"
+
+      # wasm: tarball npm (.tgz) com pkg/web + pkg/node (bindings wasm-bindgen).
+      # Reusa Rust stable (Setup Rust acima); adiciona o target wasm32 e a CLI
+      # wasm-bindgen na versao pinada (= dep do Cargo.toml). build.sh gera pkg/;
+      # npm pack empacota conforme o campo "files" do package.json.
+      - name: Build wasm (.tgz)
+        continue-on-error: true
+        env:
+          WASM_BINDGEN_VERSION: '0.2.122'
+        run: |
+          set -euo pipefail
+          rustup target add wasm32-unknown-unknown
+          if ! wasm-bindgen --version 2>/dev/null | grep -q "${WASM_BINDGEN_VERSION}"; then
+            cargo install wasm-bindgen-cli --version "${WASM_BINDGEN_VERSION}" --locked --force
+          fi
+          cd langs/wasm
+          bash build.sh
+          npm pack --pack-destination "$GITHUB_WORKSPACE/release-assets"
+
       # source tarball reproduzivel a partir da REF DA TAG (git archive).
       # cpp/go/php sao source-only: a tarball ja os carrega inteiros.
       - name: Build source tarball (.tar.gz)

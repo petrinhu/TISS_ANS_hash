@@ -1,0 +1,51 @@
+name: dart
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/dart/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/dart.yml'
+  pull_request:
+    paths:
+      - 'langs/dart/**'
+      - 'conformance/**'
+      - '.forgejo/workflows/dart.yml'
+
+concurrency:
+  group: dart-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: dart stable
+    runs-on: codeberg-small
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # setup-dart baixa o SDK; funciona na imagem catthehacker (tem curl/unzip).
+      - name: Setup Dart (stable)
+        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
+        with:
+          sdk: stable
+
+      - name: Install deps
+        working-directory: langs/dart
+        run: dart pub get
+
+      - name: Analyze (dart analyze)
+        working-directory: langs/dart
+        run: dart analyze --fatal-infos
+
+      - name: Format check
+        working-directory: langs/dart
+        run: dart format --output=none --set-exit-if-changed .
+
+      # 20 vetores sintéticos. Goldens reais fora do CI (privados).
+      - name: Test (20 vetores)
+        working-directory: langs/dart
+        run: dart test

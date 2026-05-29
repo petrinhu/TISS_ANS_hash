@@ -1,0 +1,79 @@
+name: kotlin
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'langs/kotlin/**'
+      - 'conformance/**'
+      - '.github/workflows/kotlin.yml'
+  pull_request:
+    paths:
+      - 'langs/kotlin/**'
+      - 'conformance/**'
+      - '.github/workflows/kotlin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kotlin-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Versão do compilador Kotlin alinhada ao build.gradle.kts (kotlin("jvm") 2.1.0).
+  KOTLIN_VERSION: '2.1.0'
+
+jobs:
+  test:
+    name: kotlin (jdk21 + kotlinc 2.1.0)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # JDK 21 (LTS): sob JDK 21 o kotlinc 2.1.0 roda normal — o workaround
+      # -no-jdk do build.sh existe SÓ porque a máquina de dev tem JDK 25.
+      # Aqui não precisamos dele; build.sh detecta o JDK via JAVA_HOME.
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b # v4.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Cache da instalação do compilador Kotlin (zip da release) + do json.jar
+      # de teste (.libs). Chave estável pela versão; restaura entre runs.
+      - name: Cache Kotlin compiler + libs
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/.kotlin-compiler
+            langs/kotlin/.libs
+          key: kotlin-${{ env.KOTLIN_VERSION }}-${{ runner.os }}
+
+      # Instala kotlinc baixando o zip oficial da release (sem sdkman, sem gradle).
+      # Idempotente: se o cache já trouxe a pasta, pula o download.
+      - name: Install Kotlin compiler ${{ env.KOTLIN_VERSION }}
+        run: |
+          set -euo pipefail
+          KDIR="$HOME/.kotlin-compiler"
+          if [ ! -x "$KDIR/kotlinc/bin/kotlinc" ]; then
+            mkdir -p "$KDIR"
+            URL="https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VERSION}/kotlin-compiler-${KOTLIN_VERSION}.zip"
+            echo "Baixando $URL"
+            curl -fsSL -o /tmp/kotlin-compiler.zip "$URL"
+            unzip -q /tmp/kotlin-compiler.zip -d "$KDIR"
+          fi
+          echo "$KDIR/kotlin/bin" >> "$GITHUB_PATH"
+
+      - name: Versions
+        run: |
+          java -version
+          kotlinc -version
+
+      # build.sh: compila lib (explicit-api strict) + harness e roda os 20 vetores.
+      # Os goldens reais são privados (fora do CI) → o harness os marca SKIP.
+      - name: Build + conformance (20 vetores)
+        working-directory: langs/kotlin
+        run: bash build.sh
