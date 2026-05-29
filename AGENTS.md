@@ -5,7 +5,7 @@
 > tool-agnóstica. Se você é humano, comece pelo [`README.md`](README.md) e pelo
 > [`docs/USAGE.md`](docs/USAGE.md).
 >
-> **last-reviewed:** 2026-05-29 · **owner:** petrinhu@yahoo.com.br · **versão do projeto:** v0.2.0
+> **last-reviewed:** 2026-05-29 · **owner:** petrinhu@yahoo.com.br · **versão do projeto:** v0.2.1
 
 ## O que é
 

@@ -89,11 +89,11 @@ O port **WASM** tem um motivo de existir próprio: calcular o hash **no navegado
 
 Legenda: `✅ pronto` (20/20 vetores PASS na CI + 3/3 goldens reais + docs + packaging).
 
-### Artefatos prebuilt por host (release v0.2.0)
+### Artefatos prebuilt (release v0.2.1)
 
 Todos os 13 ports **buildam do fonte** em qualquer cenário (ver o README de cada `langs/<lang>/`); os artefatos prebuilt são uma conveniência opcional anexada às releases.
 
-> **Nota sobre o jar do Kotlin (v0.2.0):** o jar prebuilt do Kotlin **não** foi anexado ao release do **GitHub** v0.2.0 (uma falha do build Kotlin na primeira execução da CI, já corrigida para os próximos releases). Ele está disponível no release do **Codeberg** v0.2.0. De qualquer forma, o port Kotlin builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)), então o jar prebuilt é apenas um atalho. Os demais artefatos estão presentes nos dois hosts.
+A partir da v0.2.1, **todos os artefatos prebuilt estão presentes nos releases dos dois hosts** ([GitHub](https://github.com/petrinhu/TISS_ANS_hash/releases/tag/v0.2.1) e [Codeberg](https://codeberg.org/petrinhu/TISS_ANS_hash/releases/tag/v0.2.1)), incluindo o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`). Mesmo assim, o port Kotlin builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)), então o jar prebuilt é apenas um atalho.
 
 ## Quickstart
 
@@ -221,6 +221,7 @@ lib_hash_ans/
 
 - 2026-05-27: projeto criado. Algoritmo extraído de um editor desktop legado descontinuado. 20 vetores de conformidade travados (18 positivos + 2 negativos). 9 ports liberados (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#), todos passando a conformidade byte-a-byte na CI das duas plataformas. XMLs reais retirados do repo (LGPD). Repos públicos: GitHub `petrinhu/TISS_ANS_hash` + Codeberg `petrinhu/TISS_ANS_hash`. Predecessor arquivado.
 - 2026-05-29: +4 ports (Kotlin, Delphi/Object Pascal via FPC, Dart, WASM), totalizando **13 ports**, todos passando os 20 vetores byte-a-byte + 3 goldens reais. O port WASM reusa o core Rust via `wasm-bindgen` (ADR-0006) e roda o hash client-side no browser (argumento LGPD). Marco do monorepo: v0.2.0.
+- 2026-05-29: v0.2.1 (patch). Build do Kotlin corrigido na CI; o jar prebuilt do Kotlin volta a ser anexado ao release, agora presente nos dois hosts. Adicionado o [`AGENTS.md`](AGENTS.md) (guia para IA/agente que usa a lib). Sem mudança no algoritmo (13 ports seguem 20/20 + 3/3 goldens).
 
 ## Termos relacionados (busca / SEO)
 

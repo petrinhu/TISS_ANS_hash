@@ -6,7 +6,13 @@ Expansão para **13 ports**. A biblioteca calcula o **hash MD5 do epílogo (`<an
 
 Novo por aqui? Comece em [`docs/CONCEITOS.md`](docs/CONCEITOS.md), depois [`docs/TUTORIAL.md`](docs/TUTORIAL.md) ou [`docs/USAGE.md`](docs/USAGE.md).
 
-## Novidades da v0.2.0
+## Novidades da v0.2.1
+
+- **Jar do Kotlin de volta ao release** dos dois hosts (build do Kotlin corrigido na CI): o prebuilt `tiss-hash-kotlin-0.1.0.jar` está anexado tanto no GitHub quanto no Codeberg.
+- **`AGENTS.md`** na raiz: guia para uma IA/agente de código que usa a lib (não reimplementar, contrato de rejeição, como validar, regras de privacidade/LGPD).
+- 13 ports, sem mudança no algoritmo (20/20 vetores + 3/3 goldens reais).
+
+## Expansão para 13 ports (vinda da v0.2.0)
 
 4 linguagens novas, todas com resultado **idêntico byte a byte** às outras (20 vetores + 3 goldens reais, 13/13 ports x 3/3 PASS):
 
@@ -21,11 +27,9 @@ Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, **Kotlin, Delphi/FPC, Dart, WA
 
 ## Como obter
 
-- **Código-fonte**: tarball desta release (anexo) ou `git clone` na tag `v0.2.0`. Todos os ports buildam do fonte (README de cada `langs/<lang>/`).
-- **Go**: `go get github.com/petrinhu/TISS_ANS_hash/langs/go@v0.2.0`
-- **Artefatos prontos** (anexos): wheel/sdist (Python), jar (Java, Kotlin), nupkg (C#), crate (Rust), tgz (Node), libs (C), pkg WASM.
-
-  > **Jar do Kotlin:** o jar prebuilt do Kotlin **não** está anexado ao release do **GitHub** v0.2.0 (falha do build Kotlin na primeira execução da CI, já corrigida para os próximos releases); ele está no release do **Codeberg** v0.2.0. Em qualquer caso, o port Kotlin builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)).
+- **Código-fonte**: tarball desta release (anexo) ou `git clone` na tag `v0.2.1`. Todos os ports buildam do fonte (README de cada `langs/<lang>/`).
+- **Go**: `go get github.com/petrinhu/TISS_ANS_hash/langs/go@v0.2.1`
+- **Artefatos prontos** (anexos): wheel/sdist (Python), jar (Java, Kotlin), nupkg (C#), crate (Rust), tgz (Node), libs (C), pkg WASM. A partir da v0.2.1, **todos os artefatos prebuilt estão presentes nos releases dos dois hosts** (GitHub e Codeberg), incluindo o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`). O port Kotlin também builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)).
 - **Registries** (PyPI, npm, crates.io, Packagist, Maven Central, NuGet): em preparação; workflows prontos, ver [`docs/RELEASING.md`](docs/RELEASING.md). Por enquanto, instalar a partir do checkout (ver [`docs/USAGE.md`](docs/USAGE.md)).
 
 ## Verificação de integridade

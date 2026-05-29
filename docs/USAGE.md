@@ -2,7 +2,7 @@
 title: Guia de uso do lib_hash_ans
 type: how-to
 audience: iniciante a intermediário (estudante de computação, dev backend, fornecedor TISS, ERP hospitalar)
-version: 0.2.0
+version: 0.2.1
 last-reviewed: 2026-05-29
 owner: petrinhu@yahoo.com.br
 status: estável (13 ports prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM)
@@ -836,7 +836,7 @@ cd langs/kotlin
 > }
 > ```
 
-> **Jar prebuilt:** o jar do Kotlin está anexado ao release **Codeberg** v0.2.0. No release **GitHub** v0.2.0 ele não foi anexado (falha do build Kotlin na primeira CI, já corrigida); use o Codeberg ou builde do fonte com `./build.sh jar` (comando acima).
+> **Jar prebuilt:** o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`) está anexado aos releases v0.2.1 dos **dois hosts** (GitHub e Codeberg). Você também pode buildá-lo do fonte com `./build.sh jar` (comando acima).
 
 A lib tem **zero dependência de runtime** além do `kotlin-stdlib`: o parser XML e o MD5 vêm da própria JDK.
 

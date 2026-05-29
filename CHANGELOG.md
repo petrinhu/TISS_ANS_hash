@@ -24,7 +24,7 @@ Patch: corrige o conjunto de artefatos do release e adiciona guia para IA. Sem m
 
 ### Changed
 
-- Documentação alinhada para **13 ports** em todas as páginas (CONCEITOS, TUTORIAL, FAQ, SPEC, PORTING_GUIDE, USAGE); nota de "artefatos prebuilt por host".
+- Documentação alinhada para **13 ports** em todas as páginas (CONCEITOS, TUTORIAL, FAQ, SPEC, PORTING_GUIDE, USAGE); nota de artefatos prebuilt atualizada (todos presentes nos releases dos dois hosts, incluindo o jar do Kotlin).
 
 ## [0.2.0] - 2026-05-29
 
