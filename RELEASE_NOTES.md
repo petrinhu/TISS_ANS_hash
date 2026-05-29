@@ -27,7 +27,7 @@ Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, **Kotlin, Delphi/FPC, Dart, WA
 
 ## Como obter
 
-- **Python (PyPI)**: `pip install tiss-hash` — publicado em [pypi.org/project/tiss-hash](https://pypi.org/project/tiss-hash/).
+- **Python (PyPI)**: `pip install tiss-hash`, publicado em [pypi.org/project/tiss-hash](https://pypi.org/project/tiss-hash/).
 - **Node.js (npm)**: `npm install tiss-hash`, publicado em [npmjs.com/package/tiss-hash](https://www.npmjs.com/package/tiss-hash).
 - **Go**: `go get github.com/petrinhu/TISS_ANS_hash/langs/go@v0.2.1` (resolvido pela tag, via proxy do Go / pkg.go.dev).
 - **Código-fonte**: tarball desta release (anexo) ou `git clone` na tag `v0.2.1`. Todos os ports buildam do fonte (README de cada `langs/<lang>/`).
