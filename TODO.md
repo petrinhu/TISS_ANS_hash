@@ -13,10 +13,10 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | ID | Onda | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | A-QA2 | W6 | QA | cargo-mutants achou 4 mutantes sobreviventes em rust/src/lib.rs (asserts fracos, NÃO bugs): Display::fmt texto, Error::source cadeia, allow_dtd (sem vetor com DTD interno), is_leaf ramo PI. Matar com vetores DTD+PI no conformance + assert de msg/source de erro (toca conformance → qa-engineer) | Baixa | A-QA1 | Média | ⏳ Pendente | — |
-| F7.1 | W5 | Release | Tag v0.1.0 Python + publicar PyPI | Alta | F1.9, F4.1, A-DOC4 | Baixa | ⏳ Pendente | — |
-| F4.4 | W5 | CI | Release automation (PyPI via trusted publishing) | Média | F7.1 | Média | ⏳ Pendente | — |
-| F7.2 | W5 | Release | Release v0.1.0 no GitHub + Codeberg (notes + checksums) | Alta | F7.1 | Baixa | ⏳ Pendente | — |
-| A-REL1 | W5 | Release | SBOM (syft/cyclonedx) + SHA256SUMS no release GitHub/Codeberg; assinatura GPG nice-to-have | Baixa | F7.2 | Média | ⏳ Pendente | — |
+| F7.1 | — | Release | **Tag v0.1.0 criada + empurrada (2 remotes) @ 534fc2f.** Go publicado pela tag (`go get .../langs/go@v0.1.0`). PyPI = gated (PYPI_ENABLED, espera conta+pending publisher do líder) | Alta | F1.9, F4.1, A-DOC4 | Baixa | ✅ Concluído | ✓ |
+| F4.4 | — | CI | Release automation: release-python.yml (PyPI OIDC gated) + 4 workflows registry gated + .forgejo/release.yml. Tudo pronto, liga por var+secret | Média | F7.1 | Média | ✅ Concluído | ✓ |
+| F7.2 | — | Release | **GitHub Release v0.1.0 NO AR** (run release-python.yml success): 13 assets = 9 ports (whl+sdist/tgz/crate/jar/nupkg/.a+.so) + source.tar.gz + SHA256SUMS + SBOM. Codeberg release dispatchado (run #71) | Alta | F7.1 | Baixa | ✅ Concluído | ✓ |
+| A-REL1 | — | Release | SHA256SUMS + SBOM CycloneDX anexados no GitHub release (gerados na CI) | Baixa | F7.2 | Média | ✅ Concluído | ✓ |
 | F7.3 | W6 | Release | Anúncio (DEV.to, LinkedIn, fórum de saúde suplementar BR) | Baixa | F7.2 | Baixa | ⏳ Pendente | — |
 | F7.4 | W6 | Release | Submeter pacote pra mirrors (conda-forge se aplicável) | Baixa | F7.1 | Baixa | ⏳ Pendente | — |
 | F8.7 | W6 | SEO (Tier 3) | Submit PR awesome-brasil + awesome-health-tech + awesome-tiss (se existir) | Baixa | F7.1 | Baixa | ⏳ Pendente | — |
