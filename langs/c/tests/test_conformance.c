@@ -10,8 +10,13 @@
  * Uso:
  *   test_conformance [inputs_dir]
  *
- * Onde inputs_dir e o diretorio com os XMLs do manifesto. Default:
- *   ../../../conformance/inputs   (relativo ao binario)
+ * Resolucao do diretorio de inputs (primeira fonte disponivel vence):
+ *   1. argv[1]                   (CLI explicito, ex.: ctest passa o path)
+ *   2. env TISS_CONFORMANCE_DIR  (robusto a CWD: aponta pra conformance/inputs)
+ *   3. ../../../conformance/inputs (default relativo ao CWD do binario)
+ *
+ * O fallback por env existe pra que rodar o binario fora do ctest (CWD
+ * diferente de langs/c/build) nao quebre — basta exportar a env.
  *
  * Exit code:
  *   0  se todos os vetores passarem (PASS == TISS_VECTORS_COUNT)
@@ -72,9 +77,22 @@ static int run_one(const char *inputs_dir, const tiss_vector_t *v)
     return 1;
 }
 
+/* Resolve o diretorio de inputs: CLI > env TISS_CONFORMANCE_DIR > default. */
+static const char *resolve_inputs_dir(int argc, char **argv)
+{
+    if (argc >= 2) {
+        return argv[1];
+    }
+    const char *env = getenv("TISS_CONFORMANCE_DIR");
+    if (env != NULL && env[0] != '\0') {
+        return env;
+    }
+    return DEFAULT_INPUTS_DIR;
+}
+
 int main(int argc, char **argv)
 {
-    const char *inputs_dir = (argc >= 2) ? argv[1] : DEFAULT_INPUTS_DIR;
+    const char *inputs_dir = resolve_inputs_dir(argc, argv);
 
     fprintf(stdout, "tiss-hash conformance: rodando %zu vetores em %s\n",
             (size_t)TISS_VECTORS_COUNT, inputs_dir);

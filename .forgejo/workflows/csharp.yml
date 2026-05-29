@@ -41,8 +41,27 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      - name: Lint (dotnet format)
+        # A-CI3: falha se houver arquivo fora do .editorconfig.
+        run: dotnet format --verify-no-changes --no-restore
+
       - name: Build
         run: dotnet build -c Release --no-restore
 
-      - name: Test
-        run: dotnet test -c Release --no-build --logger "console;verbosity=normal"
+      - name: CVE gate (vulnerable packages)
+        # A-SUP2: FALHA o job se algum pacote (incl. transitivo) tiver CVE.
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee vuln.txt
+          if grep -qi "has the following vulnerable packages" vuln.txt; then
+            echo "pacote(s) vulneravel(eis) detectado(s)"
+            exit 1
+          fi
+
+      - name: Test + cobertura (coverlet)
+        # A-CI4: coletor XPlat Code Coverage gera coverage.cobertura.xml.
+        # Sem threshold falhando: so medir/reportar.
+        run: >
+          dotnet test -c Release --no-build
+          --logger "console;verbosity=normal"
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults

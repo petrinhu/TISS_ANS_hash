@@ -1,0 +1,29 @@
+# .clang-tidy - port C da tiss-hash.
+#
+# Conjunto de checks sano que o codigo atual passa LIMPO (0 achados) sob
+# WarningsAsErrors. Checks desligados sao ruido/opiniao, nao bug:
+#   - reserved-identifier: _POSIX_C_SOURCE e feature-test macro obrigatorio
+#   - insecureAPI memcpy_s: nao-portavel (anexo K opcional), nao usamos
+#   - implicit-widening / math-missing-parentheses: benigno no codigo MD5
+#   - magic-numbers / identifier-length / cognitive-complexity: estilo
+#
+# HeaderFilterRegex limita analise aos headers do proprio port.
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-function-cognitive-complexity,
+  -readability-isolate-declaration,
+  -readability-braces-around-statements,
+  -readability-math-missing-parentheses,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-reserved-identifier,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'langs/c/(include|src|tests)/'

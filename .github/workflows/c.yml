@@ -29,9 +29,10 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [gcc, clang]
-        build-type: [Debug]
+        build-type: [Debug, Release]
     env:
       CC: ${{ matrix.compiler }}
+      # ASan+UBSan so no Debug; Release e build otimizado de corretude.
       ASAN_OPTIONS: "detect_leaks=1:strict_string_checks=1:detect_stack_use_after_return=1"
       UBSAN_OPTIONS: "print_stacktrace=1:halt_on_error=1"
     steps:
@@ -42,14 +43,35 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build python3 ${{ matrix.compiler }} \
             libxml2-dev libssl-dev pkg-config
-      - name: Configure (with ASan + UBSan)
+      - name: Configure
         working-directory: langs/c
         run: |
-          cmake -GNinja -B build \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-            -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
-            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+          if [ "${{ matrix.build-type }}" = "Debug" ]; then
+            cmake -GNinja -B build \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
+              -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+          else
+            cmake -GNinja -B build -DCMAKE_BUILD_TYPE=Release
+          fi
       - working-directory: langs/c
         run: cmake --build build --parallel
       - working-directory: langs/c
         run: ctest --test-dir build --output-on-failure
+
+  lint:
+    name: clang-tidy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-tidy + deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build clang-tidy libxml2-dev libssl-dev pkg-config
+      - name: Configure (export compile commands)
+        working-directory: langs/c
+        run: cmake -GNinja -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: clang-tidy (config em langs/c/.clang-tidy)
+        working-directory: langs/c
+        run: clang-tidy -p build src/tiss_hash.c

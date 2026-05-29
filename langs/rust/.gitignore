@@ -1,2 +1,8 @@
 /target
 Cargo.lock
+# Artefatos do cargo-mutants (mutation testing — job manual)
+/mutants.out
+/mutants.out.old
+# Relatórios de cobertura (tarpaulin / llvm-cov)
+/cobertura.xml
+/tarpaulin-report.html

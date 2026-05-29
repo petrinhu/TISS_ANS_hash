@@ -17,7 +17,10 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test test/*.test.js test/*.test.cjs"
+    "test": "node --test test/*.test.js test/*.test.cjs",
+    "lint": "eslint .",
+    "coverage": "c8 --reporter=text --reporter=text-summary node --test test/*.test.js test/*.test.cjs",
+    "audit:ci": "npm audit --audit-level=high"
   },
   "engines": {
     "node": ">=20"
@@ -45,5 +48,11 @@
     "directory": "langs/node"
   },
   "homepage": "https://github.com/petrinhu/TISS_ANS_hash",
-  "bugs": "https://github.com/petrinhu/TISS_ANS_hash/issues"
+  "bugs": "https://github.com/petrinhu/TISS_ANS_hash/issues",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "c8": "^11.0.0",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0"
+  }
 }

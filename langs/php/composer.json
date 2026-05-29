@@ -33,7 +33,8 @@
         "ext-mbstring": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.5"
+        "phpunit/phpunit": "^10.5",
+        "phpstan/phpstan": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -46,7 +47,9 @@
         }
     },
     "scripts": {
-        "test": "phpunit --colors=auto tests/"
+        "test": "phpunit --colors=auto tests/",
+        "stan": "phpstan analyse --no-progress",
+        "coverage": "phpunit --colors=auto --coverage-text tests/"
     },
     "minimum-stability": "stable"
 }

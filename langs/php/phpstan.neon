@@ -1,0 +1,6 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+    # ext-dom / libxml já são require no composer.json; sem stubs extra.

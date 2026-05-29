@@ -1,0 +1,61 @@
+# Dependabot — atualização automática de dependências (A-SUP1).
+# Um ecosystem por port + GitHub Actions. Schedule semanal pra não inundar.
+# (Codeberg/Forgejo não lê este arquivo; é específico do GitHub. Mirror de
+#  deps no Codeberg fica a cargo de update manual ou Renovate futuro.)
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+
+  - package-ecosystem: pip
+    directory: /langs/python
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps(python)"
+
+  - package-ecosystem: npm
+    directory: /langs/node
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps(node)"
+
+  - package-ecosystem: cargo
+    directory: /langs/rust
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps(rust)"
+
+  - package-ecosystem: composer
+    directory: /langs/php
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps(php)"
+
+  - package-ecosystem: maven
+    directory: /langs/java
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps(java)"
+
+  - package-ecosystem: gomod
+    directory: /langs/go
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps(go)"
+
+  - package-ecosystem: nuget
+    directory: /langs/csharp
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps(csharp)"

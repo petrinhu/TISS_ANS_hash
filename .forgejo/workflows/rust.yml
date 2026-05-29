@@ -60,3 +60,19 @@ jobs:
       - name: test
         working-directory: langs/rust
         run: cargo test --all-targets --verbose
+
+      # CVE gate (A-SUP2). cargo-audit varre Cargo.lock contra RustSec advisory-db.
+      - name: cargo audit
+        working-directory: langs/rust
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
+
+      # Coverage (A-CI4). Só mede/reporta — sem threshold que falhe.
+      # cargo-mutants (A-QA1) NÃO roda aqui: é muito lento p/ o runner Codeberg.
+      # Mutation fica no .github (job manual via workflow_dispatch).
+      - name: cargo tarpaulin (coverage)
+        working-directory: langs/rust
+        run: |
+          cargo install cargo-tarpaulin --locked
+          cargo tarpaulin --out Stdout --skip-clean

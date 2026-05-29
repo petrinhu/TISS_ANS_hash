@@ -166,3 +166,6 @@ desktop.ini
 # ----- Claude Code (manter settings.local fora) -----
 .claude/settings.local.json
 .claude/.cache/
+
+# clang-tidy compile_commands scratch dirs (W4)
+**/build_tidy/

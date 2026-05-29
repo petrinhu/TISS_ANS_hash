@@ -52,6 +52,12 @@
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
     <orgjson.version>20240303</orgjson.version>
     <surefire.version>3.2.5</surefire.version>
+
+    <!-- Plugins de qualidade (A-CI3 lint / A-CI4 cobertura / A-SUP2 CVE). -->
+    <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
+    <checkstyle.core.version>10.21.4</checkstyle.core.version>
+    <jacoco.version>0.8.12</jacoco.version>
+    <versions.plugin.version>2.18.0</versions.plugin.version>
   </properties>
 
   <!-- Zero dependências runtime: JDK puro (javax.xml + java.security.MessageDigest). -->
@@ -77,6 +83,78 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
+      </plugin>
+
+      <!-- A-CI3: gate de lint Checkstyle. Ruleset em checkstyle.xml (raiz do
+           port). `mvn checkstyle:check` falha o build em qualquer violacao
+           (failOnViolation=true, violationSeverity=error). Roda tambem no
+           verify pra que `mvn verify` cubra o gate. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>${checkstyle.core.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <consoleOutput>true</consoleOutput>
+          <failOnViolation>true</failOnViolation>
+          <violationSeverity>error</violationSeverity>
+        </configuration>
+        <executions>
+          <execution>
+            <id>checkstyle-verify</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- A-CI4: cobertura com JaCoCo. SEM threshold falhando (nao ha goal
+           `check` com rules) — apenas instrumenta (prepare-agent) e gera o
+           relatorio HTML/XML em target/site/jacoco apos os testes. -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <executions>
+          <execution>
+            <id>jacoco-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- A-SUP2: vigilancia de dependencias. OWASP dependency-check baixa a
+           base NVD inteira (centenas de MB, +API key NVD obrigatoria desde
+           2023, 10-20min na 1a run) — inviavel pra um port de lib com 2 deps
+           de TESTE e ZERO deps de runtime. Usamos a alternativa leve:
+           versions-maven-plugin reporta dependencias desatualizadas (sinal de
+           CVE potencial em libs velhas). Roda via
+           `mvn versions:display-dependency-updates` no CI (nao falha build;
+           e informativo). O gate que efetivamente FALHA em CVE conhecido fica
+           no lado C# (dotnet list package vulnerable). Trade-off documentado. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>${versions.plugin.version}</version>
       </plugin>
     </plugins>
   </build>

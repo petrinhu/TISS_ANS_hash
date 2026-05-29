@@ -31,10 +31,11 @@
 namespace {
 
 // Path para o diretorio de inputs. Resolvido em ResolveInputsDir() no
-// inicio dos testes via:
-//   1. CLI --inputs <dir>      (se fornecido pelo runner)
-//   2. env TISS_INPUTS_DIR     (fallback util pra CTest)
-//   3. ../../../conformance/inputs relativo ao CWD do binario (default)
+// inicio dos testes (primeira fonte disponivel vence):
+//   1. CLI --inputs <dir>        (se fornecido pelo runner; ex.: ctest)
+//   2. env TISS_CONFORMANCE_DIR  (robusto a CWD; nome canonico)
+//   3. env TISS_INPUTS_DIR       (alias retrocompativel)
+//   4. ../../../conformance/inputs relativo ao CWD do binario (default)
 std::filesystem::path g_inputs_dir;
 
 std::filesystem::path ResolveInputsDir(int argc, const char* const* argv) {
@@ -43,7 +44,12 @@ std::filesystem::path ResolveInputsDir(int argc, const char* const* argv) {
             return std::filesystem::path{argv[i + 1]};
         }
     }
-    if (const char* env = std::getenv("TISS_INPUTS_DIR")) {
+    if (const char* env = std::getenv("TISS_CONFORMANCE_DIR");
+        env != nullptr && env[0] != '\0') {
+        return std::filesystem::path{env};
+    }
+    if (const char* env = std::getenv("TISS_INPUTS_DIR");
+        env != nullptr && env[0] != '\0') {
         return std::filesystem::path{env};
     }
     return std::filesystem::path{"../../../conformance/inputs"};

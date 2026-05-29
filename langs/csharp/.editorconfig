@@ -1,0 +1,60 @@
+# EditorConfig do port C#/.NET do tiss-hash.
+# Fonte de verdade do gate `dotnet format --verify-no-changes` no CI.
+# Regras escolhidas para BATER com o codigo ja existente (que hoje passa
+# o verify). Mudar isto pode quebrar o gate — rode `dotnet format` local
+# depois de alterar e confira o diff.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.{cs,csx}]
+indent_size = 4
+max_line_length = 100
+
+# .NET formatting / style ----------------------------------------------------
+[*.cs]
+# usings: System.* primeiro, sem separar grupos com linha em branco
+# (codigo atual usa `using System.IO;` etc. agrupados no topo).
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# Chaves Allman (cada `{` em sua propria linha) — estilo do TissHash.cs.
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# `this.` nao usado no codigo.
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method = false:warning
+dotnet_style_qualification_for_event = false:warning
+
+# `var` quando o tipo e aparente (padrao do codigo).
+csharp_style_var_for_built_in_types = false:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = false:silent
+
+# file-scoped namespace (`namespace TissHash;`) — usado no codigo.
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Espacamento padrao C#.
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+# Acessibilidade explicita.
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+
+# Geramos arquivos em obj/ que NAO devem ser analisados pelo dotnet format.
+[**/obj/**.cs]
+generated_code = true
+
+[**/bin/**.cs]
+generated_code = true

@@ -39,6 +39,30 @@ jobs:
           java-version: ${{ matrix.java-version }}
           cache: maven
 
-      - name: Test
+      - name: Lint (Checkstyle)
         working-directory: langs/java
-        run: mvn -B -ntp test
+        # A-CI3: falha o build em qualquer violacao (failOnViolation=true).
+        run: mvn -B -ntp checkstyle:check
+
+      - name: Test + cobertura (JaCoCo)
+        working-directory: langs/java
+        # `verify` roda surefire (testes) + jacoco:report. JaCoCo so mede
+        # e gera target/site/jacoco/* (A-CI4: sem threshold falhando).
+        run: mvn -B -ntp verify
+
+      - name: CVE watch (deps desatualizadas)
+        working-directory: langs/java
+        # A-SUP2 (alternativa leve): OWASP dependency-check baixa a base NVD
+        # inteira + exige API key e roda 10-20min — inviavel pro porte da lib
+        # (zero deps runtime, 2 deps de teste). versions:display-dependency-updates
+        # sinaliza libs velhas (proxy de CVE). Informativo: nao falha o build.
+        continue-on-error: true
+        run: mvn -B -ntp versions:display-dependency-updates
+
+      - name: Upload cobertura (JaCoCo XML)
+        if: matrix.java-version == '21'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: langs/java/target/site/jacoco/
+          if-no-files-found: warn

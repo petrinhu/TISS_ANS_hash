@@ -49,3 +49,56 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
       - working-directory: langs/rust
         run: cargo test --all-targets --verbose
+
+      # CVE gate (A-SUP2). cargo-audit varre Cargo.lock contra RustSec advisory-db.
+      - name: cargo audit
+        working-directory: langs/rust
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
+
+      # Coverage (A-CI4). Apenas mede/reporta — sem threshold que falhe.
+      - name: cargo tarpaulin (coverage)
+        working-directory: langs/rust
+        run: |
+          cargo install cargo-tarpaulin --locked
+          cargo tarpaulin --out Xml --out Stdout --skip-clean
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-rust
+          path: langs/rust/cobertura.xml
+          retention-days: 14
+
+  # Mutation testing (A-QA1) — LENTO e NON-BLOCKING. Só roda manualmente
+  # (workflow_dispatch). Revela asserts fracos; não trava push.
+  mutants:
+    name: cargo-mutants (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust (stable)
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            langs/rust/target
+          key: cargo-mutants-${{ hashFiles('langs/rust/Cargo.lock') }}
+          restore-keys: cargo-
+      # --in-place: os testes de conformance leem ../../conformance/vectors.json
+      # (fora do crate) via CARGO_MANIFEST_DIR. Sem --in-place o cargo-mutants
+      # copia só o pacote pra um tmpdir e o fixture some → baseline falha.
+      # Baseline local: 43 mutantes, 35 mortos, 4 sobreviventes (89.7% viáveis).
+      # Sobreviventes = asserts fracos (não bugs): Display::fmt e Error::source
+      # sem teste de texto/chain; allow_dtd sem vetor com DTD interno; ramo is_pi()
+      # em is_leaf_for_hash sem vetor com PI. Ver TODO (A-QA1 follow-up).
+      - name: cargo mutants
+        working-directory: langs/rust
+        run: |
+          cargo install cargo-mutants --locked
+          cargo mutants --in-place --file src/lib.rs

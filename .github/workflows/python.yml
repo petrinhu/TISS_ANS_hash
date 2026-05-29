@@ -48,6 +48,15 @@ jobs:
         working-directory: langs/python
         run: ruff check src tests
 
+      # CVE gate (A-SUP2). Audita as deps runtime (defusedxml). Roda em uma
+      # versão só pra economizar; --skip-editable ignora a própria lib local.
+      - name: pip-audit
+        if: matrix.python-version == '3.12'
+        working-directory: langs/python
+        run: |
+          pip install pip-audit
+          pip-audit --skip-editable
+
       - name: Test + coverage
         working-directory: langs/python
         run: pytest tests/ --cov=tiss_hash --cov-report=xml --cov-report=term -v

@@ -12,15 +12,7 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 
 | ID | Onda | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| A-CI1 | W4 | CI | ASan+UBSan no `cpp.yml` (espelhar c.yml) — C++ com pugixml+walker manual é onde sanitizer pega bug; infra local existe (build_san) mas não no CI | Média | F5.3 | Baixa | ⏳ Pendente | — |
-| A-CI2 | W4 | CI | clang na matrix C++ + Release em C/C++ (hoje C++ só g++-13 Debug; C só Debug) | Média | F5.3 | Baixa | ⏳ Pendente | — |
-| A-CI3 | W4 | CI | Lint gate nos 6 ports sem lint (PHP phpstan/phpcs, C/C++ clang-tidy+format, Node eslint, Java checkstyle/spotbugs, C# dotnet format). Só Python/Rust/Go têm | Média | — | Média | ⏳ Pendente | — |
-| A-CI4 | W4 | CI | Coverage diferencial + baseline onde barato (tarpaulin Rust, go test -cover, jacoco Java, c8 Node, coverlet C#); hoje só Python mede | Baixa | — | Média | ⏳ Pendente | — |
-| A-CI5 | W4 | CI | C/C++ test runner depende de CWD pra achar conformance/inputs (falha fora do ctest); resolução robusta (env TISS_CONFORMANCE_DIR) | Baixa | — | Baixa | ⏳ Pendente | — |
-| A-SUP1 | W4 | Supply-chain | `.github/dependabot.yml` multi-ecosystem (pip/npm/cargo/composer/maven/gomod/nuget/gh-actions) — sem update automático de deps | Média | — | Baixa | ⏳ Pendente | — |
-| A-SUP2 | W4 | Supply-chain | Gate de CVE por port em CI (pip-audit/npm audit/cargo audit/govulncheck/composer audit/dotnet --vulnerable) — hoje zero scan | Média | — | Média | ⏳ Pendente | — |
-| A-SUP3 | W4 | Supply-chain | Bump preventivo `golang.org/x/text` v0.14→latest (govulncheck hoje clean, ~6 versões atrás) | Baixa | — | Baixa | ⏳ Pendente | — |
-| A-QA1 | W4 | QA | Mutation testing onde barato (cargo-mutants/mutmut/stryker) sobre função core pra revelar asserts que passam por inércia | Baixa | — | Média | ⏳ Pendente | — |
+| A-QA2 | W6 | QA | cargo-mutants achou 4 mutantes sobreviventes em rust/src/lib.rs (asserts fracos, NÃO bugs): Display::fmt texto, Error::source cadeia, allow_dtd (sem vetor com DTD interno), is_leaf ramo PI. Matar com vetores DTD+PI no conformance + assert de msg/source de erro (toca conformance → qa-engineer) | Baixa | A-QA1 | Média | ⏳ Pendente | — |
 | F7.1 | W5 | Release | Tag v0.1.0 Python + publicar PyPI | Alta | F1.9, F4.1, A-DOC4 | Baixa | ⏳ Pendente | — |
 | F4.4 | W5 | CI | Release automation (PyPI via trusted publishing) | Média | F7.1 | Média | ⏳ Pendente | — |
 | F7.2 | W5 | Release | Release v0.1.0 no GitHub + Codeberg (notes + checksums) | Alta | F7.1 | Baixa | ⏳ Pendente | — |
@@ -113,13 +105,23 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | A-DOC12 | — | Docs | ADR-0005 criado: nomenclatura `hash_tiss`, groupId `dev.petrus`, convenção `<lang>.yml`; emenda 0003/0004 (ponteiro, sem reescrever) | Baixa | — | Baixa | ✅ Concluído | ✓ |
 | A-DOC13 | — | Docs | ADR-0004 workflows reconciliados no ADR-0005 (sem conformance.yml/release-*.yml; `<lang>.yml` nas 2 plataformas) | Baixa | — | Baixa | ✅ Concluído | ✓ |
 | A-DOC14 | — | Docs | "3 goldens reais" suavizado em prosa READMEs rust/node/php (sem hash, sem nome de arquivo PII) | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-CI1 | — | CI | ASan+UBSan no cpp.yml (Debug) espelhando c.yml; ASAN/UBSAN_OPTIONS estritos. .github+.forgejo | Média | F5.3 | Baixa | ✅ Concluído | ✓ |
+| A-CI2 | — | CI | Matrix gcc+clang × Debug+Release em C e C++ (.github); .forgejo só gcc (libclang-rt do catthehacker não bate com sanitizer) | Média | F5.3 | Baixa | ✅ Concluído | ✓ |
+| A-CI3 | — | CI | Lint gate: Node eslint, PHP phpstan(lvl6), Java checkstyle(0 viol), C# dotnet format, C/C++ **clang-tidy** (0 warn). clang-format DROPADO (version-frágil; redaria CI). Rust/Go/Python já tinham | Média | — | Média | ✅ Concluído | ✓ |
+| A-CI4 | — | CI | Coverage non-gating: c8(node), jacoco(java), coverlet(c#), tarpaulin(rust), go -cover, pytest-cov, phpunit(.github). Só mede, sem threshold | Baixa | — | Média | ✅ Concluído | ✓ |
+| A-CI5 | — | CI | C/C++ test runner lê env `TISS_CONFORMANCE_DIR` (robusto a CWD); fallback default | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-SUP1 | — | Supply-chain | `.github/dependabot.yml` 8 ecosystems (pip/npm/cargo/composer/maven/gomod/nuget/gh-actions), semanal | Média | — | Baixa | ✅ Concluído | ✓ |
+| A-SUP2 | — | Supply-chain | CVE gate por port: npm/composer/cargo audit, govulncheck, pip-audit, dotnet --vulnerable; Java=versions watch (dependency-check pesado). Todos limpos hoje | Média | — | Média | ✅ Concluído | ✓ |
+| A-SUP3 | — | Supply-chain | golang.org/x/text v0.14→**v0.21** (não @latest=v0.37: exige Go 1.25, quebraria matrix 1.22). go test verde | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-QA1 | — | QA | cargo-mutants no core Rust: 43 mutantes, 35 mortos, 4 sobreviventes (asserts fracos, doc em A-QA2), 89.7% kill. Job manual non-blocking (.github workflow_dispatch) | Baixa | — | Média | ✅ Concluído | ✓ |
 
 ---
 
 ## Resumo
 
-- **Concluído:** 70 itens (algoritmo, fixture **20 vetores** [18 positivos + 2 negativos], 9 ports byte-a-byte + rejeições, 18 jobs CI verdes GitHub+Codeberg, repos públicos dual-push, docs, ADRs 0001-0005, SEO Tier 1+2, A-SEC1 XXE, **W1: A-DOC1/2/3/4+A-LEG1+F1.10**, **W2: A-COV1-5**, **W3: A-DOC5/6/7/8/9/10/12/13/14+A-LEG2/3**, A-LEG4).
-- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO). 31 achados; **A-SEC1 + W1 (5) + W2 (5) + W3 (11) + A-LEG4 = 23 fechados**; 8 abertos (W4 CI/supply-chain 9 + W5/W6 release/pós). **Nenhum CRÍTICO restante** — v0.1.0 desbloqueada.
+- **Concluído:** 79 itens (algoritmo, fixture **20 vetores** [18 positivos + 2 negativos], 9 ports byte-a-byte + rejeições, CI hardened [sanitizers, clang-tidy, coverage, CVE gate, dependabot], repos públicos dual-push, docs, ADRs 0001-0005, SEO Tier 1+2, A-SEC1 XXE, **W1+W2+W3+W4**, A-LEG4).
+- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO). 31 achados; **A-SEC1 + W1 (5) + W2 (5) + W3 (11) + W4 (9) + A-LEG4 = 32 fechados** (1 follow-up novo A-QA2). **Todos os achados de auditoria fechados**; resta só release (W5) + pós-release (W6). **Nenhum CRÍTICO restante** — v0.1.0 pronta.
+- **W4 (2026-05-28):** hardening CI. ASan/UBSan(cpp), matrix gcc+clang×Debug+Release(C/C++), lint gate 9 ports (clang-tidy/eslint/phpstan/checkstyle/dotnet-format; clang-format dropado por version-fragilidade), coverage non-gating, dependabot 8 ecosystems, CVE gate por port (todos limpos), cargo-mutants (89.7% kill, 4 survivors→A-QA2), bump x/text→0.21. Verificado local: C 20/20+clang-tidy 0, C++ ctest+clang-tidy 0, Java checkstyle 0+26... (Java 28/C# 26 test), Node/PHP/Rust/Go/Python por agents. Nota: CI real valida nos 2 hosts (push).
 - **W3 (2026-05-28):** accuracy de docs/legal. README raiz (9 ports, badges sem 404), USAGE 9 ports, CHANGELOG, ADR-0005 (nomenclatura/CI), atribuição 3rd-party por port, **remoção total da versão TISS "4.01.00"** (17 ocorrências), contagem 15→20 em todas as docs/READMEs, suavização goldens, memória A-DOC10. `git grep 4.01` e `15/15` limpos.
 
 ### Ondas de execução (paralelizáveis dentro da onda)
@@ -129,6 +131,7 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | ~~**W1**~~ | ~~CRÍTICOS doc/legal~~ | ✅ A-DOC1, A-LEG1, A-DOC4/F1.10, A-DOC3, A-DOC2 | **FECHADA** |
 | ~~**W2**~~ | ~~Robustez conformance~~ | ✅ A-COV1-5 (3 vetores positivos + 2 negativos; reject multi-hash + UTF-16) | **FECHADA** |
 | ~~**W3**~~ | ~~Docs/legal accuracy~~ | ✅ A-DOC5/6/7/8/9/10/12/13/14 + A-LEG2/3 (+ ADR-0005) | **FECHADA** |
+| ~~**W4**~~ | ~~Hardening CI + supply-chain~~ | ✅ A-CI1-5 + A-SUP1-3 + A-QA1 (sanitizers, clang-tidy lint, coverage, dependabot, CVE gate, mutation) | **FECHADA** |
 | **W3** | Precisão de docs + atribuição legal — antes do anúncio | A-DOC5/6/7/8/9/10/12/13/14, A-LEG2/3 | README/CHANGELOG/ADR honestos |
 | **W4** | Hardening CI + supply-chain | A-CI1/2/3/4/5, A-SUP1/2/3, A-QA1 | sanitizer, lint, CVE, dependabot |
 | **W5** | Release v0.1.0 | F7.1 → F4.4 → F7.2 → A-REL1 | PyPI + GitHub/Codeberg + SBOM |

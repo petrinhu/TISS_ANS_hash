@@ -90,7 +90,7 @@ $(XXE_BIN): tests/test_xxe.c $(LIB_STATIC) $(HDR) | $(BUILD)
 		$(LIB_STATIC) $(LDFLAGS_LIB) -o $@
 
 test: $(TEST_BIN) $(XXE_BIN)
-	$(TEST_BIN) $(INPUTS_DIR)
+	TISS_CONFORMANCE_DIR=$(INPUTS_DIR) $(TEST_BIN) $(INPUTS_DIR)
 	$(XXE_BIN)
 
 valgrind: $(TEST_BIN)

@@ -20,17 +20,23 @@ concurrency:
 jobs:
   build-test:
     name: g++-13 ${{ matrix.build-type }}
-    # codeberg-medium: C++20 + build de pugixml + ctest > 5min.
+    # codeberg-medium: C++20 + build de pugixml + ctest (+ sanitizers) > 5min.
     runs-on: codeberg-medium
     container:
       image: ghcr.io/catthehacker/ubuntu:act-latest
     strategy:
       fail-fast: false
       matrix:
-        build-type: [Debug]
+        # clang dropado no Codeberg: libclang-rt do catthehacker/ubuntu:act-latest
+        # nao bate com -fsanitize=address,undefined (mesma decisao do c.yml).
+        # Matrix com clang fica no .github/workflows/cpp.yml (ubuntu-latest).
+        # Debug = ASan+UBSan; Release = build otimizado de corretude.
+        build-type: [Debug, Release]
     env:
       CXX: g++-13
       CC: gcc-13
+      ASAN_OPTIONS: "detect_leaks=1:strict_string_checks=1:detect_stack_use_after_return=1"
+      UBSAN_OPTIONS: "print_stacktrace=1:halt_on_error=1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,11 +54,17 @@ jobs:
             gcc-13 g++-13 \
             libpugixml-dev libssl-dev pkg-config
 
-      - name: Configure
+      - name: Configure (with ASan + UBSan no Debug)
         working-directory: langs/cpp
         run: |
-          cmake -GNinja -B build \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
+          if [ "${{ matrix.build-type }}" = "Debug" ]; then
+            cmake -GNinja -B build \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
+              -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+          else
+            cmake -GNinja -B build -DCMAKE_BUILD_TYPE=Release
+          fi
 
       - name: Build
         working-directory: langs/cpp
@@ -61,3 +73,27 @@ jobs:
       - name: Test
         working-directory: langs/cpp
         run: ctest --test-dir build --output-on-failure
+
+  lint:
+    name: clang-tidy
+    runs-on: codeberg-small
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install clang-tidy + deps
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y --no-install-recommends \
+            cmake ninja-build clang clang-tidy libpugixml-dev libssl-dev pkg-config
+      - name: Configure (export compile commands)
+        working-directory: langs/cpp
+        env:
+          CC: clang
+          CXX: clang++
+        run: cmake -GNinja -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: clang-tidy (config em langs/cpp/.clang-tidy)
+        working-directory: langs/cpp
+        run: clang-tidy -p build src/tiss_hash.cpp

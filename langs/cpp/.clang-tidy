@@ -1,0 +1,39 @@
+# .clang-tidy - port C++ da tiss-hash.
+#
+# Conjunto de checks sano que o codigo atual passa LIMPO (0 achados) sob
+# WarningsAsErrors. doctest.h entra como -isystem (CMakeLists marca
+# third_party como SYSTEM), entao seus avisos de macro nao contam.
+# Checks desligados sao ruido/opiniao, nao bug:
+#   - implicit-bool-conversion: idiomatico com handles do pugixml (if (attr))
+#   - pragma-once: aceito e usado nos headers
+#   - avoid-c-arrays: kHex[] (string literal) e legitimo
+#   - use-designated-initializers: tests/test_vectors.hpp e GERADO
+#   - trailing-return-type / use-nodiscard: estilo
+#   - magic-numbers / identifier-length / cognitive-complexity: estilo
+#
+# HeaderFilterRegex limita analise aos headers do proprio port (exclui
+# third_party e o header gerado de vetores).
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  performance-*,
+  portability-*,
+  modernize-*,
+  readability-*,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-function-cognitive-complexity,
+  -readability-isolate-declaration,
+  -readability-braces-around-statements,
+  -readability-math-missing-parentheses,
+  -readability-implicit-bool-conversion,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -modernize-use-trailing-return-type,
+  -modernize-use-nodiscard,
+  -modernize-avoid-c-arrays,
+  -modernize-use-designated-initializers,
+  -portability-avoid-pragma-once
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'langs/cpp/(include|src|tests)/'

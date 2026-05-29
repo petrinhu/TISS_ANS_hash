@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+  Ruleset Checkstyle do port Java do tiss-hash (gate A-CI3).
+
+  Escopo deliberadamente conservador: verifica HIGIENE (imports, espacos,
+  chaves, modificadores, javadoc de API publica) sem impor um style guide
+  agressivo que exigiria reescrita do codigo atual. O codigo ja existente
+  PASSA neste ruleset (rodar `mvn checkstyle:check` local).
+
+  Severidade = error (com configuration property abaixo o build do
+  maven-checkstyle-plugin falha em qualquer violacao via failOnViolation).
+-->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="error"/>
+  <property name="fileExtensions" value="java"/>
+
+  <!-- Sem TAB literal: o codigo usa 4 espacos. -->
+  <module name="FileTabCharacter">
+    <property name="eachLine" value="true"/>
+  </module>
+
+  <!-- Arquivo termina com newline. -->
+  <module name="NewlineAtEndOfFile">
+    <property name="lineSeparator" value="lf"/>
+  </module>
+
+  <!-- Linha em branco no fim do arquivo / trailing whitespace. -->
+  <module name="RegexpSingleline">
+    <property name="format" value="\s+$"/>
+    <property name="message" value="Espaco em branco no fim da linha"/>
+  </module>
+
+  <module name="TreeWalker">
+
+    <!-- Imports limpos: sem estrela, sem nao-usados, sem redundantes. -->
+    <module name="AvoidStarImport"/>
+    <module name="RedundantImport"/>
+    <module name="UnusedImports">
+      <property name="processJavadoc" value="true"/>
+    </module>
+
+    <!-- Chaves obrigatorias em blocos de controle (sem if de uma linha). -->
+    <module name="NeedBraces"/>
+    <module name="LeftCurly">
+      <property name="option" value="eol"/>
+    </module>
+    <module name="RightCurly">
+      <property name="option" value="same"/>
+    </module>
+
+    <!-- Espacamento em torno de operadores e apos virgula/keyword. -->
+    <module name="WhitespaceAround">
+      <property name="allowEmptyConstructors" value="true"/>
+      <property name="allowEmptyMethods" value="true"/>
+      <property name="allowEmptyTypes" value="true"/>
+      <property name="allowEmptyLambdas" value="true"/>
+    </module>
+    <module name="WhitespaceAfter"/>
+    <module name="NoWhitespaceBefore"/>
+    <module name="MethodParamPad"/>
+    <module name="GenericWhitespace"/>
+
+    <!-- Ordem de modificadores (public static final ...) e sem redundancia. -->
+    <module name="ModifierOrder"/>
+    <module name="RedundantModifier"/>
+
+    <!-- Nomenclatura padrao Java. -->
+    <module name="PackageName"/>
+    <module name="TypeName"/>
+    <module name="MethodName"/>
+    <module name="MemberName"/>
+    <module name="ParameterName"/>
+    <module name="LocalVariableName"/>
+    <module name="ConstantName"/>
+
+    <!-- Boas praticas defensivas. -->
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="OneStatementPerLine"/>
+    <module name="UpperEll"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="FallThrough"/>
+    <module name="MissingSwitchDefault"/>
+
+    <!-- Javadoc da API publica (classes/metodos publicos documentados).
+         Os internos privados ficam livres. -->
+    <module name="JavadocType">
+      <property name="scope" value="public"/>
+    </module>
+    <module name="JavadocMethod">
+      <property name="accessModifiers" value="public"/>
+      <property name="allowMissingParamTags" value="false"/>
+      <property name="allowMissingReturnTag" value="false"/>
+    </module>
+
+  </module>
+</module>

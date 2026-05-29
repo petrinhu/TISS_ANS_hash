@@ -38,5 +38,15 @@ jobs:
           cache-dependency-path: langs/node/package-lock.json
       - working-directory: langs/node
         run: npm ci || npm install
-      - working-directory: langs/node
+      - name: Lint (ESLint)
+        working-directory: langs/node
+        run: npm run lint
+      - name: Test
+        working-directory: langs/node
         run: npm test
+      - name: Coverage (c8 — report only, sem threshold)
+        working-directory: langs/node
+        run: npm run coverage
+      - name: Audit deps (CVE gate, high+)
+        working-directory: langs/node
+        run: npm run audit:ci

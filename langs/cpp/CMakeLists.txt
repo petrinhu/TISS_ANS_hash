@@ -108,8 +108,11 @@ if(TISS_HASH_CPP_BUILD_TESTS)
 
     add_executable(test_conformance tests/test_conformance.cpp ${VECTORS_HEADER})
     add_dependencies(test_conformance tiss_hash_cpp_gen_vectors)
+    # doctest.h vai como SYSTEM: compiladores e clang-tidy ignoram seus
+    # avisos (a lib vendorizada nao e nosso codigo).
+    target_include_directories(test_conformance SYSTEM PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
     target_include_directories(test_conformance PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party
         ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     target_link_libraries(test_conformance PRIVATE tiss_hash_cpp)
 
@@ -123,6 +126,12 @@ if(TISS_HASH_CPP_BUILD_TESTS)
     add_test(
         NAME conformance
         COMMAND test_conformance --inputs ${INPUTS_DIR})
+
+    # Belt-and-suspenders (A-CI5): alem do --inputs, expor o dir absoluto via
+    # env. O runner resolve --inputs > TISS_CONFORMANCE_DIR > TISS_INPUTS_DIR
+    # > default; assim o teste acha os inputs mesmo rodado fora do CWD do build.
+    set_tests_properties(conformance PROPERTIES
+        ENVIRONMENT "TISS_CONFORMANCE_DIR=${INPUTS_DIR}")
 endif()
 
 # ----------------------------------------------------------------------------

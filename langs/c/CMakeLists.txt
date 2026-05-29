@@ -121,6 +121,12 @@ if(TISS_HASH_BUILD_TESTS)
         NAME conformance
         COMMAND test_conformance ${INPUTS_DIR})
 
+    # Belt-and-suspenders (A-CI5): alem do arg de CLI, expor o dir absoluto
+    # via env. O runner resolve CLI > TISS_CONFORMANCE_DIR > default; assim
+    # o teste acha os inputs mesmo se rodado fora do CWD do build.
+    set_tests_properties(conformance PROPERTIES
+        ENVIRONMENT "TISS_CONFORMANCE_DIR=${INPUTS_DIR}")
+
     # Regressao de seguranca XXE (achado A-SEC1). Nao depende de inputs.
     add_executable(test_xxe tests/test_xxe.c)
     target_link_libraries(test_xxe PRIVATE tiss_hash)

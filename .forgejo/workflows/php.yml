@@ -51,6 +51,19 @@ jobs:
         working-directory: langs/php
         run: composer install --prefer-dist --no-interaction --no-progress
 
+      - name: Static analysis (PHPStan level 6)
+        working-directory: langs/php
+        run: composer stan
+
       - name: Test
         working-directory: langs/php
         run: composer test
+
+      - name: Audit deps (CVE gate)
+        working-directory: langs/php
+        run: composer audit
+
+      # NOTA: cobertura PHP NAO roda aqui. Exige driver pcov/xdebug, que o
+      # runner Codeberg/Forgejo (setup-php com `coverage: none`) nao garante.
+      # Coverage vive so no .github/workflows/php.yml (job `coverage`, pcov).
+      # Report only, sem threshold — gate fragil de cobertura e pior que nada.

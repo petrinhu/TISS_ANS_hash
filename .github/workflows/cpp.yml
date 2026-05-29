@@ -23,31 +23,81 @@ concurrency:
 
 jobs:
   build-test:
-    name: g++-13 ${{ matrix.build-type }}
+    name: ${{ matrix.compiler }} ${{ matrix.build-type }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        build-type: [Debug]
+        compiler: [gcc, clang]
+        build-type: [Debug, Release]
     env:
-      CXX: g++-13
-      CC: gcc-13
+      # ASan+UBSan so no Debug; Release e build otimizado de corretude.
+      ASAN_OPTIONS: "detect_leaks=1:strict_string_checks=1:detect_stack_use_after_return=1"
+      UBSAN_OPTIONS: "print_stacktrace=1:halt_on_error=1"
     steps:
       - uses: actions/checkout@v4
-      - name: Install gcc-13 + pugixml + openssl
+
+      - name: Select compiler
+        run: |
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            echo "CC=gcc-13"  >> "$GITHUB_ENV"
+            echo "CXX=g++-13"  >> "$GITHUB_ENV"
+          else
+            echo "CC=clang"   >> "$GITHUB_ENV"
+            echo "CXX=clang++" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install toolchain + deps (pugixml, openssl)
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             software-properties-common
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build python3 \
-            gcc-13 g++-13 \
-            libpugixml-dev libssl-dev pkg-config
-      - working-directory: langs/cpp
-        run: cmake -GNinja -B build -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
-      - working-directory: langs/cpp
+          PKGS="cmake ninja-build python3 libpugixml-dev libssl-dev pkg-config"
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            PKGS="$PKGS gcc-13 g++-13"
+          else
+            PKGS="$PKGS clang"
+          fi
+          sudo apt-get install -y --no-install-recommends $PKGS
+
+      - name: Configure
+        working-directory: langs/cpp
+        run: |
+          if [ "${{ matrix.build-type }}" = "Debug" ]; then
+            cmake -GNinja -B build \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
+              -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+          else
+            cmake -GNinja -B build -DCMAKE_BUILD_TYPE=Release
+          fi
+
+      - name: Build
+        working-directory: langs/cpp
         run: cmake --build build --parallel
-      - working-directory: langs/cpp
+
+      - name: Test
+        working-directory: langs/cpp
         run: ctest --test-dir build --output-on-failure
+
+  lint:
+    name: clang-tidy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-tidy + deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build clang clang-tidy libpugixml-dev libssl-dev pkg-config
+      - name: Configure (export compile commands)
+        working-directory: langs/cpp
+        env:
+          CC: clang
+          CXX: clang++
+        run: cmake -GNinja -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: clang-tidy (config em langs/cpp/.clang-tidy)
+        working-directory: langs/cpp
+        run: clang-tidy -p build src/tiss_hash.cpp

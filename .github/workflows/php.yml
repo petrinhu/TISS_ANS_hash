@@ -43,5 +43,37 @@ jobs:
           restore-keys: composer-php${{ matrix.php }}-
       - working-directory: langs/php
         run: composer install --prefer-dist --no-interaction --no-progress
-      - working-directory: langs/php
+      - name: Static analysis (PHPStan level 6)
+        working-directory: langs/php
+        run: composer stan
+      - name: Test
+        working-directory: langs/php
         run: composer test
+      - name: Audit deps (CVE gate)
+        working-directory: langs/php
+        run: composer audit
+
+  coverage:
+    # Coverage exige driver (pcov/xdebug). Roda APENAS aqui (GitHub) numa
+    # versao de PHP — Codeberg/Forgejo nao garante driver, entao o .forgejo
+    # omite este job de proposito (ver comentario no .forgejo/workflows/php.yml).
+    # Report only: SEM threshold que falhe o build.
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, dom, libxml
+          coverage: pcov
+      - uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-cov-${{ hashFiles('langs/php/composer.json') }}
+          restore-keys: composer-cov-
+      - working-directory: langs/php
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Coverage (PHPUnit + pcov — report only)
+        working-directory: langs/php
+        run: composer coverage
