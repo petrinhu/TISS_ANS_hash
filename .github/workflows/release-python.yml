@@ -1,27 +1,37 @@
-# Release do port Python (langs/python, pacote PyPI `tiss-hash`).
+# Release multi-linguagem (port Python -> PyPI; GitHub Release com TODOS os ports).
 #
 # Dispara SÓ quando uma tag `v*` é empurrada (ou manualmente via
-# workflow_dispatch para um dry-run que NÃO publica no PyPI — ver guarda
-# `if:` no job pypi-publish). Tudo abaixo é inerte até a tag existir.
+# workflow_dispatch para um dry-run que NÃO publica no PyPI nem cria Release —
+# ver guarda `if:` nos jobs pypi-publish e github-release). Tudo abaixo é inerte
+# até a tag existir.
 #
-# Pipeline: build (sdist+wheel) -> {pypi-publish via OIDC, github-release}.
+# Pipeline:
+#   build (py sdist+wheel)          -> pypi-publish (gated, OIDC)
+#   multilang-assets (9 ports)      \
+#   build (py sdist+wheel)          /-> github-release (Release da tag, assets de todas as langs)
 #
 # GATE DE PUBLISH (vars.PYPI_ENABLED):
 #  - O job `pypi-publish` so roda quando a VARIAVEL de repo PYPI_ENABLED=true.
 #    Sem ela, o job e SKIPPED (verde) e NADA vai pro PyPI — mas o job
-#    `github-release` (depende so de `build`) cria o Release do GitHub normal.
+#    `github-release` cria o Release do GitHub normal. `github-release` depende
+#    de `build` (py) + `multilang-assets`, NUNCA de `pypi-publish`.
 #    Assim uma tag v* HOJE produz Release sem exigir conta/OIDC no PyPI.
+#
+# RESILIENCIA DOS BUILDS MULTI-LINGUAGEM:
+#  - Cada build de linguagem em `multilang-assets` e `continue-on-error: true`:
+#    um port flaky NAO bloqueia o Release. Anexa-se o que efetivamente saiu em
+#    `release-assets/`. (O Python canonico vem do job `build`, NAO daqui.)
 #
 # SEGURANCA / SUPPLY CHAIN:
 #  - Trusted Publishing (OIDC): sem token/senha no repo. O PyPI confia neste
-#    workflow via "pending publisher" configurado no projeto (ver README ao
-#    pe deste arquivo / mensagem de entrega). Requer o environment `pypi`.
+#    workflow via "pending publisher" configurado no projeto. Requer o
+#    environment `pypi`.
 #  - Todas as actions de terceiros estao PINADAS por SHA completo (nao por
-#    tag movel), conforme hardening de supply chain. O comentario `# vX.Y.Z`
-#    ao lado de cada SHA e so para leitura humana; o que o runner usa e o SHA.
-#  - Artefatos sao construidos UMA vez (job build) e reutilizados pelos jobs
-#    downstream via artifact, garantindo que o que vai pro PyPI e o que vai
-#    pro GitHub Release sao bit-a-bit identicos.
+#    tag movel). O comentario `# vX.Y.Z` ao lado de cada SHA e so para leitura
+#    humana; o que o runner usa e o SHA. Todos os SHAs ja eram usados nos
+#    workflows de CI/release deste repo (reutilizados, nada novo introduzido).
+#  - O artefato Python que vai pro PyPI e o mesmo (job `build`) reutilizado pelo
+#    Release, garantindo paridade bit-a-bit no port canonico.
 name: release-python
 
 on:
@@ -74,15 +84,129 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  multilang-assets:
+    name: build assets de todas as linguagens
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Precisamos da tag/historico para `git archive` da source tarball.
+          fetch-depth: 0
+
+      - name: Prepare release-assets dir
+        run: mkdir -p release-assets
+
+      # --- Toolchains (pinadas por SHA, reutilizadas do CI deste repo) ---
+      - name: Setup Node
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '20'
+
+      - name: Setup Java (Temurin 17)
+        uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b # v4.6.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup .NET (8)
+        uses: actions/setup-dotnet@3e891b0cb619bf60e2c25674b222b8940e2c1c25 # v4.1.0
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Rust (stable)
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable @ 2026-03-27
+        with:
+          toolchain: stable
+
+      - name: Install C build deps (libxml2, openssl)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config libxml2-dev libssl-dev
+
+      # --- Builds por linguagem. Cada um continue-on-error: um port flaky NAO
+      #     derruba o Release; anexa-se o que saiu. ---
+
+      # node: tarball npm (.tgz). --pack-destination joga direto em release-assets/.
+      - name: Build node (.tgz)
+        continue-on-error: true
+        working-directory: langs/node
+        run: |
+          npm pack --pack-destination "$GITHUB_WORKSPACE/release-assets"
+          ls -l "$GITHUB_WORKSPACE/release-assets"
+
+      # rust: crate empacotado (.crate). --no-verify evita rebuild custoso.
+      - name: Build rust (.crate)
+        continue-on-error: true
+        working-directory: langs/rust
+        run: |
+          cargo package --no-verify --locked
+          cp target/package/*.crate "$GITHUB_WORKSPACE/release-assets/"
+
+      # java: .jar em target/. -DskipTests pra empacotar rapido sem rodar suite.
+      - name: Build java (.jar)
+        continue-on-error: true
+        working-directory: langs/java
+        run: |
+          mvn -q -ntp -DskipTests package
+          cp target/*.jar "$GITHUB_WORKSPACE/release-assets/"
+
+      # csharp: .nupkg do projeto da lib (src, nunca tests).
+      - name: Build csharp (.nupkg)
+        continue-on-error: true
+        working-directory: langs/csharp
+        run: |
+          dotnet pack src/TissHash/TissHash.csproj -c Release \
+            -o "$GITHUB_WORKSPACE/release-assets"
+
+      # c: lib estatica (.a) + dinamica (.so). Makefile usa pkg-config.
+      - name: Build c (.a + .so)
+        continue-on-error: true
+        working-directory: langs/c
+        run: |
+          make
+          cp build/libtiss_hash.a "$GITHUB_WORKSPACE/release-assets/"
+          # Copia a .so (e variantes versionadas, se existirem).
+          cp build/libtiss_hash.so* "$GITHUB_WORKSPACE/release-assets/" || true
+
+      # source tarball reproduzivel a partir da REF DA TAG (git archive).
+      # cpp/go/php sao source-only: a tarball ja os carrega inteiros.
+      - name: Build source tarball (.tar.gz)
+        continue-on-error: true
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VER="${TAG#v}"
+          git archive --format=tar.gz \
+            --prefix="TISS_ANS_hash-${VER}/" \
+            "$TAG" \
+            -o "release-assets/TISS_ANS_hash-${VER}-source.tar.gz"
+
+      - name: List collected assets
+        run: ls -l release-assets
+
+      - name: Upload multilang assets artifact
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: multilang-assets
+          path: release-assets/
+          # Em workflow_dispatch (sem tag) a source-tarball usa github.ref_name
+          # que ainda pode resolver; mas se nada sair nao queremos travar o
+          # dry-run de build. `warn` em vez de `error`.
+          if-no-files-found: warn
+          retention-days: 7
+
   pypi-publish:
     name: publish to PyPI (Trusted Publishing)
     needs: build
     runs-on: ubuntu-latest
     # GATE (vars.PYPI_ENABLED): enquanto o lider nao setar a variavel de repo
     # PYPI_ENABLED=true, este job e SKIPPED (verde, nao falha) e NADA vai pro
-    # PyPI. O job `github-release` abaixo depende so de `build`, entao o Release
-    # do GitHub continua sendo criado normalmente mesmo com o publish desligado.
-    # SO publica em push de tag. workflow_dispatch nao publica (dry-run de build).
+    # PyPI. O job `github-release` abaixo depende de `build` + `multilang-assets`,
+    # entao o Release do GitHub continua sendo criado normalmente mesmo com o
+    # publish desligado. SO publica em push de tag. workflow_dispatch nao publica.
     if: vars.PYPI_ENABLED == 'true' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     # O environment `pypi` deve existir no repo e bater com o pending publisher.
     environment:
@@ -107,8 +231,8 @@ jobs:
           print-hash: true
 
   github-release:
-    name: GitHub Release (notes + checksums + SBOM)
-    needs: build
+    name: GitHub Release (todas as langs + checksums + SBOM)
+    needs: [build, multilang-assets]
     runs-on: ubuntu-latest
     # GitHub Release so faz sentido com uma tag. Pula em workflow_dispatch.
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
@@ -119,29 +243,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Download dist artifact
+      # Python canonico (bit-a-bit o mesmo que iria pro PyPI).
+      - name: Download python dist
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: python-dist
-          path: dist/
+          path: release-assets/
 
-      # Checksums dos artefatos (sdist + wheel). Nomes relativos (cd dist)
-      # para o SHA256SUMS conter so o basename, facilitando `sha256sum -c`.
+      # Assets das demais linguagens + source tarball.
+      - name: Download multilang assets
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: multilang-assets
+          path: release-assets/
+
+      # Checksums sobre TODOS os assets coletados. Nomes relativos (cd) para o
+      # SHA256SUMS conter so o basename, facilitando `sha256sum -c`.
       - name: Generate SHA256SUMS
+        working-directory: release-assets
         run: |
-          cd dist
-          sha256sum * > SHA256SUMS
+          set -euo pipefail
+          # Exclui o proprio SHA256SUMS/SBOM caso re-run deixe residuo.
+          find . -maxdepth 1 -type f \
+            ! -name 'SHA256SUMS' ! -name 'sbom.cdx.json' -printf '%P\n' \
+            | sort | xargs -r sha256sum > SHA256SUMS
           cat SHA256SUMS
 
-      # SBOM CycloneDX via syft. Escaneia o diretorio do port (le pyproject +
-      # deps declaradas). Mais confiavel e simples que cyclonedx-py porque nao
-      # exige resolver/instalar o ambiente exato. Saida JSON CycloneDX.
+      # SBOM CycloneDX via syft sobre o REPO inteiro (cobre todos os ports e
+      # suas deps declaradas), nao so o port Python. Saida JSON CycloneDX.
       - name: Generate SBOM (CycloneDX)
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
-          path: langs/python
+          path: .
           format: cyclonedx-json
-          output-file: dist/sbom.cdx.json
+          output-file: release-assets/sbom.cdx.json
           # Nao deixar a action criar seu proprio Release; nos controlamos isso.
           upload-release-assets: false
           upload-artifact: false
@@ -169,9 +304,8 @@ jobs:
           prerelease: ${{ contains(github.ref_name, '-') }}
           body_path: ${{ steps.body.outputs.use_file == 'true' && 'RELEASE_NOTES.md' || '' }}
           generate_release_notes: ${{ steps.body.outputs.generate == 'true' }}
-          fail_on_unmatched_files: true
+          # NAO falhar se um glob nao casar: builds multi-lang sao
+          # continue-on-error, entao um asset pode legitimamente faltar.
+          fail_on_unmatched_files: false
           files: |
-            dist/*.tar.gz
-            dist/*.whl
-            dist/SHA256SUMS
-            dist/sbom.cdx.json
+            release-assets/*

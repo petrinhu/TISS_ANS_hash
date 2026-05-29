@@ -1,6 +1,15 @@
 # Release no mirror Codeberg (Forgejo Actions).
 #
-# Dispara SO em push de tag `v*`. Cria o Release no Codeberg via API Forgejo
+# >>> v0.1.0: O RELEASE NO CODEBERG FOI CRIADO MANUALMENTE VIA forgejo-mcp <<<
+#   Para o v0.1.0, o release no Codeberg (com TODOS os artefatos multi-linguagem)
+#   foi publicado manualmente pelo lider via forgejo-mcp, em vez de depender do
+#   runner "lazy" do Codeberg. Por isso este workflow NAO dispara mais em push de
+#   tag: o gatilho `push: tags` foi REMOVIDO para evitar release DUPLICADO quando
+#   a tag v0.1.0 (ou futuras) for empurrada. O workflow segue disponivel via
+#   `workflow_dispatch` (disparo manual) para releases futuros que prefiram a via
+#   automatizada — basta dispara-lo a partir da UI/CLI sobre a ref/tag desejada.
+#
+# Quando disparado manualmente, cria o Release no Codeberg via API Forgejo
 # (compativel-Gitea) e anexa os MESMOS artefatos do release GitHub: sdist,
 # wheel, SHA256SUMS e SBOM CycloneDX.
 #
@@ -23,10 +32,11 @@
 # sao passados via `env:` e referenciados como "$VAR" no shell.
 name: release
 
+# Somente disparo manual (workflow_dispatch). O gatilho `push: tags` foi
+# removido a proposito — ver bloco de comentario no topo do arquivo: o release
+# Codeberg do v0.1.0 foi criado manualmente via forgejo-mcp, e nao queremos
+# release duplicado quando a tag for empurrada.
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 concurrency:
