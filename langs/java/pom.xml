@@ -55,7 +55,7 @@
 
     <!-- Plugins de qualidade (A-CI3 lint / A-CI4 cobertura / A-SUP2 CVE). -->
     <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
-    <checkstyle.core.version>10.21.4</checkstyle.core.version>
+    <checkstyle.core.version>13.4.2</checkstyle.core.version>
     <jacoco.version>0.8.12</jacoco.version>
     <versions.plugin.version>2.18.0</versions.plugin.version>
   </properties>
