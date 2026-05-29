@@ -3,9 +3,9 @@ title: Guia de uso do lib_hash_ans
 type: how-to
 audience: integrador (dev backend, fornecedor TISS, ERP hospitalar)
 version: 0.1.0
-last-reviewed: 2026-05-27
+last-reviewed: 2026-05-28
 owner: petrinhu@yahoo.com.br
-status: estável (port Python pronto; demais ports planejados)
+status: estável (9 ports prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#)
 ---
 
 # Guia de uso
@@ -14,17 +14,21 @@ Este documento mostra **como usar** as bibliotecas `lib_hash_ans` no dia-a-dia: 
 
 ## 1. Visão geral por linguagem
 
-| Linguagem | Pacote                  | Status      | Instalação                        |
-|-----------|-------------------------|-------------|-----------------------------------|
-| Python    | `tiss-hash`             | pronto      | `pip install tiss-hash`           |
-| C         | `libtiss-hash`          | em breve    | n/a                               |
-| C++       | `tiss-hash` (header)    | em breve    | n/a                               |
-| Rust      | crate `tiss-hash`       | em breve    | `cargo add tiss-hash`             |
-| PHP       | `petrinhu/tiss-hash`    | em breve    | `composer require ...`            |
-| Node.js   | `tiss-hash`             | em breve    | `npm install tiss-hash`           |
-| Outras    | ver `langs/`            | planejado   | contribuições bem-vindas          |
+| Linguagem | Pacote / módulo                | Diretório do port | Instalação / build                                   |
+|-----------|--------------------------------|-------------------|------------------------------------------------------|
+| Python    | `tiss-hash`                    | `langs/python/`   | `pip install -e .`                                   |
+| Rust      | crate `tiss-hash`              | `langs/rust/`     | `cargo add tiss-hash` (ou `cargo build`)             |
+| C         | `tiss_hash` (lib + header)     | `langs/c/`        | `cmake -B build -S . && cmake --build build`         |
+| C++       | `tiss_hash` (header-only)      | `langs/cpp/`      | `cmake -B build -S . && cmake --build build`         |
+| Node.js   | `tiss-hash`                    | `langs/node/`     | `npm install`                                        |
+| PHP       | `petrinhu/tiss-hash`           | `langs/php/`      | `composer install`                                   |
+| Java      | `tiss-hash` (jar)              | `langs/java/`     | `mvn package`                                        |
+| Go        | módulo `tisshash`              | `langs/go/`       | `go get github.com/petrinhu/TISS_ANS_hash/langs/go`  |
+| C#        | `TissHash` (.NET)              | `langs/csharp/`   | `dotnet build`                                       |
 
-Todas as implementações reproduzem o mesmo hash byte-a-byte para o mesmo XML de entrada. Não há diferença de comportamento entre linguagens.
+Os 9 ports reproduzem o **mesmo hash byte-a-byte** para o mesmo XML de entrada, validados contra os mesmos 20 vetores de conformidade. Não há diferença de comportamento entre linguagens. Cada port é autocontido e tem o seu próprio README com quickstart e referência de API completa (links na [seção 8](#8-uso-nas-demais-linguagens)).
+
+> Os pacotes ainda não foram publicados nos registries (PyPI, crates.io, npm, Packagist, Maven Central, NuGet); até lá, instale a partir do checkout do repositório como mostrado acima.
 
 ## 2. Instalação (Python)
 
@@ -122,12 +126,14 @@ except TypeError as exc:
 
 ### Exemplo 4: Validação local contra `conformance/vectors.json`
 
-Garante que o ambiente reproduz os 15 hashes esperados:
+A suíte tem **20 vetores**: 18 positivos (cada um com `expected_md5`) e 2 negativos
+(`expect: "error"`, sem `expected_md5`), que o port deve rejeitar. O loop abaixo trata
+os dois casos:
 
 ```python
 import json
 from pathlib import Path
-from tiss_hash import hash_tiss
+from tiss_hash import InvalidTissXml, hash_tiss
 
 CONF = Path("conformance")   # caminho relativo à raiz do checkout
 
@@ -135,12 +141,20 @@ manifest = json.loads((CONF / "vectors.json").read_text(encoding="utf-8"))
 
 for vec in manifest["vectors"]:
     raw = (CONF / vec["input"]).read_bytes()
-    got = hash_tiss(raw)
-    status = "OK" if got == vec["expected_md5"] else "FAIL"
-    print(f"{status}  {vec['id']}  {got}")
+    if vec.get("expect") == "error":
+        # Vetor negativo: o port DEVE rejeitar este input.
+        try:
+            hash_tiss(raw)
+            print(f"FAIL  {vec['id']}  (esperava erro, mas hasheou)")
+        except InvalidTissXml:
+            print(f"OK    {vec['id']}  (rejeitado como esperado)")
+    else:
+        got = hash_tiss(raw)
+        status = "OK  " if got == vec["expected_md5"] else "FAIL"
+        print(f"{status}  {vec['id']}  {got}")
 ```
 
-Saída esperada: `OK` em todas as 15 linhas.
+Saída esperada: `OK` em todas as 20 linhas.
 
 ## 4. Receitas comuns
 
@@ -360,23 +374,174 @@ Saída esperada (resumida):
 tests/test_conformance.py::test_vector_matches_expected[syn_minimal.xml] PASSED
 tests/test_conformance.py::test_vector_matches_expected[syn_acento.xml] PASSED
 ...
+tests/test_conformance.py::test_vector_matches_expected[syn_multi_hash.xml] PASSED
 tests/test_conformance.py::test_invalid_xml_raises_invalid_tiss_xml PASSED
 tests/test_conformance.py::test_non_bytes_input_raises_type_error PASSED
-============================== 19 passed ==============================
+============================== 24 passed ==============================
 ```
 
-Os 19 testes cobrem: 15 vetores de conformidade + 4 testes de API auxiliares (manifest core, equivalência file/bytes, erro com XML inválido, erro com tipo errado).
+Os 24 testes cobrem: 20 vetores de conformidade (18 positivos + 2 negativos) + 4 testes de API auxiliares (manifest core, equivalência file/bytes, erro com XML inválido, erro com tipo errado).
 
-## 8. Outras linguagens (em breve)
+## 8. Uso nas demais linguagens
 
-Implementação planejada nas linguagens listadas em [`README.md`](../README.md#linguagens-alvo). O contrato será idêntico:
+Os 8 ports além do Python seguem o mesmo contrato:
 
-- 1 função: bytes/arquivo → string hex 32 chars minúsculos.
-- 1 exceção tipada: XML inválido.
-- 0 estado mutável (pura).
-- Mesmos 15 vetores de conformidade, byte-a-byte.
+- 1 função `bytes/arquivo → string hex 32 chars minúsculos`.
+- 1 erro tipado para XML inválido (exceção ou valor de erro, conforme idioma).
+- 0 estado mutável (função pura, thread-safe).
+- Mesmos 20 vetores de conformidade, byte-a-byte.
 
-Quer ajudar a portar? Ver [`PORTING_GUIDE.md`](PORTING_GUIDE.md) e [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
+Abaixo, o mínimo para instalar e calcular um hash em cada linguagem. Para a referência de API completa, opções de build alternativas e detalhes de packaging, consulte o README do port (link em cada subseção).
+
+### 8.1 Rust — [`langs/rust/README.md`](../langs/rust/README.md)
+
+```bash
+cargo add tiss-hash   # ou, no checkout: cd langs/rust && cargo build
+```
+
+```rust
+use tiss_hash::{hash_tiss, hash_tiss_file, TissHashError};
+
+fn main() -> Result<(), TissHashError> {
+    let raw = std::fs::read("envio.xml")?;
+    println!("{}", hash_tiss(&raw)?);   // 32 chars hex minúsculos
+    println!("{}", hash_tiss_file("envio.xml")?);
+    Ok(())
+}
+```
+
+Erro tipado: `TissHashError` (`InvalidXml(String)` / `Io(std::io::Error)`).
+
+### 8.2 C — [`langs/c/README.md`](../langs/c/README.md)
+
+```bash
+cd langs/c
+cmake -B build -S . && cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
+
+```c
+#include "tiss_hash.h"
+
+char out_hex[33];   /* 32 chars + terminador */
+tiss_hash_status_t st = tiss_hash_file("envio.xml", out_hex, sizeof out_hex);
+if (st == TISS_HASH_OK) {
+    /* out_hex contém o digest */
+}
+/* tiss_hash_bytes(xml, len, out_hex, out_len) para bytes em memória */
+```
+
+Erro tipado: `tiss_hash_status_t` (não-`OK` indica XML inválido ou falha de I/O).
+
+### 8.3 C++ — [`langs/cpp/README.md`](../langs/cpp/README.md)
+
+Header-only.
+
+```bash
+cd langs/cpp
+cmake -B build -S . && cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
+
+```cpp
+#include <tiss_hash/tiss_hash.hpp>
+
+try {
+    std::string h = tiss_hash::HashTissFile("envio.xml");   // 32 hex minúsculos
+    // tiss_hash::HashTiss(bytes) para dados em memória
+} catch (const tiss_hash::InvalidTissXml& e) {
+    // XML inválido
+}
+```
+
+### 8.4 Node.js — [`langs/node/README.md`](../langs/node/README.md)
+
+```bash
+cd langs/node && npm install
+```
+
+```js
+import { hashTiss, hashTissFile } from 'tiss-hash';
+import { readFileSync } from 'node:fs';
+
+const md5 = hashTiss(readFileSync('envio.xml'));   // síncrono, 32 hex minúsculos
+const md5File = await hashTissFile('envio.xml');   // assíncrono
+```
+
+Erro tipado: `InvalidTissXmlError` (subclasse de `Error`, `name === 'InvalidTissXmlError'`).
+
+### 8.5 PHP — [`langs/php/README.md`](../langs/php/README.md)
+
+```bash
+cd langs/php && composer install
+```
+
+```php
+<?php
+require 'vendor/autoload.php';
+use TissHash\TissHash;
+
+$hash = TissHash::hashTiss(file_get_contents('envio.xml'));  // 32 hex minúsculos
+$hash = TissHash::hashTissFile('envio.xml');
+```
+
+Erro tipado: `TissHash\InvalidTissXmlException`.
+
+### 8.6 Java — [`langs/java/README.md`](../langs/java/README.md)
+
+```bash
+cd langs/java
+mvn -q test       # roda os vetores + testes auxiliares
+mvn -q package    # gera o jar
+```
+
+```java
+import dev.petrus.tisshash.TissHash;
+import java.nio.file.Path;
+import java.nio.file.Files;
+
+String hash = TissHash.hashTiss(Files.readAllBytes(Path.of("envio.xml")));  // 32 hex minúsculos
+String hashFile = TissHash.hashTissFile(Path.of("envio.xml"));              // recebe Path
+```
+
+Erro tipado: `dev.petrus.tisshash.InvalidTissXmlException`.
+
+### 8.7 Go — [`langs/go/README.md`](../langs/go/README.md)
+
+```bash
+go get github.com/petrinhu/TISS_ANS_hash/langs/go
+```
+
+```go
+import tisshash "github.com/petrinhu/TISS_ANS_hash/langs/go"
+
+raw, _ := os.ReadFile("envio.xml")
+h, err := tisshash.HashTiss(raw)        // 32 hex minúsculos
+hf, err := tisshash.HashTissFile("envio.xml")
+```
+
+Erro idiomático Go: `error` não-nil para XML inválido.
+
+### 8.8 C# / .NET — [`langs/csharp/README.md`](../langs/csharp/README.md)
+
+```bash
+cd langs/csharp && dotnet build
+# ou referenciar o projeto:
+# dotnet add reference path/to/langs/csharp/src/TissHash/TissHash.csproj
+```
+
+```csharp
+using TissHashLib = TissHash.TissHash;   // alias evita ambiguidade namespace vs classe
+
+string hash = TissHashLib.HashTiss(File.ReadAllBytes("envio.xml"));   // 32 hex minúsculos
+string hashFile = TissHashLib.HashTissFile("envio.xml");
+```
+
+Erro tipado: `TissHash.InvalidTissXmlException`.
+
+---
+
+Quer ajudar a portar para uma nova linguagem? Ver [`PORTING_GUIDE.md`](PORTING_GUIDE.md) e [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
 
 ## 9. FAQ
 
@@ -386,11 +551,11 @@ Porque o algoritmo real (validado contra hashes confirmados pela ANS) usa UTF-8 
 
 ### Posso usar em produção?
 
-O port Python (0.1.0) está pronto: 19 testes passando, parser endurecido contra XXE, código revisado. **Recomendação:** valide você mesmo contra alguns lotes seus que já foram aceitos pela operadora, antes de colocar em prod. A licença [MIT](../LICENSE) é explícita: sem garantias.
+Os 9 ports estão prontos e passam os 20 vetores de conformidade byte-a-byte (o port Python tem ainda 4 testes de API auxiliares, total 24). Os parsers são endurecidos contra XXE/billion-laughs. **Recomendação:** valide você mesmo contra alguns lotes seus que já foram aceitos pela operadora, antes de colocar em prod. A licença [MIT](../LICENSE) é explícita: sem garantias.
 
 ### E se a ANS mudar o algoritmo?
 
-A spec em [`SPEC.md`](SPEC.md) está versionada (SemVer). Mudança incompatível no padrão TISS dispara nova major (2.0.0) com migração documentada. Versão atual cobre TISS 4.01.00.
+A spec em [`SPEC.md`](SPEC.md) está versionada (SemVer). O algoritmo de hash é estável entre versões do Padrão TISS, então a lib é agnóstica à versão vigente. Caso a ANS introduza mudança incompatível no padrão, dispara nova major (2.0.0) com migração documentada.
 
 ### Por que MD5 sendo fraco criptograficamente?
 

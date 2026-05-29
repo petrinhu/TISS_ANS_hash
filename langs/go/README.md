@@ -2,12 +2,12 @@
 
 Port Go da biblioteca `tiss-hash`: hash MD5 do epilogo `<ans:hash>` de mensagens XML do Padrao TISS/ANS (saude suplementar Brasil).
 
-Bate **byte-a-byte** com a implementacao de referencia Python (`conformance/reference.py`) e com os outros 6 ports (C, C++, Rust, Python, PHP, Node.js) nos 15 vetores publicos.
+Bate **byte-a-byte** com a implementacao de referencia Python (`conformance/reference.py`) e com os outros ports (C, C++, Rust, Python, PHP, Node.js, Java, C#) nos 20 vetores publicos (18 positivos + 2 negativos).
 
 ## Status
 
 - Alpha (v0.1.0).
-- Suite de conformidade: **15/15 PASS**.
+- Suite de conformidade: **20/20 PASS** (18 positivos + 2 negativos: multi-hash e UTF-16 sao rejeitados).
 - Compatibilidade: Go 1.22+ (testado em Go 1.26).
 - Licenca: MIT.
 
@@ -88,7 +88,7 @@ if err != nil {
 2. Parse streaming: pilha de elementos, cada um acumulando texto e flag de "tem filho estruturado".
 3. Em `EndElement`, se o elemento que fecha NAO teve filho Element/Comment/PI/Directive, eh folha; contribui texto pro concat global.
 4. Comentarios entram no concat (ambiguidade #2 da referencia; ver `conformance/AMBIGUITY_NOTES.md`).
-5. `<ans:hash>` (primeira ocorrencia, namespace TISS) contribui string vazia.
+5. `<ans:hash>` (namespace TISS) contribui string vazia. Documento sem `<ans:hash>` e valido; com multiplos `<ans:hash>` e rejeitado (erro).
 6. MD5 dos bytes UTF-8 do concat. Hex lowercase 32 chars.
 
 Ver `tisshash.go` para detalhes e justificativa das alternativas descartadas.
@@ -124,6 +124,17 @@ go test -bench=. -benchmem ./...
 - Algoritmo de referencia: [`conformance/reference.py`](../../conformance/reference.py)
 - Vetores: [`conformance/vectors.json`](../../conformance/vectors.json)
 - Ambiguidades fixadas: [`conformance/AMBIGUITY_NOTES.md`](../../conformance/AMBIGUITY_NOTES.md)
+
+## Dependencias e licencas
+
+Dependencia de runtime (unica externa; parser e MD5 vem da stdlib):
+
+| Dependencia | Licenca | Uso |
+|---|---|---|
+| golang.org/x/text | BSD-3-Clause | decode ISO-8859-1 (`charmap.ISO8859_1`) |
+
+Atribuicao consolidada de todos os ports em
+[`THIRD_PARTY_LICENSES.md`](../../THIRD_PARTY_LICENSES.md) na raiz do repo.
 
 ## Licenca
 

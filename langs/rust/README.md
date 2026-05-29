@@ -1,10 +1,10 @@
 # tiss-hash (Rust)
 
-Hash MD5 do epílogo XML **TISS/ANS** (Padrão TISS 4.01.00: Troca de
+Hash MD5 do epílogo XML **TISS/ANS** (Padrão TISS: Troca de
 Informações em Saúde Suplementar, ANS). Port Rust da biblioteca
 [`lib_hash_ans`](https://github.com/petrinhu/TISS_ANS_hash).
 
-Status: **alpha**. 15/15 vetores sintéticos PASS contra a referência Python.
+Status: **alpha**. 20/20 vetores sintéticos PASS contra a referência Python (18 positivos + 2 negativos).
 
 ## Quickstart
 
@@ -73,6 +73,8 @@ Resumo do que esta crate reproduz:
 - Indentação entre tags **não** entra (não-folhas são puladas).
 - Valores numéricos com zeros à esquerda preservados como string.
 - BOM UTF-8 aceito e descartado pelo parser.
+- Múltiplos `<ans:hash>` no documento são **rejeitados** (erro), não tolerados.
+- Encodings suportados: ISO-8859-1 e UTF-8. UTF-16/UTF-32 são **rejeitados** (fora de escopo).
 
 ### Encoding ISO-8859-1
 
@@ -98,14 +100,18 @@ Justificativa registrada no topo de [`src/lib.rs`](src/lib.rs):
 
 ## Conformance
 
-Esta crate passa **15/15 vetores** sintéticos públicos em
-`conformance/vectors.json` (mínimo, acento, vazio, CR/LF, multi-guia,
-entidades, CDATA, comentário, atributos, namespace, whitespace, leading
-zeros, ISO-8859-1 símbolos, perf grande ~600 KB, BOM UTF-8).
+Esta crate passa **20/20 vetores** sintéticos públicos em
+`conformance/vectors.json`: 18 positivos (mínimo, acento, vazio, CR/LF,
+multi-guia, entidades, CDATA, comentário, atributos, namespace, whitespace,
+leading zeros, ISO-8859-1 símbolos, namespace default, sem hash, entidade
+numérica, perf grande ~600 KB, BOM UTF-8) e 2 negativos rejeitados
+(`syn_multi_hash.xml` = múltiplos `<ans:hash>`; `syn_utf16.xml` = UTF-16
+fora de escopo). A lista canônica vive em `conformance/vectors.json`.
 
-Os 3 goldens reais (`real_envio1/2/3.xml`, com PII) vivem **fora do repo**
-em `_private_tiss_real_xmls/`. Testá-los exige acesso ao diretório
-privado.
+Além dos vetores sintéticos públicos, o algoritmo foi validado contra
+goldens reais (privados, fora do repo, em `_private_tiss_real_xmls/`).
+Esses arquivos contêm PII e não são distribuídos; rodá-los exige acesso ao
+diretório privado.
 
 ### Rodar localmente
 
@@ -119,7 +125,7 @@ cargo clippy -- -D warnings
 cargo fmt --check
 ```
 
-Esperado: `15/15` no teste `todos_vetores_passam`, sem warnings de clippy.
+Esperado: `20/20` no teste `todos_vetores_passam`, sem warnings de clippy.
 
 ## Comparação com o port Python
 
@@ -130,9 +136,21 @@ Esperado: `15/15` no teste `todos_vetores_passam`, sem warnings de clippy.
 | Comentários entram no concat     | sim (`lxml`-like)               | sim (`is_comment()` + filtro)   |
 | API                              | `hash_tiss`, `hash_tiss_file`   | idem (`Result<String, _>`)      |
 | Erro                             | `InvalidTissXml`                | `TissHashError::InvalidXml`/`Io` |
-| Vetores                          | 15/15 PASS                      | 15/15 PASS                      |
+| Vetores                          | 20/20 PASS                      | 20/20 PASS                      |
 | MSRV / Python                    | Python 3.10+                    | rustc 1.75+                     |
 | Dependências runtime             | `defusedxml>=0.7.1`             | `roxmltree`, `md-5`             |
+
+## Dependências e licenças
+
+Dependências de runtime:
+
+| Dependência | Licença | Uso |
+| --- | --- | --- |
+| [`roxmltree`](https://crates.io/crates/roxmltree) | MIT OR Apache-2.0 | parser DOM |
+| [`md-5`](https://crates.io/crates/md-5) (RustCrypto) | MIT OR Apache-2.0 | MD5 |
+
+Atribuição consolidada de todos os ports em
+[`THIRD_PARTY_LICENSES.md`](../../THIRD_PARTY_LICENSES.md) na raiz do repo.
 
 ## Licença
 

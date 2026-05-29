@@ -79,13 +79,18 @@ Implementação de referência: `conformance/reference.py`.
 
 ## Conformidade
 
-Esta lib passa os **15 vetores de conformidade** em
-`conformance/vectors.json`, todos sintéticos (`source: derived`). O
-conjunto público de conformidade é 100% sintético, sem qualquer XML real
-de paciente. Cobrem: mínimo, acentuação, campos vazios, CR/LF embutido,
-múltiplas guias, entidades XML, CDATA, comentário, atributo de folha,
-namespace alternativo, whitespace puro, zeros à esquerda, símbolos
-ISO-8859-1, performance e BOM UTF-8.
+Esta lib passa os **20 vetores de conformidade** em
+`conformance/vectors.json`, todos sintéticos (`source: derived`): 18
+positivos e 2 negativos (que devem ser rejeitados). O conjunto público de
+conformidade é 100% sintético, sem qualquer XML real de paciente. Os 18
+positivos cobrem: mínimo, acentuação, campos vazios, CR/LF embutido,
+múltiplas guias, entidades XML, entidades numéricas, CDATA, comentário,
+atributo de folha, namespace alternativo, namespace default, documento sem
+`<ans:hash>`, whitespace puro, zeros à esquerda, símbolos ISO-8859-1,
+performance e BOM UTF-8. Os 2 negativos (`syn_multi_hash.xml` e
+`syn_utf16.xml`) cobrem rejeição de múltiplos `<ans:hash>` e de UTF-16
+(fora de escopo: encodings suportados são ISO-8859-1 e UTF-8). A lista
+canônica vive em `conformance/vectors.json`.
 
 Rodar os testes localmente, a partir da raiz do repositório:
 
@@ -94,10 +99,11 @@ python -m pip install -e ./langs/python[dev]
 pytest langs/python/tests/ -v
 ```
 
-Saída esperada: `19 passed`. Desses, 15 testes são os vetores de
-conformidade (um por vetor, parametrizados) e 4 são testes de API
-auxiliares (`hash_tiss_file`, XML inválido, tipo de entrada errado e
-integridade do manifesto).
+Saída esperada: `24 passed`. Desses, 20 testes são os vetores de
+conformidade (um por vetor, parametrizados: 18 positivos comparam o hash,
+2 negativos verificam a rejeição) e 4 são testes de API auxiliares
+(`hash_tiss_file`, XML inválido, tipo de entrada errado e integridade do
+manifesto).
 
 ## Dependências
 

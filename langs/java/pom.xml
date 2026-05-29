@@ -13,7 +13,7 @@
   <name>tiss-hash</name>
   <description>
     Hash MD5 canônico do epílogo &lt;ans:hash&gt; em XMLs do Padrão TISS/ANS
-    (Padrão TISS 4.01.00 — Troca de Informações em Saúde Suplementar,
+    (Padrão TISS — Troca de Informações em Saúde Suplementar,
     regulamentado pela Agência Nacional de Saúde Suplementar). Port Java
     da biblioteca multi-linguagem TISS_ANS_hash; bate byte-a-byte com a
     referência Python (conformance/reference.py) nos 15 vetores de

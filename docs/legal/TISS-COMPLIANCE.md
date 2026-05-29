@@ -18,14 +18,15 @@ O **Padrão TISS** é o conjunto de regras editado pela **Agência Nacional de S
 
 A troca acontece via mensagens XML que seguem schemas XSD oficiais publicados pela ANS, transmitidas via Web Services SOAP, com assinatura digital XAdES e mecanismos de controle de integridade.
 
-## 2. Versão coberta
+## 2. Escopo em relação às versões do padrão
 
-- **Componente de Representação:** TISS 4.01.00.
+Esta lib implementa o **algoritmo de hash do epílogo do Padrão TISS de forma agnóstica à versão**: ela calcula o conteúdo de `<ans:hash>` segundo o algoritmo documentado na SPEC, que é **estável entre as versões publicadas do padrão**. A lib **não declara conformidade com uma versão específica** do Padrão TISS, justamente porque a ANS revisa o padrão periodicamente e fixar um número de versão induziria afirmação enganosa.
+
+- **Componente de Representação:** Padrão TISS (versão-agnóstica; ver nota acima).
 - **Componente de Comunicação:** SOAP 1.1 sobre HTTPS.
 - **Componente de Segurança e Privacidade:** assinatura XAdES; hash MD5 do epílogo.
-- **Componente Organizacional:** versão vigente em novembro/2025.
 
-A lib **acompanha versões do padrão** e atualiza quando há mudança que afete o algoritmo de hash. Mudança incompatível dispara nova major version (ver [`CHANGELOG.md`](../../CHANGELOG.md) e SemVer da SPEC).
+Caso uma futura revisão do Padrão TISS altere o algoritmo de hash em si (o que a SPEC monitora), a mudança incompatível dispara nova major version (ver [`CHANGELOG.md`](../../CHANGELOG.md) e SemVer da SPEC).
 
 ## 3. O que a lib cobre
 
@@ -82,9 +83,9 @@ Se você passar um XML qualquer (mesmo não-TISS), a lib calcula um hash sobre e
 
 A lib é validada de duas formas:
 
-### 6.1 Vetores sintéticos públicos (15 vetores)
+### 6.1 Vetores sintéticos públicos (20 vetores: 18 positivos + 2 negativos)
 
-Em [`conformance/vectors.json`](../../conformance/vectors.json), 15 XMLs sintéticos cobrindo casos de borda:
+Em [`conformance/vectors.json`](../../conformance/vectors.json), XMLs sintéticos cobrindo casos de borda. **18 positivos** (comparam hash):
 
 - Mínimo (cabeçalho + epílogo).
 - Acentuação (discriminador de encoding).
@@ -92,15 +93,20 @@ Em [`conformance/vectors.json`](../../conformance/vectors.json), 15 XMLs sintét
 - CR/LF dentro de valor.
 - Múltiplas guias.
 - Entidades XML predefinidas.
+- Entidades de caractere numéricas.
 - Seções CDATA.
 - Comentários.
 - Atributos em folha.
 - Namespaces alternativos (`xsi:type`).
+- Namespace TISS default (sem prefixo).
+- Documento sem `<ans:hash>` (válido).
 - Whitespace puro.
 - Zeros à esquerda.
 - Símbolos ISO-8859-1.
 - Documento grande (performance).
 - BOM UTF-8.
+
+E **2 negativos** (entrada que o port deve rejeitar): múltiplos `<ans:hash>` e encoding UTF-16.
 
 Detalhes em [`conformance/TEST_PLAN.md`](../../conformance/TEST_PLAN.md) e ambiguidades fixadas em [`conformance/AMBIGUITY_NOTES.md`](../../conformance/AMBIGUITY_NOTES.md).
 
@@ -132,7 +138,7 @@ Se a ANS publicar mudança no algoritmo de hash, a lib responde com:
 ## 9. Referências
 
 - **ANS**, Padrão TISS, página oficial: [`https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-para-troca-de-informacao-de-saude-suplementar-tiss`](https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-para-troca-de-informacao-de-saude-suplementar-tiss).
-- **ANS**, Componente de Representação TISS 4.01.00 (XSDs oficiais publicados pela agência).
+- **ANS**, Componente de Representação do Padrão TISS (XSDs oficiais publicados pela agência).
 - **ANS**, Componente Organizacional TISS (versão vigente em novembro/2025).
 - **ANS**, Manual de Conteúdo e Estrutura Padrão TISS.
 

@@ -1,15 +1,15 @@
 # tiss-hash (port C)
 
-Hash MD5 do epilogo `<ans:hash>` em XMLs do **Padrao TISS/ANS** (Padrao TISS 4.01.00). Implementacao em C11 puro com `libxml2` (parser) + `OpenSSL EVP` (MD5).
+Hash MD5 do epilogo `<ans:hash>` em XMLs do **Padrao TISS/ANS**. Implementacao em C11 puro com `libxml2` (parser) + `OpenSSL EVP` (MD5).
 
 - Spec canonica: [`docs/SPEC.md`](../../docs/SPEC.md) (raiz do repo).
 - Referencia executavel: [`conformance/reference.py`](../../conformance/reference.py).
 - 15 ambiguidades canonicas: [`conformance/AMBIGUITY_NOTES.md`](../../conformance/AMBIGUITY_NOTES.md).
-- Bate **byte-a-byte** com a referencia nos 15 vetores em [`conformance/vectors.json`](../../conformance/vectors.json).
+- Bate **byte-a-byte** com a referencia nos 20 vetores (18 positivos + 2 negativos) em [`conformance/vectors.json`](../../conformance/vectors.json).
 
 ## Status
 
-Alpha. **15/15 vetores PASS**. Sem vazamentos detectados em valgrind (`make valgrind`).
+Alpha. **20/20 vetores PASS** (18 positivos + 2 negativos: multi-hash e UTF-16 sao rejeitados). Sem vazamentos detectados em valgrind (`make valgrind`).
 
 ## Dependencias de sistema
 
@@ -35,7 +35,7 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-Resultado esperado: `15/15 PASS`.
+Resultado esperado: `20/20 PASS`.
 
 ## Build & test (Makefile alternativo)
 
@@ -44,7 +44,7 @@ Pra builds rapidos sem CMake (assume `pkg-config` funcional):
 ```bash
 cd langs/c
 make            # libtiss_hash.so + .a + test_conformance
-make test       # 15/15 PASS
+make test       # 20/20 PASS
 make valgrind   # leak-check completo (precisa valgrind instalado)
 ```
 
@@ -161,6 +161,19 @@ langs/c/
 └── tools/
     └── gen_test_vectors.py        # le vectors.json, emite header
 ```
+
+## Dependencias e licencas
+
+Dependencias de runtime (linkadas; nao vendoradas):
+
+| Dependencia | Licenca | Uso |
+|---|---|---|
+| libxml2 | MIT | parser XML |
+| OpenSSL / libcrypto | Apache-2.0 | MD5 (EVP) |
+
+A Apache-2.0 (OpenSSL) exige atribuicao ao redistribuir; mantenha o aviso de
+licenca correspondente. Atribuicao consolidada de todos os ports em
+[`THIRD_PARTY_LICENSES.md`](../../THIRD_PARTY_LICENSES.md) na raiz do repo.
 
 ## Licenca
 

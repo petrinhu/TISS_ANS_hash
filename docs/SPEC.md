@@ -2,10 +2,10 @@
 title: Especificação canônica do hash TISS/ANS
 type: reference
 audience: implementadores de port
-version: 1.0.0
+version: 1.1.0
 last-reviewed: 2026-05-28
 owner: petrinhu@yahoo.com.br
-status: estável (15 vetores de conformidade, 100% sintéticos)
+status: estável (20 vetores de conformidade: 18 positivos + 2 negativos, 100% sintéticos)
 ---
 
 # Especificação canônica: hash MD5 do epílogo TISS/ANS
@@ -210,6 +210,7 @@ O contexto cliente original não existe mais. O algoritmo permanece porque o pad
 | Versão | Data       | Mudança                                              |
 |--------|------------|------------------------------------------------------|
 | 1.0.0  | 2026-05-28 | Spec baseada na referência Python + 15 vetores de conformidade 100% sintéticos. |
+| 1.1.0  | 2026-05-28 | Suíte expandida p/ 20 vetores (18 positivos + 2 negativos). Fixado: rejeição de múltiplos `<ans:hash>` e de encoding UTF-16/UTF-32. |
 
 Mudanças que alterem hash de qualquer vetor existente são **breaking** e exigem bump major + ADR.
 

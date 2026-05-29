@@ -12,27 +12,49 @@ A versão de **cada port** é independente, declarada em seu próprio pacote (ex
 
 ### Added
 
-- (vazio; próximas mudanças aqui)
+- **8 ports Tier 2**, todos passando os mesmos vetores de conformidade byte-a-byte
+  contra a referência Python e entre si:
+  - **Rust** (`langs/rust/`, crate `tiss-hash`): `hash_tiss(&[u8])`, `hash_tiss_file(P)`,
+    erro `TissHashError` (`InvalidXml` / `Io`).
+  - **C** (`langs/c/`, lib + header `tiss_hash.h`): `tiss_hash_bytes(...)`,
+    `tiss_hash_file(...)`, status `tiss_hash_status_t`; build via CMake e Makefile.
+  - **C++** (`langs/cpp/`, header-only): `tiss_hash::HashTiss(...)`,
+    `tiss_hash::HashTissFile(...)`, exceção `tiss_hash::InvalidTissXml`; build via CMake.
+  - **Node.js** (`langs/node/`, `tiss-hash`): `hashTiss(bytes)` (síncrono),
+    `hashTissFile(path)` (assíncrono), erro `InvalidTissXmlError`; ESM.
+  - **PHP** (`langs/php/`, `petrinhu/tiss-hash`): `TissHash::hashTiss(string)`,
+    `TissHash::hashTissFile(string)`, exceção `TissHash\InvalidTissXmlException`.
+  - **Java** (`langs/java/`, pacote `dev.petrus.tisshash`): `TissHash.hashTiss(byte[])`,
+    `TissHash.hashTissFile(Path)`, exceção `InvalidTissXmlException`; build via Maven
+    (com fallback `javac`/`java`).
+  - **Go** (`langs/go/`, módulo `tisshash`): `HashTiss([]byte)`, `HashTissFile(string)`,
+    `error` idiomático para XML inválido.
+  - **C#/.NET** (`langs/csharp/`, `TissHash`): `TissHash.HashTiss(byte[])`,
+    `TissHash.HashTissFile(string)`, exceção `InvalidTissXmlException`; build via `dotnet`.
+- **Expansão da suíte de conformidade** de 5 vetores sintéticos iniciais para 15 e, em
+  seguida, para **20 vetores** (18 positivos + 2 negativos). Os vetores negativos exercem
+  comportamentos de **rejeição** que todos os ports devem honrar:
+  - múltiplos elementos `<ans:hash>` no mesmo documento (ambiguidade de alvo): `expect: "error"`;
+  - documentos em **UTF-16/UTF-32**, fora do escopo do padrão (que usa ISO-8859-1/UTF-8):
+    `expect: "error"`.
+- **`THIRD_PARTY_LICENSES.md`** na raiz: inventário das dependências de terceiros de cada
+  port e suas licenças.
+- **Documentação de uso multi-linguagem** em [`docs/USAGE.md`](docs/USAGE.md): quickstart
+  resumido por port com ponteiro para o README de cada `langs/<lang>/`.
 
 ### Changed
 
-- (vazio)
-
-### Fixed
-
-- (vazio)
-
-### Deprecated
-
-- (vazio)
-
-### Removed
-
-- (vazio)
+- **Manifesto de conformidade** (`conformance/vectors.json`) passou a distinguir vetores
+  positivos (`expected_md5`) de negativos (`expect: "error"`, `expected_md5` nulo).
+- **Algoritmo de referência** e ports atualizados para **rejeitar explicitamente** os casos
+  cobertos pelos vetores negativos (multi-`<ans:hash>`, UTF-16/UTF-32) em vez de produzir
+  hash silenciosamente.
 
 ### Security
 
-- (vazio)
+- **Remoção de PII das docs**: exemplos e trechos foram revisados para não exporem hashes
+  de XML real nem dados de pacientes; toda a documentação pública usa apenas vetores
+  sintéticos. Validação contra XMLs reais permanece fora do repositório (LGPD).
 
 ## [0.1.0] - 2026-05-27
 

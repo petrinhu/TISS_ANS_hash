@@ -4,6 +4,8 @@
 **Data:** 2026-05-27
 **Decisores:** Petrus (autor/dono do projeto)
 
+> Emendado por ADR-0005 (convenção de workflow CI `<linguagem>.yml`, sem `conformance.yml`/`release-*.yml`, atualizada).
+
 ## Contexto
 
 Cada port (ADR-0001) deve passar 100% de `conformance/vectors.json` antes de

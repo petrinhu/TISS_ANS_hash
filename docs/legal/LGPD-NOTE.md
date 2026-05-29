@@ -163,7 +163,7 @@ Se seu DPO precisa de informações sobre esta lib para incluir no RTOA ou RIPD:
 - **ANPD**, Guia Orientativo "Como elaborar Relatório de Impacto à Proteção de Dados Pessoais (RIPD)", v2.0, 2023.
 - **ANPD**, Resolução CD/ANPD nº 2/2022 (regulamenta o regime de tratamento por agentes de pequeno porte).
 - **ANPD**, Resolução CD/ANPD nº 15/2024 (comunicação de incidentes de segurança).
-- **ANS**, Padrão TISS (versão 4.01.00 e Componente Organizacional vigente).
+- **ANS**, Padrão TISS (Componente Organizacional vigente). A lib é agnóstica à versão do Padrão TISS — o algoritmo de hash é estável entre versões.
 
 ## 8. Licenciamento desta lib
 

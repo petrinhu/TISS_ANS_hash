@@ -4,6 +4,8 @@
 **Data:** 2026-05-27
 **Decisores:** Petrus (autor/dono do projeto)
 
+> Emendado por ADR-0005 (nomenclatura de função `hash_tiss`/`hash_tiss_file` e groupId Maven `dev.petrus` atualizados).
+
 ## Contexto
 
 Cada port (ADR-0001) é publicado no **registry idiomático da sua linguagem**.

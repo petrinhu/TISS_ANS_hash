@@ -32,7 +32,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Hash MD5 canônico do epílogo {@code <ans:hash>} em XMLs do
- * <strong>Padrão TISS/ANS</strong> (Padrão TISS 4.01.00 — Troca de
+ * <strong>Padrão TISS/ANS</strong> (Padrão TISS — Troca de
  * Informações em Saúde Suplementar, regulamentado pela Agência Nacional
  * de Saúde Suplementar).
  *

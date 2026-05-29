@@ -25,7 +25,7 @@ Guia prático para implementar a lib em uma linguagem ainda não suportada. Ante
   cd conformance
   python3 build_fixture.py
   ```
-  Deve imprimir `OK: 15 vetores`. Se não imprimir, **pare e abra issue** antes de portar.
+  Deve imprimir `OK: 20 vetores` (18 positivos + 2 negativos). Se não imprimir, **pare e abra issue** antes de portar.
 
 ## Passo 1: criar o esqueleto do port
 
@@ -37,7 +37,7 @@ langs/<linguagem>/
 ├── README.md                  # quickstart específico
 ├── src/                       # ou equivalente
 ├── tests/
-│   └── conformance_test.<ext> # roda os 15 vetores
+│   └── conformance_test.<ext> # roda os 20 vetores (18 positivos + 2 negativos)
 └── <manifest de build>        # Cargo.toml, package.json, composer.json, CMakeLists.txt, etc.
 ```
 
@@ -122,7 +122,7 @@ for v in vectors.vectors:
 assert fails.empty(), "vetores falhando: " + format(fails)
 ```
 
-Roda no CI do port. **Sem flexibilidade: 15/15 ou nada.**
+Roda no CI do port. **Sem flexibilidade: 20/20 ou nada** (18 positivos comparam hash; 2 negativos `expect:"error"` devem ser rejeitados).
 
 ## Passo 5: pegadinhas comuns por categoria de parser
 
@@ -181,12 +181,12 @@ Antes de abrir PR para inclusão do port, marque tudo:
 - [ ] XXE explicitamente desligado no parser.
 - [ ] Encoding do MD5 confirmado UTF-8 (não usar encoding do XML).
 - [ ] Teste de conformidade lê `conformance/vectors.json` programaticamente (não hardcoded).
-- [ ] **Os 15 vetores passam** localmente. Cole a saída no PR.
+- [ ] **Os 20 vetores passam** localmente (18 positivos + 2 negativos rejeitados). Cole a saída no PR.
 - [ ] Docstrings/comentários públicos na API.
 - [ ] Exemplo de uso de 5 linhas no `langs/<linguagem>/README.md`.
 - [ ] Build local funciona com instruções escritas (testado em máquina limpa ou container).
 - [ ] Linter/formatter padrão da linguagem rodou sem erros.
-- [ ] Commit segue Conventional Commits: `feat(port-<linguagem>): impl. inicial passando 15/15 vetores`.
+- [ ] Commit segue Conventional Commits: `feat(port-<linguagem>): impl. inicial passando 20/20 vetores`.
 - [ ] Linha no `README.md` raiz atualizada de `planejado` para `em progresso` ou `pronto`.
 
 ## Relacionados

@@ -1,14 +1,14 @@
 # tiss-hash (Node.js)
 
-Hash MD5 do epílogo `<ans:hash>` em XMLs do **Padrão TISS/ANS** (Padrão
-TISS 4.01.00, Troca de Informações em Saúde Suplementar, regulamentado
-pela Agência Nacional de Saúde Suplementar).
+Hash MD5 do epílogo `<ans:hash>` em XMLs do **Padrão TISS/ANS** (Troca de
+Informações em Saúde Suplementar, regulamentado pela Agência Nacional de
+Saúde Suplementar).
 
 Este é o port Node.js da biblioteca [`lib_hash_ans`](https://github.com/petrinhu/TISS_ANS_hash).
 Outras linguagens (Python, Rust, C, C++, PHP, etc.) seguem o mesmo
 contrato e os mesmos vetores de conformidade.
 
-- **Status:** alpha. 15/15 vetores sintéticos PASS (`conformance/vectors.json`).
+- **Status:** alpha. 20/20 vetores sintéticos PASS (18 positivos + 2 negativos) em `conformance/vectors.json`.
 - **Licença:** MIT.
 - **Engines:** Node.js `>=20` (testado em 20 LTS e 22 LTS).
 - **Dependência runtime única:** [`@xmldom/xmldom`](https://github.com/xmldom/xmldom) (DOM puro, pure-JS, sem deps nativas).
@@ -86,8 +86,9 @@ Resumo do que `hashTiss` faz:
    - `utf-8`: usa direto. Strippa BOM UTF-8 se presente.
 2. Parseia o XML com [`@xmldom/xmldom`](https://github.com/xmldom/xmldom)
    (DOM W3C compliant, mantém comentários em `childNodes`).
-3. Localiza o primeiro `<ans:hash>` (por **namespace URI**, não por
-   prefixo) e marca-o para ser zerado.
+3. Localiza o `<ans:hash>` (por **namespace URI**, não por prefixo) e
+   marca-o para ser zerado. Documento sem `<ans:hash>` é válido; com
+   múltiplos `<ans:hash>` é **rejeitado** (erro).
 4. Caminha a árvore em ordem de documento (depth-first, pre-order).
    Para cada **nó-folha**, isto é, `Element` ou `Comment` cujos filhos
    NÃO contêm `Element`/`Comment`/`ProcessingInstruction`, concatena
@@ -102,10 +103,10 @@ O manual TISS (Componente Organizacional nov/2025, pág 53, item 146) diz
 ambígua** e foi historicamente mal interpretada. Refere-se ao encoding do
 arquivo XML, **não** dos bytes que alimentam o MD5.
 
-Na prática (validada contra 3 goldens reais aceitos pela ANS), os valores
-extraídos do XML são re-encodados em **UTF-8** antes do MD5.
-Implementações que aplicam MD5 sobre bytes ISO-8859-1 produzem hash
-diferente e **errado**.
+Na prática (validada contra goldens reais privados, fora do repo, além dos
+vetores sintéticos públicos), os valores extraídos do XML são re-encodados
+em **UTF-8** antes do MD5. Implementações que aplicam MD5 sobre bytes
+ISO-8859-1 produzem hash diferente e **errado**.
 
 Spec completa: [`docs/SPEC.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/SPEC.md).
 Catálogo das 15 decisões canônicas (CDATA, entidades, atributos,
@@ -123,14 +124,19 @@ Avaliadas três opções:
 
 ## Conformidade
 
-Esta lib passa os **15 vetores sintéticos** em
+Esta lib passa os **20 vetores sintéticos** (18 positivos + 2 negativos) em
 [`conformance/vectors.json`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/conformance/vectors.json),
 cobrindo:
 
-- mínimo, acentuação (UTF-8 vs ISO-8859-1), campos vazios, CR/LF,
-  múltiplas guias, entidades XML, CDATA, comentários, atributos,
-  namespaces variados, whitespace puro, zeros à esquerda, símbolos
+- **18 positivos:** mínimo, acentuação (UTF-8 vs ISO-8859-1), campos vazios,
+  CR/LF, múltiplas guias, entidades XML, entidades numéricas, CDATA,
+  comentários, atributos, namespaces variados, namespace default, sem
+  `<ans:hash>` (válido), whitespace puro, zeros à esquerda, símbolos
   ISO-8859-1, performance (~600 KB), BOM UTF-8.
+- **2 negativos** (esperam erro): `syn_multi_hash.xml` (múltiplos
+  `<ans:hash>`) e `syn_utf16.xml` (UTF-16 fora de escopo).
+
+A lista canônica vive em `conformance/vectors.json`.
 
 Rodar os testes localmente, a partir desta pasta:
 
@@ -139,16 +145,30 @@ npm install
 npm test
 ```
 
-Saída esperada: 15 vetores passando + asserts de API auxiliares.
+Saída esperada: 20 vetores passando (incluindo os 2 negativos que devem
+lançar erro) + asserts de API auxiliares.
 
 ## Limitações conhecidas
 
-- **Múltiplos `<ans:hash>` no mesmo documento:** seguimos a referência,
-  zerando apenas o **primeiro**. Cenário patológico, não previsto pelo
-  padrão TISS.
+- **Múltiplos `<ans:hash>` no mesmo documento:** **rejeitado** (lança
+  `InvalidTissXmlError`). Cenário patológico, não previsto pelo padrão
+  TISS; falhar é mais seguro que adivinhar qual zerar.
+- **Encodings suportados:** ISO-8859-1 e UTF-8. UTF-16/UTF-32 são
+  **rejeitados** (fora de escopo).
 - **Bytes inválidos no encoding declarado:** comportamento não fixado
   pela suite. O parser tipicamente substitui ou rejeita; a lib não tenta
   recuperar.
+
+## Dependências e licenças
+
+Dependência de runtime única (MD5 vem do `node:crypto`, sem deps nativas):
+
+| Dependência | Licença | Uso |
+| --- | --- | --- |
+| [`@xmldom/xmldom`](https://github.com/xmldom/xmldom) | MIT | parser DOM (pure-JS) |
+
+Atribuição consolidada de todos os ports em
+[`THIRD_PARTY_LICENSES.md`](../../THIRD_PARTY_LICENSES.md) na raiz do repo.
 
 ## Licença
 

@@ -18,7 +18,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(tiss_hash_cpp
     VERSION 0.1.0
-    DESCRIPTION "Hash MD5 do epilogo XML TISS/ANS (Padrao TISS 4.01.00) - C++ port"
+    DESCRIPTION "Hash MD5 do epilogo XML TISS/ANS (Padrao TISS) - C++ port"
     HOMEPAGE_URL "https://github.com/petrinhu/TISS_ANS_hash"
     LANGUAGES CXX)
 

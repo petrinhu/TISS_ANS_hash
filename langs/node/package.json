@@ -1,7 +1,7 @@
 {
   "name": "tiss-hash",
   "version": "0.1.0",
-  "description": "Hash MD5 do epílogo XML TISS/ANS (Padrão TISS 4.01.00). Reverse-engineered, validado contra goldens reais.",
+  "description": "Hash MD5 do epílogo XML TISS/ANS (Padrão TISS). Reverse-engineered, validado contra goldens reais privados + vetores sintéticos.",
   "type": "module",
   "main": "src/index.cjs",
   "module": "src/index.js",

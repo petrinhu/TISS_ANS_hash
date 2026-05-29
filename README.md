@@ -1,23 +1,24 @@
 # TISS_ANS_hash · lib hash TISS / ANS
 
-> **Biblioteca multi-linguagem (Python, Rust, C, C++, Node.js, PHP) para gerar o hash MD5 do epílogo XML do Padrão TISS/ANS (saúde suplementar Brasil).**
-> Multi-language library (Python, Rust, C, C++, Node.js, PHP) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard).
+> **Biblioteca multi-linguagem (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#) para gerar o hash MD5 do epílogo XML do Padrão TISS/ANS (saúde suplementar Brasil).**
+> Multi-language library (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Codeberg CI](https://ci.codeberg.org/api/badges/petrinhu/TISS_ANS_hash/status.svg)](https://ci.codeberg.org/petrinhu/TISS_ANS_hash)
-[![GitHub Actions](https://github.com/petrinhu/TISS_ANS_hash/actions/workflows/python.yml/badge.svg)](https://github.com/petrinhu/TISS_ANS_hash/actions)
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions%20%2B%20Forgejo%20Actions-success)](https://github.com/petrinhu/TISS_ANS_hash/actions)
 [![PyPI version](https://img.shields.io/pypi/v/tiss-hash.svg)](https://pypi.org/project/tiss-hash/)
 [![Spec](https://img.shields.io/badge/spec-v1.0.0-blue)](docs/SPEC.md)
-[![Conformance Vectors](https://img.shields.io/badge/conformance-15%20vectors-success)](conformance/vectors.json)
+[![Conformance Vectors](https://img.shields.io/badge/conformance-20%20vectors-success)](conformance/vectors.json)
 [![TISS Standard](https://img.shields.io/badge/Padr%C3%A3o-TISS-blue)](docs/SPEC.md)
 [![Codeberg](https://img.shields.io/badge/mirror-Codeberg-2185D0)](https://codeberg.org/petrinhu/TISS_ANS_hash)
 [![GitHub](https://img.shields.io/badge/mirror-GitHub-181717)](https://github.com/petrinhu/TISS_ANS_hash)
+
+> CI: cada um dos 9 ports roda em duas plataformas, **GitHub Actions** (`.github/workflows/<lang>.yml`) e **Forgejo Actions** no Codeberg (`.forgejo/workflows/<lang>.yml`).
 
 ## O que é
 
 `lib_hash_ans` é uma coleção de bibliotecas independentes, uma por linguagem-alvo, que calculam o hash MD5 do epílogo de mensagens TISS/ANS (padrão da Agência Nacional de Saúde Suplementar para troca de dados entre operadoras de saúde e prestadores no Brasil).
 
-Todas as implementações reproduzem **byte a byte** o mesmo algoritmo, validado contra goldens reais (privados, em poder do mantenedor) e contra 15 vetores sintéticos públicos. Definição canônica em [`docs/SPEC.md`](docs/SPEC.md). Suíte de conformidade pública em [`conformance/`](conformance/).
+Todas as implementações reproduzem **byte a byte** o mesmo algoritmo, validado contra goldens reais (privados, em poder do mantenedor) e contra 20 vetores de conformidade públicos (18 positivos + 2 negativos). Definição canônica em [`docs/SPEC.md`](docs/SPEC.md). Suíte de conformidade pública em [`conformance/`](conformance/).
 
 ## O que NÃO faz
 
@@ -37,43 +38,47 @@ Se você procurou por "hash TISS não bate", "hash tiss rejeitado pela ANS", "MD
 
 **A engenharia reversa:** o algoritmo correto foi extraído de **três XMLs reais com hashes confirmados pela ANS** (golden vectors). Validação por bisseção: somente a combinação `concat-de-folhas + UTF-8 + MD5` reproduz os três hashes; toda outra falha. Detalhes da reversão e da divergência ISO vs UTF-8 em [`docs/SPEC.md §4 e §9`](docs/SPEC.md).
 
-**A garantia:** 15 vetores sintéticos públicos travam todos os casos de borda (acentuação, CR/LF dentro de valor, CDATA, entidades XML, comentários, atributos, namespaces, BOM UTF-8, whitespace puro, leading zeros, símbolos ISO-8859-1, multi-guia, documento grande). Cada port em cada linguagem **tem que** bater byte-a-byte contra os 15 antes de qualquer release.
+**A garantia:** 20 vetores de conformidade públicos (18 positivos + 2 negativos) travam todos os casos de borda (acentuação, CR/LF dentro de valor, CDATA, entidades XML, comentários, atributos, namespaces, BOM UTF-8, whitespace puro, leading zeros, símbolos ISO-8859-1, multi-guia, documento grande). Cada port em cada linguagem **tem que** bater byte-a-byte contra os 20 antes de qualquer release.
 
 **Origem:** algoritmo extraído de um editor desktop legado (TISSGama, arquivado) que foi descontinuado junto com o contexto cliente original. O algoritmo sobreviveu porque o Padrão TISS continua sendo usado por toda a saúde suplementar brasileira, e qualquer fornecedor TISS tem o mesmo problema de encoding enquanto a ANS não corrigir o manual.
 
 **O que esta lib oferece de diferente** vs reinventar a roda:
 
 - Algoritmo validado contra hashes aceitos pela ANS (não contra interpretação literal do manual).
-- 6 ports independentes (Python, Rust, C, C++, Node.js, PHP), pega errado em um, não pega nos outros (cross-port equivalence é parte da CI).
+- 9 ports independentes (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#), pega errado em um, não pega nos outros (cross-port equivalence é parte da CI).
 - Fixture de conformidade portável: mesmo `vectors.json` roda em todos os ports.
 - Documentação explícita das pegadinhas (encoding, comentários XML que entram no concat, CDATA tratado como texto, etc).
 
 ## Linguagens-alvo
 
-### Tier 1: declarado pelo usuário
+### Ports prontos (9)
 
-| Linguagem | Status         | Pasta                | Notas                                |
-|-----------|----------------|----------------------|--------------------------------------|
-| Python    | pronto         | `langs/python/`      | 19 testes passando, lib `tiss-hash`  |
-| C         | planejado      | `langs/c/`           | base p/ FFI, possível core comum     |
-| C++       | planejado      | `langs/cpp/`         | header-only desejável                |
-| Rust      | planejado      | `langs/rust/`        | crate + WASM target                  |
-| PHP       | planejado      | `langs/php/`         | composer package                     |
-| Node.js   | planejado      | `langs/nodejs/`      | package npm, TypeScript types        |
+Todos passam a suíte de conformidade byte-a-byte (20 vetores) na CI das duas plataformas.
 
-### Tier 2: relevantes no ecossistema BR
+| Linguagem | Status     | Pasta             | Notas                                |
+|-----------|------------|-------------------|--------------------------------------|
+| Python    | ✅ pronto  | `langs/python/`   | lib `tiss-hash`, 19 testes passando  |
+| Rust      | ✅ pronto  | `langs/rust/`     | crate                                |
+| C         | ✅ pronto  | `langs/c/`        | base p/ FFI, core comum              |
+| C++       | ✅ pronto  | `langs/cpp/`      | header-friendly                      |
+| Node.js   | ✅ pronto  | `langs/node/`     | package npm, TypeScript types        |
+| PHP       | ✅ pronto  | `langs/php/`      | composer package                     |
+| Java      | ✅ pronto  | `langs/java/`     | ERP/hospitalar enterprise            |
+| Go        | ✅ pronto  | `langs/go/`       | backend, microsserviços              |
+| C# / .NET | ✅ pronto  | `langs/csharp/`   | desktop de clínica                   |
 
-| Linguagem              | Status     | Justificativa                                |
-|------------------------|------------|----------------------------------------------|
-| Java                   | planejado  | ERP/hospitalar enterprise                    |
-| Kotlin                 | planejado  | Android + multiplatform                      |
-| C# / .NET              | planejado  | desktop de clínica                           |
-| Delphi / Object Pascal | planejado  | legado massivo de faturamento médico BR      |
-| Go                     | planejado  | backend, microsserviços                      |
-| Dart / Flutter         | planejado  | mobile cross-platform                        |
-| WASM                   | planejado  | hash client-side no browser, argumento LGPD  |
+### Candidatos futuros (ecossistema BR)
 
-Legenda: `planejado` (não iniciado), `em progresso` (código existe, vetores parciais), `pronto` (15/15 vetores PASS + docs + release).
+Avaliados, ainda não iniciados:
+
+| Linguagem              | Justificativa                                |
+|------------------------|----------------------------------------------|
+| Kotlin                 | Android + multiplatform                      |
+| Delphi / Object Pascal | legado massivo de faturamento médico BR      |
+| Dart / Flutter         | mobile cross-platform                        |
+| WASM                   | hash client-side no browser, argumento LGPD  |
+
+Legenda: `✅ pronto` (20/20 vetores PASS na CI + docs + packaging).
 
 ## Quickstart
 
@@ -102,7 +107,7 @@ python3 build_fixture.py
 Saída esperada:
 
 ```
-OK: 15 vetores sinteticos
+OK: 20 vetores de conformidade (18 positivos + 2 negativos)
   3aa0c578c95cdb861a125f480a8a4de5  syn_minimal.xml         [derived]
   a20afc9a89aadaa2179d03d225337662  syn_acento.xml          [derived]
   ...
@@ -135,7 +140,7 @@ Pré-requisitos: Python 3.10+, `lxml` (para a referência).
 
 ## Privacidade dos vetores
 
-O repositório público contém **somente 15 vetores sintéticos** que cobrem todos os casos de borda relevantes (acentuação, CR/LF, comentário, CDATA, BOM, namespace, atributo em folha, performance, etc.; ver [`conformance/TEST_PLAN.md`](conformance/TEST_PLAN.md)).
+O repositório público contém **somente vetores sintéticos** (20 no total: 18 positivos + 2 negativos) que cobrem todos os casos de borda relevantes (acentuação, CR/LF, comentário, CDATA, BOM, namespace, atributo em folha, performance, etc.; ver [`conformance/TEST_PLAN.md`](conformance/TEST_PLAN.md)).
 
 XMLs reais usados durante a engenharia reversa (com hashes confirmados pela ANS) **foram removidos** do repositório por conterem PII de pacientes (LGPD, Lei 13.709/2018, art. 5º, II). Eles vivem em diretório privado fora do repo, em poder do mantenedor, e servem como validação adicional pré-release. O conjunto sintético público é suficiente para garantir conformidade byte-a-byte de qualquer port.
 
@@ -161,7 +166,7 @@ lib_hash_ans/
 ├── CONTRIBUTING.md            # como contribuir, dual push
 ├── CODE_OF_CONDUCT.md         # Contributor Covenant 2.1
 ├── SECURITY.md                # política de segurança
-├── LICENSE                    # MIT (a criar inline)
+├── LICENSE                    # MIT
 ├── docs/
 │   ├── USAGE.md               # guia de uso (how-to)
 │   ├── SPEC.md                # algoritmo canônico (reference)
@@ -172,19 +177,27 @@ lib_hash_ans/
 ├── conformance/
 │   ├── reference.py           # impl. de referência Python (autoridade executável)
 │   ├── build_fixture.py       # regera vectors.json
-│   ├── vectors.json           # manifesto: 15 vetores sintéticos
+│   ├── vectors.json           # manifesto: 20 vetores (18 positivos + 2 negativos)
 │   ├── inputs/                # XMLs sintéticos públicos (sem PII)
 │   ├── TEST_PLAN.md           # plano de teste e cobertura
 │   └── AMBIGUITY_NOTES.md     # decisões fixadas pela referência
-├── langs/
-│   └── python/                # port Python pronto (tiss-hash)
-├── .github/                   # templates de issue/PR (GitHub)
-└── .forgejo/                  # templates de issue/PR (Codeberg/Forgejo)
+├── langs/                     # 9 ports independentes, um por linguagem
+│   ├── python/                # port Python (tiss-hash)
+│   ├── rust/                  # crate Rust
+│   ├── c/                     # port C (base p/ FFI)
+│   ├── cpp/                   # port C++
+│   ├── node/                  # package npm + TypeScript types
+│   ├── php/                   # composer package
+│   ├── java/                  # port Java
+│   ├── go/                    # port Go
+│   └── csharp/                # port C# / .NET
+├── .github/workflows/         # CI GitHub Actions (1 workflow por port)
+└── .forgejo/workflows/        # CI Forgejo Actions no Codeberg (1 por port)
 ```
 
 ## Histórico
 
-- 2026-05-27: projeto criado. Algoritmo extraído de um editor desktop legado descontinuado. 15 vetores sintéticos travados. Port Python liberado (19 testes passando). XMLs reais retirados do repo (LGPD). Repos públicos: GitHub `petrinhu/TISS_ANS_hash` + Codeberg `petrinhu/TISS_ANS_hash`. Predecessor arquivado.
+- 2026-05-27: projeto criado. Algoritmo extraído de um editor desktop legado descontinuado. 20 vetores de conformidade travados (18 positivos + 2 negativos). 9 ports liberados (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#), todos passando a conformidade byte-a-byte na CI das duas plataformas. XMLs reais retirados do repo (LGPD). Repos públicos: GitHub `petrinhu/TISS_ANS_hash` + Codeberg `petrinhu/TISS_ANS_hash`. Predecessor arquivado.
 
 ## Termos relacionados (busca / SEO)
 
@@ -196,7 +209,7 @@ Se você procurou por algum dos termos abaixo e chegou aqui, é exatamente este 
 - Padrão TISS, padrao TISS, padrao TISS hash, epilogo TISS hash
 - hash XML ANS, XML TISS hash, ans:hash, &lt;ans:hash&gt;
 - saúde suplementar Brasil hash, operadora hash TISS, prestador hash TISS
-- tiss-hash Python, tiss-hash Rust, tiss-hash Node, tiss-hash PHP, tiss-hash C, tiss-hash C++
+- tiss-hash Python, tiss-hash Rust, tiss-hash Node, tiss-hash PHP, tiss-hash C, tiss-hash C++, tiss-hash Java, tiss-hash Go, tiss-hash C#
 - ans hash xml utf-8, tiss hash não bate, hash tiss errado, hash tiss rejeitado, hash tiss divergente
 - ANS XML hash library, TISS supplementary health hash, Brazilian healthcare XML MD5
 
@@ -208,6 +221,6 @@ Especificação completa do algoritmo (incluindo a divergência UTF-8 vs ISO-885
 
 ## Contribuindo
 
-Para portar uma nova linguagem, ver [`docs/PORTING_GUIDE.md`](docs/PORTING_GUIDE.md). Para o fluxo de contribuição (dual push GitHub + Codeberg, Conventional Commits, checklist de PR), ver [`CONTRIBUTING.md`](CONTRIBUTING.md). PR deve ter os 15 vetores de conformidade passando.
+Para portar uma nova linguagem, ver [`docs/PORTING_GUIDE.md`](docs/PORTING_GUIDE.md). Para o fluxo de contribuição (dual push GitHub + Codeberg, Conventional Commits, checklist de PR), ver [`CONTRIBUTING.md`](CONTRIBUTING.md). PR deve ter os 20 vetores de conformidade passando.
 
 Para reportar imprecisão na spec ou nos vetores, abrir issue com label `spec` ou `conformance` no [GitHub](https://github.com/petrinhu/TISS_ANS_hash/issues) ou no [Codeberg](https://codeberg.org/petrinhu/TISS_ANS_hash/issues).

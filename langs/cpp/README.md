@@ -1,15 +1,15 @@
 # tiss-hash (port C++)
 
-Hash MD5 do epilogo `<ans:hash>` em XMLs do **Padrao TISS/ANS** (Padrao TISS 4.01.00). Implementacao em C++20 com `pugixml` (parser) + `OpenSSL EVP` (MD5).
+Hash MD5 do epilogo `<ans:hash>` em XMLs do **Padrao TISS/ANS**. Implementacao em C++20 com `pugixml` (parser) + `OpenSSL EVP` (MD5).
 
 - Spec canonica: [`docs/SPEC.md`](../../docs/SPEC.md) (raiz do repo).
 - Referencia executavel: [`conformance/reference.py`](../../conformance/reference.py).
 - 15 ambiguidades canonicas: [`conformance/AMBIGUITY_NOTES.md`](../../conformance/AMBIGUITY_NOTES.md).
-- Bate **byte-a-byte** com a referencia nos 15 vetores em [`conformance/vectors.json`](../../conformance/vectors.json).
+- Bate **byte-a-byte** com a referencia nos 20 vetores (18 positivos + 2 negativos) em [`conformance/vectors.json`](../../conformance/vectors.json).
 
 ## Status
 
-Alpha. **15/15 vetores PASS**. API publica estavel; ABI nao garantido ainda.
+Alpha. **20/20 vetores PASS** (18 positivos + 2 negativos: multi-hash e UTF-16 sao rejeitados). API publica estavel; ABI nao garantido ainda.
 
 ## Dependencias de sistema
 
@@ -37,7 +37,7 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-Resultado esperado: `15/15 PASS` no test case de conformidade.
+Resultado esperado: `20/20 PASS` no test case de conformidade.
 
 ### Sanitizers (recomendado em dev)
 
@@ -158,7 +158,7 @@ langs/cpp/
 ├── src/
 │   └── tiss_hash.cpp
 ├── tests/
-│   ├── test_conformance.cpp             # 15 vetores
+│   ├── test_conformance.cpp             # 20 vetores
 │   └── test_vectors.hpp                 # GERADO via tools/gen_test_vectors.py
 ├── third_party/
 │   └── doctest.h                        # MIT, v2.4.11
@@ -175,7 +175,7 @@ Mesmo algoritmo (mesmo manifesto de vetores, mesma referencia Python). Diferenca
 - Port C tem Makefile alternativo; port C++ so CMake.
 - Ambos compartilham OpenSSL EVP pra MD5.
 
-Os dois ports rodam o mesmo conjunto de 15 vetores e devem produzir hashes identicos: cross-validation entre duas engines de parser independentes.
+Os dois ports rodam o mesmo conjunto de 20 vetores e devem produzir hashes identicos (e rejeitar os mesmos 2 vetores negativos): cross-validation entre duas engines de parser independentes.
 
 ## Licenca
 

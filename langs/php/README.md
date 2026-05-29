@@ -1,8 +1,8 @@
 # tiss-hash (PHP)
 
-Hash MD5 do epilogo XML TISS/ANS (Padrao TISS 4.01.00, Troca de
-Informacoes em Saude Suplementar, regulamentado pela ANS). Implementacao
-PHP portavel, com parsing endurecido contra XXE e billion-laughs.
+Hash MD5 do epilogo XML TISS/ANS (Padrao TISS, Troca de Informacoes em
+Saude Suplementar, regulamentado pela ANS). Implementacao PHP portavel,
+com parsing endurecido contra XXE e billion-laughs.
 
 Este e o port PHP da biblioteca `lib_hash_ans`. Outras linguagens
 (Python, Rust, C, C++, Node.js, etc.) seguem o mesmo contrato e os mesmos
@@ -11,7 +11,7 @@ vetores de conformidade.
 - Repositorio principal: <https://github.com/petrinhu/TISS_ANS_hash>
 - Spec canonica: [`docs/SPEC.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/SPEC.md)
 - Implementacao de referencia: `conformance/reference.py` (Python + lxml)
-- Status: **alpha**, 15/15 vetores sinteticos PASS
+- Status: **alpha**, 20/20 vetores sinteticos PASS (18 positivos + 2 negativos)
 
 ## Requisitos
 
@@ -85,8 +85,9 @@ Resumo do que `TissHash::hashTiss` faz:
 5. Devolve o `md5()` minusculo (32 caracteres).
 
 **Atencao:** o encoding dos bytes alimentados ao MD5 e **UTF-8**, NAO
-ISO-8859-1. O manual TISS afirma o contrario, mas o valor que bate com
-os goldens reais e UTF-8.
+ISO-8859-1. O manual TISS afirma o contrario, mas o valor validado contra
+goldens reais (privados, fora do repo) e os vetores sinteticos publicos e
+UTF-8.
 
 Especificacao canonica completa: [`docs/SPEC.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/SPEC.md).
 
@@ -95,7 +96,9 @@ Catalogo de 15 ambiguidades canonicas que cada port deve reproduzir:
 
 ## Conformidade
 
-15/15 vetores sinteticos do manifesto publico (`conformance/vectors.json`):
+20/20 vetores sinteticos do manifesto publico (`conformance/vectors.json`):
+18 positivos + 2 negativos. A lista canonica vive em
+`conformance/vectors.json`.
 
 | Vetor | Cobre |
 | --- | --- |
@@ -105,15 +108,22 @@ Catalogo de 15 ambiguidades canonicas que cada port deve reproduzir:
 | `syn_crlf_value.xml` | CR/LF preservado dentro de valor |
 | `syn_multi_guia.xml` | ordem de documento |
 | `syn_entidades_xml.xml` | `&amp;`, `&lt;` etc. decodificadas |
+| `syn_entidade_numerica.xml` | entidades numericas (`&#nn;`) decodificadas |
 | `syn_cdata.xml` | CDATA = texto literal |
 | `syn_comentario.xml` | comentario XML ENTRA no concat |
 | `syn_atributo_folha.xml` | atributos NAO entram |
 | `syn_namespace_xsi.xml` | prefixo de namespace irrelevante |
+| `syn_default_ns.xml` | namespace default (sem prefixo) |
+| `syn_sem_hash.xml` | documento sem `<ans:hash>` (valido) |
 | `syn_whitespace_puro.xml` | espacos puros preservados |
 | `syn_leading_zero.xml` | zeros a esquerda mantidos |
 | `syn_iso8859_simbolos.xml` | `grau`, `paragrafo`, `meio`, `micro` validos em ISO-8859-1 |
 | `syn_perf_grande.xml` | ~600KB, ~1500 guias |
 | `syn_bom_utf8.xml` | BOM UTF-8 aceito |
+
+Mais 2 vetores **negativos** (esperam erro): `syn_multi_hash.xml`
+(multiplos `<ans:hash>` -> rejeitado) e `syn_utf16.xml` (UTF-16 fora de
+escopo -> rejeitado). Encodings suportados: ISO-8859-1 e UTF-8.
 
 Rodar os testes localmente:
 
@@ -123,7 +133,8 @@ composer install
 composer test
 ```
 
-Saida esperada: `OK (22 tests, ...)` (15 do data provider + 7 auxiliares).
+Saida esperada: `OK (... tests)`: 20 vetores de conformidade (data
+provider) mais testes auxiliares de API.
 
 ## Seguranca
 

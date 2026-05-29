@@ -1,6 +1,6 @@
 // tiss_hash.hpp - API publica do port C++ da tiss-hash.
 //
-// Hash MD5 do epilogo <ans:hash> em XMLs do Padrao TISS/ANS (4.01.00).
+// Hash MD5 do epilogo <ans:hash> em XMLs do Padrao TISS/ANS.
 //
 // Algoritmo canonico (definido em conformance/reference.py):
 //   1. Parse XML.

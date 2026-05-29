@@ -1,7 +1,7 @@
 //! # tiss-hash
 //!
 //! Hash MD5 do epílogo `<ans:hash>` em XMLs do **Padrão TISS/ANS** (Padrão TISS
-//! 4.01.00 — Troca de Informações em Saúde Suplementar, regulamentado pela
+//! — Troca de Informações em Saúde Suplementar, regulamentado pela
 //! Agência Nacional de Saúde Suplementar).
 //!
 //! Spec canônica: `docs/SPEC.md` no repositório principal.

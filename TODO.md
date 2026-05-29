@@ -12,17 +12,6 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 
 | ID | Onda | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| A-DOC5 | W3 | Docs | README raiz tabela de status: 9 ports prontos marcados "planejado"; "6 ports" deveria ser "9 ports". Subvende o projeto | Média | — | Baixa | ⏳ Pendente | — |
-| A-DOC6 | W3 | Docs | README raiz: caminho `langs/nodejs/` quebrado (real = `langs/node/`); árvore "Estrutura" lista só python/; "LICENSE (a criar inline)" desatualizado | Média | — | Baixa | ⏳ Pendente | — |
-| A-DOC7 | W3 | Docs | README badges: badge Codeberg/Woodpecker tende 404 (CI real é Forgejo Actions, sem .woodpecker.yml); GitHub badge aponta só python.yml de 9 | Média | F4.9 | Baixa | ⏳ Pendente | — |
-| A-DOC8 | W3 | Docs | `docs/USAGE.md` documenta só Python; 8 ports prontos marcados "em breve" | Média | — | Média | ⏳ Pendente | — |
-| A-DOC9 | W3 | Docs | CHANGELOG parou no 0.1.0 (só Python); Unreleased vazio; 8 ports Tier 2 + expansão 5→15 vetores ausentes | Média | — | Baixa | ⏳ Pendente | — |
-| A-LEG2 | W3 | Legal | Padronizar seção "Dependências e licenças" nos READMEs de C, Go, Node, Rust (C++ já tem); OpenSSL Apache-2.0 exige atribuição | Média | A-LEG1 | Baixa | ⏳ Pendente | — |
-| A-LEG3 | W3 | Legal | Versão TISS "4.01.00" hard-coded em packaging (Cargo/npm/composer/pom) + TISS-COMPLIANCE.md contradiz decisão de remover versão; risco de afirmação enganosa | Média | — | Baixa | ⏳ Pendente | — |
-| A-DOC10 | W3 | Docs | Memória + CLAUDE.md dizem Python ref usa "xml.etree+defusedxml"; `reference.py` usa lxml (origem da ambiguidade #2, comentários no concat) | Baixa | — | Baixa | ⏳ Pendente | — |
-| A-DOC12 | W3 | Docs | ADR-0003 cita `hash_tiss_bytes`/`HashTissBytes`; impl real = `hash_tiss`/`HashTiss`. groupId Maven `br.dev.petrus` (ADR) vs `dev.petrus` (Java README). Abrir ADR-0005 | Baixa | — | Baixa | ⏳ Pendente | — |
-| A-DOC13 | W3 | Docs | ADR-0004 cita workflows `lang-<x>.yml`+`conformance.yml`+`release-*.yml`; reais = `<x>.yml` sem extras. Nota de superseção / ADR-0005 | Baixa | — | Baixa | ⏳ Pendente | — |
-| A-DOC14 | W3 | Docs | Suavizar menção a "3 goldens reais" em prosa nos README rust/node/php (sem hash exposto, só contagem) | Baixa | — | Baixa | ⏳ Pendente | — |
 | A-CI1 | W4 | CI | ASan+UBSan no `cpp.yml` (espelhar c.yml) — C++ com pugixml+walker manual é onde sanitizer pega bug; infra local existe (build_san) mas não no CI | Média | F5.3 | Baixa | ⏳ Pendente | — |
 | A-CI2 | W4 | CI | clang na matrix C++ + Release em C/C++ (hoje C++ só g++-13 Debug; C só Debug) | Média | F5.3 | Baixa | ⏳ Pendente | — |
 | A-CI3 | W4 | CI | Lint gate nos 6 ports sem lint (PHP phpstan/phpcs, C/C++ clang-tidy+format, Node eslint, Java checkstyle/spotbugs, C# dotnet format). Só Python/Rust/Go têm | Média | — | Média | ⏳ Pendente | — |
@@ -113,14 +102,25 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | A-COV3 | — | Conformance | Vetor `syn_sem_hash.xml` (sem `<ans:hash>` = VÁLIDO, concatena tudo). 9 ports PASS sem erro | Média | — | Baixa | ✅ Concluído | ✓ |
 | A-COV4 | — | Conformance | Vetor `syn_entidade_numerica.xml` (`&#xE9;` hex + `&#231;&#227;` dec). 9 ports PASS (parser decodifica) | Baixa | — | Baixa | ✅ Concluído | ✓ |
 | A-COV5 | — | Conformance | UTF-16/UTF-32 FIXADO = **rejeitar** (escopo ISO-8859-1+UTF-8). reference + 9 ports detectam BOM e rejeitam; vetor negativo `syn_utf16.xml`; AMBIGUITY §11b + SPEC §2/§7 | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-DOC5 | — | Docs | README raiz: 9 ports prontos (✅), "6"→"9 ports", árvore lista os 9, contagem→20 vetores | Média | — | Baixa | ✅ Concluído | ✓ |
+| A-DOC6 | — | Docs | README raiz: `langs/nodejs/`→`langs/node/`; árvore Estrutura com 9 ports; "LICENSE a criar"→existe MIT | Média | — | Baixa | ✅ Concluído | ✓ |
+| A-DOC7 | — | Docs | README badges: removido badge Woodpecker 404 + badge python.yml; substituído por "CI: GitHub Actions + Forgejo Actions" textual (sem URL inventada) | Média | F4.9 | Baixa | ✅ Concluído | ✓ |
+| A-DOC8 | — | Docs | USAGE.md: bloco de uso pros 9 ports (removido "em breve"); contagem→20; API real verificada por linguagem | Média | — | Média | ✅ Concluído | ✓ |
+| A-DOC9 | — | Docs | CHANGELOG: Unreleased com 8 ports Tier 2 + expansão 5→15→20 vetores + rejeições + remoção PII + THIRD_PARTY_LICENSES | Média | — | Baixa | ✅ Concluído | ✓ |
+| A-LEG2 | — | Legal | Seção "Dependências e licenças" nos READMEs C/Go/Node/Rust (aponta THIRD_PARTY_LICENSES; OpenSSL Apache-2.0 atribuído no C) | Média | A-LEG1 | Baixa | ✅ Concluído | ✓ |
+| A-LEG3 | — | Legal | Versão TISS "4.01.00" removida de TUDO (5 da lista + 12 extras: READMEs, comentários código, CMakeLists, USAGE, LGPD-NOTE, TISS-COMPLIANCE). `git grep 4.01` = só falsos-positivos | Média | — | Baixa | ✅ Concluído | ✓ |
+| A-DOC10 | — | Docs | Memória atualizada: reference.py=lxml (oracle) vs port Python=xml.etree+defusedxml; comentário-no-concat = artefato lxml.iter congelado | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-DOC12 | — | Docs | ADR-0005 criado: nomenclatura `hash_tiss`, groupId `dev.petrus`, convenção `<lang>.yml`; emenda 0003/0004 (ponteiro, sem reescrever) | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-DOC13 | — | Docs | ADR-0004 workflows reconciliados no ADR-0005 (sem conformance.yml/release-*.yml; `<lang>.yml` nas 2 plataformas) | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| A-DOC14 | — | Docs | "3 goldens reais" suavizado em prosa READMEs rust/node/php (sem hash, sem nome de arquivo PII) | Baixa | — | Baixa | ✅ Concluído | ✓ |
 
 ---
 
 ## Resumo
 
-- **Concluído:** 59 itens (algoritmo, fixture **20 vetores** [18 positivos + 2 negativos], 9 ports byte-a-byte + rejeições, 18 jobs CI verdes GitHub+Codeberg, repos públicos dual-push, docs, ADRs, SEO Tier 1+2, A-SEC1 XXE, **W1: A-DOC1/2/3/4+A-LEG1+F1.10**, **W2: A-COV1-5**, A-LEG4).
-- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO). 31 achados; **A-SEC1 + W1 (5) + W2 (5) + A-LEG4 = 12 fechados**; 19 abertos. **Nenhum CRÍTICO restante** — v0.1.0 desbloqueada.
-- **W2 (2026-05-28):** contrato estendido com vetores negativos (`expect:"error"`). 2 decisões do líder: multi-hash → rejeita; UTF-16/32 → rejeita (escopo ISO-8859-1+UTF-8). reference.py + 9 ports + AMBIGUITY §9/§11b + SPEC §2/§7/§8. Verificado: C 20/20+XXE+valgrind, C++ ctest, Go, Python 24, Rust 21, Node 29, PHP 32, Java 28, C# 26.
+- **Concluído:** 70 itens (algoritmo, fixture **20 vetores** [18 positivos + 2 negativos], 9 ports byte-a-byte + rejeições, 18 jobs CI verdes GitHub+Codeberg, repos públicos dual-push, docs, ADRs 0001-0005, SEO Tier 1+2, A-SEC1 XXE, **W1: A-DOC1/2/3/4+A-LEG1+F1.10**, **W2: A-COV1-5**, **W3: A-DOC5/6/7/8/9/10/12/13/14+A-LEG2/3**, A-LEG4).
+- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO). 31 achados; **A-SEC1 + W1 (5) + W2 (5) + W3 (11) + A-LEG4 = 23 fechados**; 8 abertos (W4 CI/supply-chain 9 + W5/W6 release/pós). **Nenhum CRÍTICO restante** — v0.1.0 desbloqueada.
+- **W3 (2026-05-28):** accuracy de docs/legal. README raiz (9 ports, badges sem 404), USAGE 9 ports, CHANGELOG, ADR-0005 (nomenclatura/CI), atribuição 3rd-party por port, **remoção total da versão TISS "4.01.00"** (17 ocorrências), contagem 15→20 em todas as docs/READMEs, suavização goldens, memória A-DOC10. `git grep 4.01` e `15/15` limpos.
 
 ### Ondas de execução (paralelizáveis dentro da onda)
 
@@ -128,6 +128,7 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | :--- | :--- | :--- | :--- |
 | ~~**W1**~~ | ~~CRÍTICOS doc/legal~~ | ✅ A-DOC1, A-LEG1, A-DOC4/F1.10, A-DOC3, A-DOC2 | **FECHADA** |
 | ~~**W2**~~ | ~~Robustez conformance~~ | ✅ A-COV1-5 (3 vetores positivos + 2 negativos; reject multi-hash + UTF-16) | **FECHADA** |
+| ~~**W3**~~ | ~~Docs/legal accuracy~~ | ✅ A-DOC5/6/7/8/9/10/12/13/14 + A-LEG2/3 (+ ADR-0005) | **FECHADA** |
 | **W3** | Precisão de docs + atribuição legal — antes do anúncio | A-DOC5/6/7/8/9/10/12/13/14, A-LEG2/3 | README/CHANGELOG/ADR honestos |
 | **W4** | Hardening CI + supply-chain | A-CI1/2/3/4/5, A-SUP1/2/3, A-QA1 | sanitizer, lint, CVE, dependabot |
 | **W5** | Release v0.1.0 | F7.1 → F4.4 → F7.2 → A-REL1 | PyPI + GitHub/Codeberg + SBOM |

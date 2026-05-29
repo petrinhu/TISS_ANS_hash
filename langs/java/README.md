@@ -1,15 +1,15 @@
 # tiss-hash (Java)
 
 Port Java da biblioteca multi-linguagem **TISS_ANS_hash**. Calcula o hash MD5
-canônico do epílogo `<ans:hash>` em XMLs do Padrão TISS/ANS (Padrão TISS
-4.01.00, Troca de Informações em Saúde Suplementar, regulamentado pela
-Agência Nacional de Saúde Suplementar).
+canônico do epílogo `<ans:hash>` em XMLs do Padrão TISS/ANS (Troca de
+Informações em Saúde Suplementar, regulamentado pela Agência Nacional de
+Saúde Suplementar).
 
 - **Repo principal:** <https://github.com/petrinhu/TISS_ANS_hash>
 - **Spec canônica:** [`docs/SPEC.md`](../../docs/SPEC.md)
 - **Referência:** [`conformance/reference.py`](../../conformance/reference.py)
 - **Licença:** MIT
-- **Status:** alpha, 15/15 vetores de conformidade passando
+- **Status:** alpha, 20/20 vetores de conformidade passando (18 positivos + 2 negativos)
 - **Compat:** JDK 17+ (testado em OpenJDK 25)
 
 ## Coordenadas Maven
@@ -70,7 +70,7 @@ decodificadas, exigência do algoritmo (ver
 
 1. Strip de BOM UTF-8 se presente.
 2. Parse com `DocumentBuilder` seguro, namespace-aware, comentários preservados.
-3. Zera o conteúdo do primeiro `<ans:hash>` (qualquer prefixo, namespace TISS).
+3. Zera o conteúdo do `<ans:hash>` (qualquer prefixo, namespace TISS). Documento sem `<ans:hash>` é válido; com múltiplos `<ans:hash>` é **rejeitado**.
 4. Concatena o texto de cada **nó-folha** (Element ou Comment cujos filhos NÃO contêm Element/Comment/PI), em ordem de documento.
 5. MD5 dos bytes **UTF-8** da string concatenada, não ISO-8859-1, apesar do manual.
 6. Hex lowercase, 32 caracteres.
@@ -83,7 +83,7 @@ Detalhes e ambiguidades fixadas: [`conformance/AMBIGUITY_NOTES.md`](../../confor
 
 ```bash
 cd langs/java
-mvn -q test     # roda os 15 vetores + testes auxiliares
+mvn -q test     # roda os 20 vetores + testes auxiliares
 mvn -q package  # gera target/tiss-hash-0.1.0.jar
 ```
 
@@ -113,9 +113,10 @@ java -jar .libs/junit-platform-console-standalone.jar \
 
 ## Conformidade
 
-Roda os 15 vetores sintéticos em `conformance/vectors.json`. Bate
-byte-a-byte com a referência Python e com os demais ports (C, C++, Rust,
-Node, PHP, Python).
+Roda os 20 vetores sintéticos (18 positivos + 2 negativos) em
+`conformance/vectors.json`. Bate byte-a-byte com a referência Python e com
+os demais ports (C, C++, Rust, Node, PHP, Python, Go, C#). A lista canônica
+vive em `conformance/vectors.json`.
 
 ```
 ConformanceTest > conformance(syn_minimal.xml)             OK
@@ -124,15 +125,20 @@ ConformanceTest > conformance(syn_empty.xml)               OK
 ConformanceTest > conformance(syn_crlf_value.xml)          OK
 ConformanceTest > conformance(syn_multi_guia.xml)          OK
 ConformanceTest > conformance(syn_entidades_xml.xml)       OK
+ConformanceTest > conformance(syn_entidade_numerica.xml)   OK
 ConformanceTest > conformance(syn_cdata.xml)               OK
 ConformanceTest > conformance(syn_comentario.xml)          OK
 ConformanceTest > conformance(syn_atributo_folha.xml)      OK
 ConformanceTest > conformance(syn_namespace_xsi.xml)       OK
+ConformanceTest > conformance(syn_default_ns.xml)          OK
+ConformanceTest > conformance(syn_sem_hash.xml)            OK
 ConformanceTest > conformance(syn_whitespace_puro.xml)     OK
 ConformanceTest > conformance(syn_leading_zero.xml)        OK
 ConformanceTest > conformance(syn_iso8859_simbolos.xml)    OK
 ConformanceTest > conformance(syn_perf_grande.xml)         OK
 ConformanceTest > conformance(syn_bom_utf8.xml)            OK
+ConformanceTest > conformance(syn_multi_hash.xml)          OK  (rejeitado: multiplos <ans:hash>)
+ConformanceTest > conformance(syn_utf16.xml)               OK  (rejeitado: UTF-16 fora de escopo)
 ```
 
 ## Licença
