@@ -44,7 +44,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/petrinhu/TISS_ANS_hash.git",
+    "url": "git+https://github.com/petrinhu/TISS_ANS_hash.git",
     "directory": "langs/node"
   },
   "homepage": "https://github.com/petrinhu/TISS_ANS_hash",

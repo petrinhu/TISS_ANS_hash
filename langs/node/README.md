@@ -52,9 +52,12 @@ a baixa e instala. O comando abaixo adiciona esta lib ao seu projeto:
 npm install tiss-hash
 ```
 
-> A publicação no npm registry (o repositório oficial de pacotes Node.js) ainda
-> não foi feita. Por enquanto, instale diretamente a partir do checkout do
-> repositório (a pasta que você baixou com `git clone`):
+O pacote está publicado no npm registry (o repositório oficial de pacotes
+Node.js): <https://www.npmjs.com/package/tiss-hash>.
+
+> **Alternativa: instalar do fonte (a partir do checkout).** Se você clonou o
+> repositório e quer usar o código local, aponte o `npm install` para a pasta do
+> port:
 >
 > ```bash
 > npm install /caminho/para/lib_hash_ans/langs/node
