@@ -44,11 +44,21 @@ Version", é a versão mínima de Rust suportada.)
 ## Quickstart
 
 Uma **dependência** ("crate", no jargão Rust) é uma biblioteca de terceiros que
-o seu projeto usa. O comando abaixo adiciona esta lib como dependência do seu
-projeto:
+o seu projeto usa. Esta crate está publicada no
+[crates.io](https://crates.io/crates/tiss-hash) (documentação da API em
+[docs.rs/tiss-hash](https://docs.rs/tiss-hash)). O comando abaixo, rodado dentro
+do seu projeto (a pasta com o `Cargo.toml`), baixa a crate e a adiciona como
+dependência:
 
 ```bash
 cargo add tiss-hash
+```
+
+Em alternativa, escreva à mão na seção `[dependencies]` do seu `Cargo.toml`:
+
+```toml
+[dependencies]
+tiss-hash = "0.1"
 ```
 
 ```rust

@@ -29,10 +29,11 @@ Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, **Kotlin, Delphi/FPC, Dart, WA
 
 - **Python (PyPI)**: `pip install tiss-hash`, publicado em [pypi.org/project/tiss-hash](https://pypi.org/project/tiss-hash/).
 - **Node.js (npm)**: `npm install tiss-hash`, publicado em [npmjs.com/package/tiss-hash](https://www.npmjs.com/package/tiss-hash).
+- **Rust (crates.io)**: `cargo add tiss-hash`, publicado em [crates.io/crates/tiss-hash](https://crates.io/crates/tiss-hash) (docs em [docs.rs/tiss-hash](https://docs.rs/tiss-hash)).
 - **Go**: `go get github.com/petrinhu/TISS_ANS_hash/langs/go@v0.2.1` (resolvido pela tag, via proxy do Go / pkg.go.dev).
 - **Código-fonte**: tarball desta release (anexo) ou `git clone` na tag `v0.2.1`. Todos os ports buildam do fonte (README de cada `langs/<lang>/`).
 - **Artefatos prontos** (anexos): wheel/sdist (Python), jar (Java, Kotlin), nupkg (C#), crate (Rust), tgz (Node), libs (C), pkg WASM. A partir da v0.2.1, **todos os artefatos prebuilt estão presentes nos releases dos dois hosts** (GitHub e Codeberg), incluindo o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`). O port Kotlin também builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)).
-- **Demais registries** (crates.io, Packagist, Maven Central, NuGet, pub.dev, e npm para o WASM): em preparação; workflows prontos, ver [`docs/RELEASING.md`](docs/RELEASING.md). Por enquanto, instalar esses ports a partir do checkout (ver [`docs/USAGE.md`](docs/USAGE.md)).
+- **Demais registries** (Packagist, Maven Central, NuGet, pub.dev, e npm para o WASM): em preparação; workflows prontos, ver [`docs/RELEASING.md`](docs/RELEASING.md). Por enquanto, instalar esses ports a partir do checkout (ver [`docs/USAGE.md`](docs/USAGE.md)).
 
 ## Verificação de integridade
 

@@ -7,6 +7,7 @@
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions%20%2B%20Forgejo%20Actions-success)](https://github.com/petrinhu/TISS_ANS_hash/actions)
 [![PyPI version](https://img.shields.io/pypi/v/tiss-hash.svg)](https://pypi.org/project/tiss-hash/)
 [![npm version](https://img.shields.io/npm/v/tiss-hash)](https://www.npmjs.com/package/tiss-hash)
+[![crates.io version](https://img.shields.io/crates/v/tiss-hash)](https://crates.io/crates/tiss-hash)
 [![Spec](https://img.shields.io/badge/spec-v1.0.0-blue)](docs/SPEC.md)
 [![Conformance Vectors](https://img.shields.io/badge/conformance-20%20vectors-success)](conformance/vectors.json)
 [![TISS Standard](https://img.shields.io/badge/Padr%C3%A3o-TISS-blue)](docs/SPEC.md)
@@ -122,6 +123,22 @@ import { hashTissFile } from 'tiss-hash';
 
 const digest = await hashTissFile('envio.xml');
 console.log(digest);  // 32 chars hex minúsculos
+```
+
+### Usando o port Rust (pronto)
+
+```bash
+cargo add tiss-hash
+```
+
+```rust
+use tiss_hash::hash_tiss_file;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let digest = hash_tiss_file("envio.xml")?;
+    println!("{digest}");  // 32 chars hex minúsculos
+    Ok(())
+}
 ```
 
 Mais exemplos, receitas e FAQ em [`docs/USAGE.md`](docs/USAGE.md).
