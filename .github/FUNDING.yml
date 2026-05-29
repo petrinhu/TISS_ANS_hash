@@ -2,11 +2,13 @@
 # Habilita o botão "Sponsor" no GitHub.
 # Documentação: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
 #
-# Atualmente o projeto NÃO possui canal de patrocínio ativo.
-# Preencher quando houver Open Collective, GitHub Sponsors, Liberapay, etc.
+# Canal de patrocínio = GitHub Sponsors (o mais usado em repos GitHub).
+# NOTA: o botão só renderiza se a conta `petrinhu` estiver inscrita/aprovada
+# no GitHub Sponsors (github.com/sponsors). Se ainda não estiver, inscrever
+# lá; ou trocar por um canal sem enrollment abaixo.
+github: [petrinhu]
 #
-# Exemplo (descomentar e preencher quando aplicável):
-# github: [petrinhu]
+# Alternativas (descomentar a que tiver conta):
 # open_collective: tiss-ans-hash
 # liberapay: petrinhu
 # ko_fi: petrinhu
