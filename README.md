@@ -240,6 +240,16 @@ Se você procurou por algum dos termos abaixo e chegou aqui, é exatamente este 
 
 Especificação completa do algoritmo (incluindo a divergência UTF-8 vs ISO-8859-1 do manual oficial): [`docs/SPEC.md`](docs/SPEC.md).
 
+## ⭐ Changelog do teu apoio
+
+### Added
+- 1 estrela no topo deste repo (opcional, mas faz o maintainer solo sorrir).
+
+### Fixed
+- Síndrome do impostor de quem mantém FOSS de graça no fim de semana.
+
+Custo: 1 clique. SemVer: não quebra nada.
+
 ## Licença
 
 [MIT](LICENSE). Uso livre, comercial e não-comercial, com manutenção do aviso de copyright.
