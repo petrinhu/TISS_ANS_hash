@@ -21,7 +21,7 @@ exclude = [
 # Dependências runtime: roxmltree (DOM, semântica próxima da referência Python
 # `lxml`) + md-5 da RustCrypto. Zero outras deps obrigatórias.
 [dependencies]
-roxmltree = "0.20"
+roxmltree = "0.21"
 md-5 = "0.10"
 
 [dev-dependencies]
