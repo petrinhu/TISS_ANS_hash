@@ -61,18 +61,10 @@ jobs:
         working-directory: langs/rust
         run: cargo test --all-targets --verbose
 
-      # CVE gate (A-SUP2). cargo-audit varre Cargo.lock contra RustSec advisory-db.
-      - name: cargo audit
-        working-directory: langs/rust
-        run: |
-          cargo install cargo-audit --locked
-          cargo audit
-
-      # Coverage (A-CI4). Só mede/reporta — sem threshold que falhe.
-      # cargo-mutants (A-QA1) NÃO roda aqui: é muito lento p/ o runner Codeberg.
-      # Mutation fica no .github (job manual via workflow_dispatch).
-      - name: cargo tarpaulin (coverage)
-        working-directory: langs/rust
-        run: |
-          cargo install cargo-tarpaulin --locked
-          cargo tarpaulin --out Stdout --skip-clean
+      # NOTA: cargo-audit (CVE, A-SUP2), cargo-tarpaulin (coverage, A-CI4) e
+      # cargo-mutants (A-QA1) NÃO rodam no Codeberg. Cada `cargo install` compila
+      # um binário grande do zero (~5-8min cada) e estoura o budget do runner
+      # codeberg-medium (run cancelado em 10m01s no push d2d658b/697cb18).
+      # Esses gates rodam no .github/workflows/rust.yml (ubuntu-latest, sem aperto
+      # de tempo). O Codeberg mantém o que importa pra paridade: fmt+clippy+test
+      # (conformance byte-a-byte). Ver TODO A-SUP2/A-CI4/A-QA1.
