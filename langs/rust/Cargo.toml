@@ -22,7 +22,7 @@ exclude = [
 # `lxml`) + md-5 da RustCrypto. Zero outras deps obrigatórias.
 [dependencies]
 roxmltree = "0.20"
-md-5 = "0.10"
+md-5 = "0.11"
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }
