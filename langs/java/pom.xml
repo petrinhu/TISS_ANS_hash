@@ -57,7 +57,7 @@
     <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
     <checkstyle.core.version>10.21.4</checkstyle.core.version>
     <jacoco.version>0.8.12</jacoco.version>
-    <versions.plugin.version>2.18.0</versions.plugin.version>
+    <versions.plugin.version>2.21.0</versions.plugin.version>
   </properties>
 
   <!-- Zero dependências runtime: JDK puro (javax.xml + java.security.MessageDigest). -->
