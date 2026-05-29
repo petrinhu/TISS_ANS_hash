@@ -1,4 +1,6 @@
-# TISS_ANS_hash v0.2.0
+# TISS_ANS_hash v0.2.1
+
+Patch sobre a v0.2.0: o **jar prebuilt do Kotlin volta a ser anexado** ao release (build do Kotlin no CI corrigido), e adiciona o **`AGENTS.md`** (guia para IA/agente que usa a lib). 13 ports, sem mudança no algoritmo. Detalhe no [`CHANGELOG.md`](CHANGELOG.md).
 
 Expansão para **13 ports**. A biblioteca calcula o **hash MD5 do epílogo (`<ans:hash>`) de documentos XML do Padrão TISS/ANS** (o valor que a ANS aceita para garantir que um lote não foi adulterado). Segredo: os bytes alimentados ao MD5 são **UTF-8**, não ISO-8859-1.
 

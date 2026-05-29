@@ -10,6 +10,22 @@ A versão de **cada port** é independente, declarada em seu próprio pacote (ex
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-29
+
+Patch: corrige o conjunto de artefatos do release e adiciona guia para IA. Sem mudança no algoritmo (13 ports seguem 20/20 + 3/3 goldens).
+
+### Fixed
+
+- **CI do port Kotlin**: `build.sh` resolvia `kotlin-stdlib.jar` por caminho frágil e falhava no runner (kotlinc instalado via symlink/versão diferente). Agora resolve dinâmico (`readlink -f` do binário + fallbacks). Como efeito, o **jar prebuilt do Kotlin volta a ser anexado ao release** (estava ausente no GitHub v0.2.0).
+
+### Added
+
+- **`AGENTS.md`** na raiz: guia tool-agnóstico para uma IA/agente de código que baixa e USA a lib (não reimplementar; contrato de rejeição; validar contra os vetores; regras de privacidade/LGPD; nunca expor hash real, versão do Padrão TISS ou operadora). README aponta para ele.
+
+### Changed
+
+- Documentação alinhada para **13 ports** em todas as páginas (CONCEITOS, TUTORIAL, FAQ, SPEC, PORTING_GUIDE, USAGE); nota de "artefatos prebuilt por host".
+
 ## [0.2.0] - 2026-05-29
 
 Expansão para **13 ports**. Quatro linguagens novas, todas passando os mesmos 20 vetores de conformidade (18 positivos + 2 negativos) byte a byte e validadas contra os 3 goldens reais (13/13 ports x 3/3 goldens PASS). Os 9 ports da 0.1.0 seguem inalterados.
@@ -69,6 +85,7 @@ Primeiro release público. Algoritmo do hash MD5 do epílogo do Padrão TISS/ANS
 
 ---
 
-[Unreleased]: https://github.com/petrinhu/TISS_ANS_hash/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/petrinhu/TISS_ANS_hash/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/petrinhu/TISS_ANS_hash/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/petrinhu/TISS_ANS_hash/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/petrinhu/TISS_ANS_hash/releases/tag/v0.1.0
