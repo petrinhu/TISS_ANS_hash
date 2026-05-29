@@ -23,10 +23,10 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | F8.8 | W6 | SEO (Tier 3) | Blog post anúncio: DEV.to + LinkedIn + fóruns TI saúde suplementar BR | Baixa | F7.1 | Média | ⏳ Pendente | — |
 | F8.9 | W6 | SEO (Tier 3) | GitHub Pages site (Hugo/MkDocs) com domínio próprio ou subpath github.io | Baixa | F8.1 | Média | ⏳ Pendente | — |
 | F8.10 | W6 | SEO (Tier 3) | Submit conda-forge (overlap c/ F7.4) | Baixa | F7.1 | Baixa | ⏳ Pendente | — |
-| F6.2 | W6 | Port Kotlin | langs/kotlin/ ou compartilhado com Java via JVM | Média | F6.1 | Baixa | ⏳ Pendente | — |
-| F6.6 | W6 | Port Dart | langs/dart/ (package:xml, pub.dev) | Baixa | F2.4 | Média | ⏳ Pendente | — |
-| F6.4 | W6 | Port Delphi | langs/delphi/ (Object Pascal, OmniXML/MSXML, FPC compat) | Média | F2.4 | Alta | ⏳ Pendente | — |
-| F6.7 | W6 | Port WASM | langs/wasm/ (Rust core compilado, browser-side, LGPD-friendly) | Baixa | F5.1 | Alta | 💡 Decisão tomada | — |
+| F6.2 | W6 | Port Kotlin | langs/kotlin/ (JVM, espelha Java/DocumentBuilder). **v0.2.0**. Toolchain kotlinc 2.1.0 em ~/sdks. backend-engineer | Média | F6.1 | Baixa | 🔄 Em andamento | — |
+| F6.6 | W6 | Port Dart | langs/dart/ (package:xml, pub.dev). **v0.2.0**. Toolchain dart 3.12.1 em ~/sdks. backend-engineer | Baixa | F2.4 | Média | 🔄 Em andamento | — |
+| F6.4 | W6 | Port Delphi/FPC | langs/delphi/ (Object Pascal, fcl-xml DOM, FPC compat). **v0.2.0**. Toolchain fpc 3.2.3. backend-engineer | Média | F2.4 | Alta | 🔄 Em andamento | — |
+| F6.7 | W6 | Port WASM | langs/wasm/ (core Rust via wasm-bindgen → browser; LGPD: hash client-side, XML não sai da máquina). **v0.2.0**. rust wasm32 + wasm-pack. ADR-0006 + backend-engineer | Baixa | F5.1 | Alta | 🔄 Em andamento | — |
 | F4.2b | W6 | CI | Alternativa self-host forgejo-runner (backup) | Baixa | F4.2 | Média | ⏳ Pendente | — |
 | A-DOC11 | W6 | Docs | Ratificar ou agendar decisão sobre AMBIGUITY_NOTES §2 (comentários XML entram no concat) — travado em 9 ports mas ninguém decidiu de propósito | Baixa | — | Baixa | 💡 Decisão tomada | — |
 

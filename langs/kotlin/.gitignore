@@ -1,0 +1,14 @@
+build/
+.gradle/
+out/
+.libs/
+.idea/
+*.iml
+.kotlin/
+.vscode/
+.classpath
+.project
+.settings/
+.DS_Store
+*.class
+hs_err_pid*

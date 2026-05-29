@@ -1,0 +1,26 @@
+name: tiss_hash
+description: >-
+  Hash MD5 do epilogo <ans:hash> em documentos do Padrao TISS/ANS (Troca de
+  Informacoes em Saude Suplementar). Port Dart da lib multi-linguagem tiss-hash.
+version: 0.1.0
+repository: https://github.com/petrinhu/TISS_ANS_hash
+homepage: https://github.com/petrinhu/TISS_ANS_hash
+issue_tracker: https://github.com/petrinhu/TISS_ANS_hash/issues
+
+topics:
+  - tiss
+  - ans
+  - md5
+  - xml
+  - healthcare
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  xml: ^6.5.0
+  crypto: ^3.0.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0

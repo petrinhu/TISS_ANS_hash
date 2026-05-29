@@ -1,4 +1,12 @@
 porte=solo
-variante=Pipeline-Sprint (elevacao cirurgica: CISO-light + CLO-light)
-data=2026-05-28
-nota=lib multi-linguagem open-source MIT; insumo TISS PII justifica supply-chain + LGPD elevados; demais C-levels dormentes
+variante=Pipeline-Sprint (elevacao cirurgica LIGHT: CISO + CLO em modo verificacao)
+data=2026-05-29
+re-route=mantido solo apos v0.1.0 RELEASED; +4 ports (Kotlin/Delphi-FPC/Dart/WASM) = mesma natureza de trabalho, nao mudanca organizacional; GTM = lancamento pontual (1 post + awesome-lists via technical-writer), NAO operacao CMO continua
+ativos=Celso(go/no-go), Caetano(arq 4 ports)
+light=Narciso(WASM nao vaza PII + tokens fora do repo), Claudio(MIT propaga 4 ports + atrib 3rd-party)
+dormentes=Capitolino, Camilo, Cosmo, Candido, Confucio, Cicero
+agents=backend-engineer(Kotlin/Dart/Delphi), software-architect(ADR WASM), qa-engineer(conformance 4 ports + A-QA2), devops-sre(4 CI + registries gated), technical-writer(blog+awesome-lists)
+cerimonia=nenhuma formal; Kanban leve via TODO.md W6; 4 ports paralelizaveis (dispatch paralelo)
+gatilho-proximo=re-avaliar no fechamento v0.2.0; ANTES disso se: (a) issues/PRs externos recorrentes, (b) intencao de monetizar -> CFO+CRO, (c) tracao mensuravel em registry -> CPO, (d) novo req regulatorio concreto -> CISO/CLO de light p/ pleno
+bloqueio=registries esperam conta+token do lider (decisao soberana, nao delegavel); workflows gated ja prontos (F4.4)
+nota=PII/LGPD + supply-chain ja resolvidos (A-DOC1 purgou PII, A-SUP1-3 + CVE gate + dependabot); CISO/CLO ficam LIGHT

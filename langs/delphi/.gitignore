@@ -1,0 +1,14 @@
+# Artefatos de build do Free Pascal / Delphi
+build/
+*.o
+*.ppu
+*.ppl
+*.a
+*.or
+*.compiled
+*.dcu
+*.exe
+*.dbg
+__history/
+__recovery/
+backup/

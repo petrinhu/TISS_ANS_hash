@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tiss-hash-wasm: hash TISS 100% no browser</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 48rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        line-height: 1.5;
+      }
+      .privacy {
+        background: #e8f5e9;
+        border: 1px solid #66bb6a;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        margin: 1rem 0;
+      }
+      code,
+      output {
+        font-family: ui-monospace, monospace;
+      }
+      output {
+        display: block;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #f5f5f5;
+        border-radius: 0.5rem;
+        word-break: break-all;
+        min-height: 1.5rem;
+      }
+      .err {
+        color: #c62828;
+      }
+      .ok {
+        color: #2e7d32;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>tiss-hash-wasm</h1>
+    <p>
+      Calcula o hash MD5 do epílogo <code>&lt;ans:hash&gt;</code> de um XML do
+      Padrão TISS/ANS, <strong>inteiramente dentro desta aba</strong>.
+    </p>
+
+    <div class="privacy">
+      <strong>Privacidade (LGPD):</strong> o arquivo XML é lido e hasheado
+      localmente, no seu navegador, via WebAssembly. <strong>Nada é enviado a
+      nenhum servidor</strong>: nem o XML (que pode conter dados de paciente),
+      nem o hash. Você pode desconectar a internet depois de carregar a página
+      que continua funcionando.
+    </div>
+
+    <p>
+      <input type="file" id="file" accept=".xml,text/xml,application/xml" />
+    </p>
+    <output id="out">Selecione um arquivo XML TISS para calcular o hash.</output>
+
+    <p style="margin-top: 2rem; font-size: 0.9rem; color: #666">
+      Como servir localmente (o navegador exige HTTP, não <code>file://</code>,
+      para carregar o módulo WASM):
+    </p>
+    <pre style="font-size: 0.85rem"><code>cd langs/wasm
+python3 -m http.server 8000
+# abra http://localhost:8000/examples/browser/</code></pre>
+
+    <script type="module">
+      // Importa o binding ESM (target=web) e o init async (default export).
+      import init, {
+        hashTiss,
+        tissNamespace,
+      } from '../../pkg/web/tiss_hash_wasm.js';
+
+      const out = document.getElementById('out');
+      const fileInput = document.getElementById('file');
+
+      // Inicializa o módulo WASM uma vez (carrega o .wasm via fetch).
+      const ready = init();
+      ready.then(() => {
+        console.log('WASM pronto. Namespace TISS:', tissNamespace());
+      });
+
+      fileInput.addEventListener('change', async (ev) => {
+        const file = ev.target.files?.[0];
+        if (!file) return;
+        out.className = '';
+        out.textContent = 'Calculando...';
+        try {
+          await ready;
+          const bytes = new Uint8Array(await file.arrayBuffer());
+          const t0 = performance.now();
+          const hash = hashTiss(bytes); // pode lançar (XML inválido / rejeitado)
+          const dt = (performance.now() - t0).toFixed(1);
+          out.className = 'ok';
+          out.textContent = `${hash}  (${file.name}, ${dt} ms)`;
+        } catch (err) {
+          // A mensagem vem do core Rust e não contém PII.
+          out.className = 'err';
+          out.textContent = `Rejeitado: ${err.message}`;
+        }
+      });
+    </script>
+  </body>
+</html>

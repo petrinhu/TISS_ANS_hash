@@ -1,0 +1,18 @@
+# Nota: a re-inclusao do diretorio de codigo-fonte `lib/` (excluido por engano
+# pela regra `lib/` do template Python no .gitignore da raiz) e feita LA na
+# raiz, com `!langs/dart/lib/`. O `dart pub` nao reverte negacao de
+# diretorio-pai excluido feita em .gitignore aninhado, por isso fica na raiz.
+
+# Dart / pub
+.dart_tool/
+.packages
+build/
+pubspec.lock
+doc/api/
+
+# Cobertura
+coverage/
+
+# XMLs reais com PII (LGPD) — jamais versionar
+**/real_*.xml
+*.pii.xml

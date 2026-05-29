@@ -1,0 +1,49 @@
+{
+  "name": "tiss-hash-wasm",
+  "version": "0.1.0",
+  "description": "Hash MD5 do epílogo XML TISS/ANS em WebAssembly. Roda 100% client-side no browser (PII nunca trafega). Core Rust reusado via wasm-bindgen.",
+  "license": "MIT",
+  "author": "Petrus Silva Costa <petrinhu@yahoo.com.br>",
+  "homepage": "https://github.com/petrinhu/TISS_ANS_hash",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/petrinhu/TISS_ANS_hash.git",
+    "directory": "langs/wasm"
+  },
+  "keywords": [
+    "tiss",
+    "ans",
+    "md5",
+    "wasm",
+    "webassembly",
+    "xml",
+    "healthcare",
+    "lgpd",
+    "client-side"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "//exports": "Entrada padrão (browser/edge) = pkg/web (ESM com init async). Subpath './node' = pkg/node (CJS, .wasm carregado sincronamente no load).",
+  "exports": {
+    ".": {
+      "types": "./pkg/web/tiss_hash_wasm.d.ts",
+      "import": "./pkg/web/tiss_hash_wasm.js"
+    },
+    "./node": {
+      "types": "./pkg/node/tiss_hash_wasm.d.ts",
+      "require": "./pkg/node/tiss_hash_wasm.js"
+    }
+  },
+  "files": [
+    "pkg/web",
+    "pkg/node",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bash ./build.sh",
+    "test": "node test/conformance.mjs"
+  }
+}

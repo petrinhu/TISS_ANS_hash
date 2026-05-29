@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-License-Identifier: MIT
+  Copyright (c) Petrus Silva Costa
+
+  Manifesto Maven ALTERNATIVO do port Kotlin (para quem prefere Maven +
+  kotlin-maven-plugin a Gradle). O build de referência hoje é ./build.sh
+  (kotlinc + java puros), por causa do JDK 25 no ambiente alvo. Este pom mira
+  a publicação futura em Maven Central com coords dev.petrus:tiss-hash-kotlin.
+  Use um JDK 17/21 LTS como toolchain ao buildar com Maven (kotlin-maven-plugin
+  2.1.0 ainda não suporta rodar sob JDK 25).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>dev.petrus</groupId>
+  <artifactId>tiss-hash-kotlin</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <name>tiss-hash (Kotlin)</name>
+  <description>
+    Hash MD5 canônico do epílogo &lt;ans:hash&gt; de documentos do Padrão
+    TISS/ANS. Port Kotlin/JVM da lib multi-linguagem TISS_ANS_hash.
+  </description>
+  <url>https://github.com/petrinhu/TISS_ANS_hash</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>petrinhu</id>
+      <name>Petrus Silva Costa</name>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>https://github.com/petrinhu/TISS_ANS_hash</url>
+    <connection>scm:git:https://github.com/petrinhu/TISS_ANS_hash.git</connection>
+  </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <kotlin.version>2.1.0</kotlin.version>
+    <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
+    <maven.compiler.release>17</maven.compiler.release>
+    <junit.version>5.10.2</junit.version>
+  </properties>
+
+  <dependencies>
+    <!-- Runtime: só kotlin-stdlib. Parser XML e MD5 vêm da JDK. -->
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+
+    <!-- Teste: org.json (carrega vectors.json no harness) + JUnit. -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20240303</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <version>${kotlin.version}</version>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <phase>compile</phase>
+            <goals><goal>compile</goal></goals>
+          </execution>
+          <execution>
+            <id>test-compile</id>
+            <phase>test-compile</phase>
+            <goals><goal>test-compile</goal></goals>
+          </execution>
+        </executions>
+        <configuration>
+          <jvmTarget>${kotlin.compiler.jvmTarget}</jvmTarget>
+          <args>
+            <arg>-Xexplicit-api=strict</arg>
+          </args>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>

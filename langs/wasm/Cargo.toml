@@ -1,0 +1,34 @@
+[package]
+name = "tiss-hash-wasm"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+description = "Port WASM do hash MD5 do epílogo XML TISS/ANS. Reusa o core Rust (langs/rust) via wasm-bindgen; roda 100% client-side no browser (PII nunca trafega)."
+repository = "https://github.com/petrinhu/TISS_ANS_hash"
+homepage = "https://github.com/petrinhu/TISS_ANS_hash"
+readme = "README.md"
+keywords = ["tiss", "ans", "md5", "wasm", "healthcare"]
+categories = ["wasm", "cryptography", "parser-implementations"]
+authors = ["Petrus Silva Costa <petrinhu@yahoo.com.br>"]
+
+[lib]
+# cdylib: alvo WebAssembly carregável pelo wasm-bindgen.
+crate-type = ["cdylib"]
+
+[dependencies]
+# Core nativo Rust: NÃO reimplementar (ADR-0006). Path-dependency = 1 fonte
+# de verdade Rust para o algoritmo (nativo + WASM compartilham o mesmo código).
+tiss-hash = { path = "../rust" }
+# wasm-bindgen: a versão DEVE casar com a wasm-bindgen-cli instalada (0.2.122).
+# Drift de versão entre lib e CLI quebra o glue. Pin com `=` é intencional.
+wasm-bindgen = "=0.2.122"
+
+[profile.release]
+# Otimizar para tamanho do .wasm (z = menor binário). O parser roxmltree +
+# md-5 dominam o tamanho; aceitável para hashear um XML na aba do browser.
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -37,6 +37,12 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Excecao: o port Dart usa `lib/` como diretorio de CODIGO-FONTE (convencao
+# pub.dev), nao como artefato de build Python. Re-inclui essa subarvore (a
+# regra `lib/` acima vem do template Python e a excluiria por engano).
+!langs/dart/lib/
+!langs/dart/lib/**
+
 # Virtualenvs
 .venv/
 venv/

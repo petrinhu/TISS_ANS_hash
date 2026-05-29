@@ -1,0 +1,4 @@
+# Excluido do pacote publicado no pub.dev (mas mantido no repo git).
+tool/
+coverage/
+analysis_options.yaml
