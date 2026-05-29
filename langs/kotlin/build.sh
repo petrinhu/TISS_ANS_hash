@@ -55,10 +55,59 @@ require_tool kotlinc
 require_tool java
 
 # --- localizar kotlin-stdlib.jar (vem com a instalação do kotlinc) ----------
-KOTLINC_BIN="$(command -v kotlinc)"
-KOTLIN_HOME="$(cd "$(dirname "$KOTLINC_BIN")/.." && pwd)"
-STDLIB="$KOTLIN_HOME/lib/kotlin-stdlib.jar"
-[[ -f "$STDLIB" ]] || { err "kotlin-stdlib.jar não encontrado em $KOTLIN_HOME/lib"; exit 1; }
+# Resolução PORTÁVEL: o jar tem que ser achado tanto com o kotlinc 2.1.0 de
+# ~/sdks (binário real, bin/ irmão de lib/) quanto com um kotlinc instalado
+# via apt/sdkman/setup-kotlin no CI — onde `command -v kotlinc` quase sempre
+# devolve um SYMLINK (ex.: /usr/bin/kotlinc -> /usr/share/kotlin/bin/kotlinc).
+# Por isso seguimos o symlink com `readlink -f` antes de derivar o KOTLIN_HOME,
+# e ainda assim caímos em fallbacks (locais comuns + find) se a heurística
+# falhar para algum layout exótico. Nunca caminho FIXO.
+find_kotlin_stdlib() {
+  local bin home cand
+  local -a candidates=()
+
+  # 1) A partir do binário real do kotlinc (resolve symlinks).
+  bin="$(command -v kotlinc)"
+  bin="$(readlink -f "$bin" 2>/dev/null || readlink -f -- "$bin")"
+  if [[ -n "$bin" ]]; then
+    home="$(cd "$(dirname "$bin")/.." && pwd)"   # .../kotlinc (bin/ -> ..)
+    candidates+=("$home/lib/kotlin-stdlib.jar")
+  fi
+
+  # 2) Respeita KOTLIN_HOME se o ambiente o exportou.
+  [[ -n "${KOTLIN_HOME:-}" ]] && candidates+=("$KOTLIN_HOME/lib/kotlin-stdlib.jar")
+
+  # 3) Locais comuns por gerenciador de pacote / distribuição.
+  candidates+=(
+    /usr/share/kotlin/lib/kotlin-stdlib.jar
+    /usr/local/share/kotlin/lib/kotlin-stdlib.jar
+    /opt/kotlinc/lib/kotlin-stdlib.jar
+    "$HOME/.sdkman/candidates/kotlin/current/lib/kotlin-stdlib.jar"
+    "$HOME/.kotlin-compiler/kotlinc/lib/kotlin-stdlib.jar"
+  )
+
+  for cand in "${candidates[@]}"; do
+    [[ -f "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+  done
+
+  # 4) Último recurso: varrer KOTLIN_HOME derivado e raízes comuns com find.
+  #    (versões variadas, ex. 2.3.x, podem ter layout diferente).
+  local root
+  for root in "$home" "${KOTLIN_HOME:-}" /usr/share /usr/local/share /opt \
+              "$HOME/.sdkman/candidates/kotlin" "$HOME/.kotlin-compiler"; do
+    [[ -n "$root" && -d "$root" ]] || continue
+    cand="$(find "$root" -maxdepth 4 -name 'kotlin-stdlib.jar' -print -quit 2>/dev/null)"
+    [[ -n "$cand" && -f "$cand" ]] && { printf '%s\n' "$cand"; return 0; }
+  done
+
+  return 1
+}
+
+STDLIB="$(find_kotlin_stdlib)" || {
+  err "kotlin-stdlib.jar não encontrado (kotlinc=$(command -v kotlinc); procurei a partir do binário real, KOTLIN_HOME, locais comuns e find)"
+  exit 1
+}
+log "kotlin-stdlib resolvido: $STDLIB"
 
 # --- localizar JAVA_HOME (para extrair as classes do JDK) -------------------
 if [[ -z "${JAVA_HOME:-}" ]]; then

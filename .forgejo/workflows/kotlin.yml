@@ -69,7 +69,10 @@ jobs:
             curl -fsSL -o /tmp/kotlin-compiler.zip "$URL"
             unzip -q /tmp/kotlin-compiler.zip -d "$KDIR"
           fi
-          echo "$KDIR/kotlin/bin" >> "$GITHUB_PATH"
+          # O zip oficial extrai para "$KDIR/kotlinc" (não "kotlin"): o binário é
+          # "$KDIR/kotlinc/bin/kotlinc". build.sh resolve o stdlib a partir do
+          # binário real (readlink -f), então este PATH é a única fonte de verdade.
+          echo "$KDIR/kotlinc/bin" >> "$GITHUB_PATH"
 
       - name: Versions
         run: |
