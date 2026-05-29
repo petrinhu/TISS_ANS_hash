@@ -5,7 +5,7 @@ audience: iniciante (estudante de computação, integrador novo no TISS)
 version: 0.1.0
 last-reviewed: 2026-05-29
 owner: petrinhu@yahoo.com.br
-status: estável (9 ports prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#)
+status: estável (13 ports prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM)
 ---
 
 # FAQ, glossário e troubleshooting
@@ -84,7 +84,7 @@ O componente que lê o texto do XML e o transforma numa estrutura que o programa
 
 ### port
 
-Uma implementação da mesma biblioteca em outra linguagem de programação. "Portar" é traduzir o código para que rode em Python, Rust, Java, e assim por diante, mantendo o mesmo comportamento. Este projeto tem 9 ports: Python, Rust, C, C++, Node.js, PHP, Java, Go e C#. Cada um fica em `langs/<lang>/`.
+Uma implementação da mesma biblioteca em outra linguagem de programação. "Portar" é traduzir o código para que rode em Python, Rust, Java, e assim por diante, mantendo o mesmo comportamento. Este projeto tem 13 ports: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart e WASM. Cada um fica em `langs/<lang>/`.
 
 ### TISS
 
@@ -112,9 +112,9 @@ Não. Para usar, basta chamar uma função: você passa os bytes do XML e recebe
 
 Se um dia você quiser entender por que o resultado é aquele (por curiosidade, para portar para uma nova linguagem, ou para depurar um caso estranho), aí sim leia o [`SPEC.md`](SPEC.md) e o [`CONCEITOS.md`](CONCEITOS.md). Mas não é pré-requisito para usar.
 
-### Por que 9 linguagens?
+### Por que 13 linguagens?
 
-Porque cada equipe de software usa a linguagem que já conhece, e ninguém deveria ter que reimplementar este algoritmo do zero (e arriscar errar a pegadinha do encoding). Os 9 ports cobrem os ambientes mais comuns na saúde suplementar brasileira:
+Porque cada equipe de software usa a linguagem que já conhece, e ninguém deveria ter que reimplementar este algoritmo do zero (e arriscar errar a pegadinha do encoding). Os 13 ports cobrem os ambientes mais comuns na saúde suplementar brasileira:
 
 - Python: scripts, integrações rápidas, back-ends.
 - Rust e Go: serviços de back-end e microsserviços.
@@ -124,18 +124,22 @@ Porque cada equipe de software usa a linguagem que já conhece, e ninguém dever
 - PHP: sistemas web tradicionais de faturamento.
 - Java: sistemas hospitalares e ERPs corporativos.
 - C# / .NET: aplicações de clínica em Windows.
+- Kotlin: JVM e Android (interop com Java).
+- Delphi / Object Pascal: legado de faturamento médico no Brasil (Free Pascal).
+- Dart: aplicativos mobile cross-platform (Flutter).
+- WASM: hash no navegador do usuário, sem trânsito do XML ao servidor (argumento de privacidade/LGPD).
 
 Ter vários ports também é uma rede de segurança: se alguém errar a implementação em uma linguagem, o erro não passa, porque a CI (a automação que roda os testes) compara todos contra os mesmos vetores. Detalhe da decisão em [`CONCEITOS.md`](CONCEITOS.md) e em [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ### Os hashes batem entre as linguagens?
 
-Sim. Os 9 ports produzem exatamente o mesmo hash para o mesmo XML de entrada, byte a byte (ver `byte` no glossário). Isso é garantido por 20 vetores de conformidade (ver `vetor de conformidade`): 18 que devem gerar um hash específico e 2 que devem ser recusados. Toda vez que o código muda, a automação confere que todos os ports continuam batendo nos 20 vetores antes de liberar qualquer versão.
+Sim. Os 13 ports produzem exatamente o mesmo hash para o mesmo XML de entrada, byte a byte (ver `byte` no glossário). Isso é garantido por 20 vetores de conformidade (ver `vetor de conformidade`): 18 que devem gerar um hash específico e 2 que devem ser recusados. Toda vez que o código muda, a automação confere que todos os ports continuam batendo nos 20 vetores antes de liberar qualquer versão.
 
 Na prática: se você calcular o hash de um lote em Python e um colega calcular o mesmo lote em Java, os dois recebem o mesmo código de 32 caracteres. A lista completa de vetores e seus hashes está em [`SPEC.md §8`](SPEC.md#8-vetores-de-conformidade).
 
 ### Posso usar em produção?
 
-Sim, com uma recomendação de prudência. Os 9 ports passam os 20 vetores de conformidade e os parsers (ver `parser`) são endurecidos contra ataques conhecidos via XML. Antes de colocar no fluxo real, faça este teste simples: pegue alguns lotes (ver `lote`) seus que a operadora já aceitou no passado, calcule o hash com a biblioteca e confirme que bate com o que foi aceito. Isso valida que o seu caso de uso está coberto.
+Sim, com uma recomendação de prudência. Os 13 ports passam os 20 vetores de conformidade e os parsers (ver `parser`) são endurecidos contra ataques conhecidos via XML. Antes de colocar no fluxo real, faça este teste simples: pegue alguns lotes (ver `lote`) seus que a operadora já aceitou no passado, calcule o hash com a biblioteca e confirme que bate com o que foi aceito. Isso valida que o seu caso de uso está coberto.
 
 A licença é [MIT](../LICENSE): uso livre, inclusive comercial, sem garantias. Mais detalhes em [`USAGE.md`](USAGE.md#posso-usar-em-produção) e [`docs/legal/DISCLAIMER.md`](legal/DISCLAIMER.md).
 

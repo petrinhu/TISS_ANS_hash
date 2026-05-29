@@ -86,9 +86,9 @@ Esta lib calcula o hash **do jeito que a ANS realmente aceita** (bytes UTF-8). I
 
 Resumo em uma frase: voce entrega o arquivo XML do lote TISS, e a lib devolve o **hash MD5 correto do epilogo**, aquele que a ANS aceita.
 
-E ela faz isso em **9 linguagens de programacao**: Python, Rust, C, C++, Node.js, PHP, Java, Go e C#. Cada uma vive em sua pasta dentro de `langs/<linguagem>/`. O ponto central: as 9 produzem o **mesmo resultado, identico byte a byte**. Nao importa em qual linguagem seu sistema foi escrito, o hash sai igual.
+E ela faz isso em **13 linguagens de programacao**: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart e WASM. Cada uma vive em sua pasta dentro de `langs/<linguagem>/`. O ponto central: as 13 produzem o **mesmo resultado, identico byte a byte**. Nao importa em qual linguagem seu sistema foi escrito, o hash sai igual.
 
-Para garantir isso, o projeto tem uma **suite de conformidade** com **20 vetores de teste**: 18 positivos (entradas validas com o hash esperado) e 2 negativos (entradas invalidas que a lib deve recusar). "Conformidade" aqui significa estar de acordo com a regra definida: antes de qualquer versao ser liberada, todas as 9 linguagens precisam passar nos 20 testes, todas dando o mesmo hash. Os dados desses testes sao 100% **sinteticos** (inventados), nenhum dado real de paciente entra no projeto.
+Para garantir isso, o projeto tem uma **suite de conformidade** com **20 vetores de teste**: 18 positivos (entradas validas com o hash esperado) e 2 negativos (entradas invalidas que a lib deve recusar). "Conformidade" aqui significa estar de acordo com a regra definida: antes de qualquer versao ser liberada, todas as 13 linguagens precisam passar nos 20 testes, todas dando o mesmo hash. Os dados desses testes sao 100% **sinteticos** (inventados), nenhum dado real de paciente entra no projeto.
 
 > Sobre **dependencias**: uma "dependencia" e outro pedaco de software que a lib precisa para funcionar. Esta lib procura usar o minimo possivel, para ser facil de instalar e segura. Veja os detalhes por linguagem em [USAGE.md](USAGE.md).
 
@@ -143,7 +143,7 @@ Em palavras: o XML entra, o campo de hash e zerado, os valores das folhas sao co
 ## 10. Para onde ir agora
 
 - Quer colocar a mao na massa e calcular um hash do zero, com um exemplo guiado: veja [TUTORIAL.md](TUTORIAL.md).
-- Quer usar a lib na sua linguagem (Python, Rust, C, C++, Node.js, PHP, Java, Go ou C#): veja [USAGE.md](USAGE.md).
+- Quer usar a lib na sua linguagem (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart ou WASM): veja [USAGE.md](USAGE.md).
 - Quer duvidas comuns respondidas: veja [FAQ.md](FAQ.md).
 - Quer a definicao tecnica exata do algoritmo: veja [SPEC.md](SPEC.md).
 

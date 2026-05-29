@@ -32,6 +32,8 @@ Comece pelo documento que combina com o seu momento:
 
 Se a dúvida for "por que existe e por que UTF-8 e não ISO-8859-1?", veja a seção [Por que existe](#por-que-existe-história) abaixo e a [`docs/SPEC.md`](docs/SPEC.md).
 
+> **É uma IA ou um agente de código usando esta lib?** Leia o [`AGENTS.md`](AGENTS.md): regra nº 1 (não reimplemente o algoritmo, use um dos 13 ports), contrato de rejeição, como validar um port e, principalmente, as obrigações de privacidade/LGPD ao manipular XML TISS (nunca logar/persistir/transmitir o XML real nem o hash de dados reais).
+
 ## O que NÃO faz
 
 - Não persiste nada.
@@ -86,6 +88,12 @@ Todos passam a suíte de conformidade byte-a-byte (20 vetores) na CI das duas pl
 O port **WASM** tem um motivo de existir próprio: calcular o hash **no navegador do usuário**, sem que o XML com dados de paciente (PII) saia da máquina. Sem upload, sem servidor, sem ponto de vazamento. É o argumento de privacidade (LGPD) mais forte do projeto e só o WASM o entrega. Decisão em [`docs/adr/0006-wasm-port.md`](docs/adr/0006-wasm-port.md).
 
 Legenda: `✅ pronto` (20/20 vetores PASS na CI + 3/3 goldens reais + docs + packaging).
+
+### Artefatos prebuilt por host (release v0.2.0)
+
+Todos os 13 ports **buildam do fonte** em qualquer cenário (ver o README de cada `langs/<lang>/`); os artefatos prebuilt são uma conveniência opcional anexada às releases.
+
+> **Nota sobre o jar do Kotlin (v0.2.0):** o jar prebuilt do Kotlin **não** foi anexado ao release do **GitHub** v0.2.0 (uma falha do build Kotlin na primeira execução da CI, já corrigida para os próximos releases). Ele está disponível no release do **Codeberg** v0.2.0. De qualquer forma, o port Kotlin builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)), então o jar prebuilt é apenas um atalho. Os demais artefatos estão presentes nos dois hosts.
 
 ## Quickstart
 

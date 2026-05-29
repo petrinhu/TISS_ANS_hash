@@ -12,7 +12,7 @@ Guia prático para implementar a lib em uma linguagem ainda não suportada. Ante
 
 ## Quando usar este guia
 
-- Você quer adicionar suporte a uma linguagem ainda não coberta (9 ports já estão prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#).
+- Você quer adicionar suporte a uma linguagem ainda não coberta (13 ports já estão prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM).
 - Você já tem a linguagem instalada e conhece o ecossistema de parser XML dela.
 - Você tem `python3` + `lxml` disponíveis para rodar a referência localmente.
 

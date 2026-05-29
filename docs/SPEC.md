@@ -177,7 +177,7 @@ Entrada que **não** produz hash; o port deve sinalizar erro. No manifesto têm 
 | `syn_multi_hash.xml`   | múltiplos `<ans:hash>` → rejeitar (ver §7, AMBIGUITY §9)     |
 | `syn_utf16.xml`        | encoding UTF-16 (BOM) → rejeitar (ver §7, AMBIGUITY §11b)    |
 
-`source = derived`: XML sintético construído para cobrir um caso de borda; hash calculado pela referência e congelado no manifesto. Os hashes acima são reproduzidos por todos os 9 ports atuais.
+`source = derived`: XML sintético construído para cobrir um caso de borda; hash calculado pela referência e congelado no manifesto. Os hashes acima são reproduzidos por todos os 13 ports atuais.
 
 Regerar a suíte:
 ```bash

@@ -22,6 +22,8 @@ Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, **Kotlin, Delphi/FPC, Dart, WA
 - **Código-fonte**: tarball desta release (anexo) ou `git clone` na tag `v0.2.0`. Todos os ports buildam do fonte (README de cada `langs/<lang>/`).
 - **Go**: `go get github.com/petrinhu/TISS_ANS_hash/langs/go@v0.2.0`
 - **Artefatos prontos** (anexos): wheel/sdist (Python), jar (Java, Kotlin), nupkg (C#), crate (Rust), tgz (Node), libs (C), pkg WASM.
+
+  > **Jar do Kotlin:** o jar prebuilt do Kotlin **não** está anexado ao release do **GitHub** v0.2.0 (falha do build Kotlin na primeira execução da CI, já corrigida para os próximos releases); ele está no release do **Codeberg** v0.2.0. Em qualquer caso, o port Kotlin builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)).
 - **Registries** (PyPI, npm, crates.io, Packagist, Maven Central, NuGet): em preparação; workflows prontos, ver [`docs/RELEASING.md`](docs/RELEASING.md). Por enquanto, instalar a partir do checkout (ver [`docs/USAGE.md`](docs/USAGE.md)).
 
 ## Verificação de integridade

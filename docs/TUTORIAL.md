@@ -182,11 +182,11 @@ Dois termos que faltavam:
 - **Byte**: a menor unidade de dado que o computador manipula (um número de 0 a 255). Um arquivo de texto é, no fundo, uma sequência de bytes. Cada caractere vira um ou mais bytes conforme o encoding.
 - **Encoding**: a regra que diz como cada caractere (por exemplo a letra `ç` ou `ã`) é convertido em bytes. Existem várias regras; duas comuns são **UTF-8** e **ISO-8859-1**. A mesma letra acentuada vira bytes diferentes em cada regra, e por isso o encoding muda o hash.
 
-Aqui mora o detalhe mais importante (e a razão de este projeto existir): o manual do Padrão TISS sugere ISO-8859-1, mas o hash que a ANS de fato aceita é calculado em **UTF-8**. A lib já faz a coisa certa pra você, em todas as 9 linguagens. Você não precisa decidir nada sobre encoding: só passe os bytes do arquivo.
+Aqui mora o detalhe mais importante (e a razão de este projeto existir): o manual do Padrão TISS sugere ISO-8859-1, mas o hash que a ANS de fato aceita é calculado em **UTF-8**. A lib já faz a coisa certa pra você, em todas as 13 linguagens. Você não precisa decidir nada sobre encoding: só passe os bytes do arquivo.
 
 Para a versão completa, com a regra exata, os casos de borda e o passo a passo do algoritmo, leia a especificação canônica em [`SPEC.md`](SPEC.md). Para o "porquê" conceitual (o que é o hash do epílogo, por que MD5, a história da divergência de encoding), veja [`CONCEITOS.md`](CONCEITOS.md).
 
-Por fim, **conformidade** é a garantia de que cada uma das 9 linguagens produz exatamente o mesmo hash para a mesma entrada. O projeto mantém 20 casos de teste (chamados "vetores": 18 que devem produzir um hash conhecido e 2 que devem ser rejeitados), e toda linguagem precisa passar nos 20 antes de qualquer publicação.
+Por fim, **conformidade** é a garantia de que cada uma das 13 linguagens produz exatamente o mesmo hash para a mesma entrada. O projeto mantém 20 casos de teste (chamados "vetores": 18 que devem produzir um hash conhecido e 2 que devem ser rejeitados), e toda linguagem precisa passar nos 20 antes de qualquer publicação.
 
 ## 6. Erros comuns de iniciante
 
@@ -237,4 +237,4 @@ Você:
 
 ## E nas outras linguagens?
 
-Este tutorial usou Python por ser o mais simples para começar, mas a lib existe em 9 linguagens (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#), todas com o mesmo resultado. Para instalar e calcular o hash em qualquer uma das outras, veja [`USAGE.md`](USAGE.md).
+Este tutorial usou Python por ser o mais simples para começar, mas a lib existe em 13 linguagens (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM), todas com o mesmo resultado. Para instalar e calcular o hash em qualquer uma das outras, veja [`USAGE.md`](USAGE.md).

@@ -836,6 +836,8 @@ cd langs/kotlin
 > }
 > ```
 
+> **Jar prebuilt:** o jar do Kotlin está anexado ao release **Codeberg** v0.2.0. No release **GitHub** v0.2.0 ele não foi anexado (falha do build Kotlin na primeira CI, já corrigida); use o Codeberg ou builde do fonte com `./build.sh jar` (comando acima).
+
 A lib tem **zero dependência de runtime** além do `kotlin-stdlib`: o parser XML e o MD5 vêm da própria JDK.
 
 ### c. Snippet mínimo
@@ -1237,7 +1239,7 @@ async def calcular_hash(request: Request) -> dict[str, str]:
 
 Atenção: o XML contém dados pessoais de pacientes. Esse endpoint **não deve registrar (logar) o corpo da requisição** e idealmente roda só em rede interna. Ver [`legal/LGPD-NOTE.md`](legal/LGPD-NOTE.md).
 
-## 12. Pegadinhas (valem para os 9 ports)
+## 12. Pegadinhas (valem para os 13 ports)
 
 ### 12.1 O encoding dos bytes do MD5 é UTF-8, não ISO-8859-1
 
@@ -1290,6 +1292,10 @@ Cada port traz a suíte de 20 vetores de conformidade. Rodá-la confirma que a i
 | Java      | `mvn -q test`                                |
 | Go        | `go test -v ./...`                           |
 | C#        | `dotnet test`                                |
+| Kotlin    | `./build.sh`                                 |
+| Delphi/FPC| `make test`                                  |
+| Dart      | `dart pub get && dart test`                  |
+| WASM      | `bash build.sh && npm test`                  |
 
 > O port Python tem 24 testes no total: os 20 vetores de conformidade mais 4 testes auxiliares de API.
 
@@ -1297,7 +1303,7 @@ Cada port traz a suíte de 20 vetores de conformidade. Rodá-la confirma que a i
 
 ### Qual linguagem escolher?
 
-Escolha a linguagem que o **resto do seu sistema** já usa. As 9 produzem o mesmo hash, então não há vantagem técnica de hash em uma sobre as outras: a melhor é a que se encaixa no seu projeto sem você ter que aprender uma stack nova.
+Escolha a linguagem que o **resto do seu sistema** já usa. As 13 produzem o mesmo hash, então não há vantagem técnica de hash em uma sobre as outras: a melhor é a que se encaixa no seu projeto sem você ter que aprender uma stack nova.
 
 - Já tem um backend **Python / Node.js / PHP / Java / C# / Go**? Use o port da mesma linguagem.
 - Precisa de **desempenho máximo** ou rodar em ambiente sem runtime (firmware, binário pequeno)? **Rust** ou **C/C++**.
@@ -1307,7 +1313,7 @@ Na dúvida, comece pelo **Python**: é o port mais maduro e o de referência.
 
 ### Os resultados são iguais entre linguagens?
 
-**Sim, byte a byte.** Para o mesmo XML de entrada, as 9 linguagens devolvem exatamente o mesmo hash de 32 caracteres. Todas são testadas contra os **mesmos 20 vetores de conformidade** (18 positivos, que devem dar certo, e 2 negativos, que devem ser rejeitados). Você pode calcular o hash em Python e conferir em Go, por exemplo, e o valor será idêntico. Foi assim de propósito: o algoritmo é único; o que muda é só a linguagem que o implementa.
+**Sim, byte a byte.** Para o mesmo XML de entrada, as 13 linguagens devolvem exatamente o mesmo hash de 32 caracteres. Todas são testadas contra os **mesmos 20 vetores de conformidade** (18 positivos, que devem dar certo, e 2 negativos, que devem ser rejeitados). Você pode calcular o hash em Python e conferir em Go, por exemplo, e o valor será idêntico. Foi assim de propósito: o algoritmo é único; o que muda é só a linguagem que o implementa.
 
 ### Por que UTF-8 e não ISO-8859-1?
 
@@ -1315,7 +1321,7 @@ Porque o algoritmo de verdade (conferido contra hashes que a ANS já aprovou) us
 
 ### Posso usar em produção?
 
-Os 9 ports estão prontos e passam os 20 vetores byte a byte. Os parsers são endurecidos contra ataques via XML (XXE, "billion-laughs"). **Recomendação:** antes de pôr em produção, valide você mesmo contra alguns lotes seus que a operadora já aceitou. A licença [MIT](../LICENSE) é explícita: sem garantias.
+Os 13 ports estão prontos e passam os 20 vetores byte a byte. Os parsers são endurecidos contra ataques via XML (XXE, "billion-laughs"). **Recomendação:** antes de pôr em produção, valide você mesmo contra alguns lotes seus que a operadora já aceitou. A licença [MIT](../LICENSE) é explícita: sem garantias.
 
 ### E se a ANS mudar o algoritmo?
 
@@ -1335,7 +1341,7 @@ Porque a lib precisa controlar o encoding. O algoritmo decodifica o XML conforme
 
 ### Tem versão para rodar no navegador (WASM)?
 
-Ainda não, está no roadmap. A motivação é de privacidade (LGPD): rodar o hash no navegador do usuário evita que o XML com dados de paciente trafegue até o servidor.
+Sim. O port **WASM** (`langs/wasm/`) calcula o hash no navegador do usuário (ou no Node), sem enviar nada para servidor. A motivação é de privacidade (LGPD): rodar o hash localmente evita que o XML com dados de paciente trafegue até o servidor. Veja a [seção 14](#14-wasm-webassembly) deste guia e a [`adr/0006-wasm-port.md`](adr/0006-wasm-port.md).
 
 ## 15. Ver também
 
