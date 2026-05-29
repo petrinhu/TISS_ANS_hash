@@ -1,0 +1,67 @@
+# Publish do port Node (langs/node, pacote npm `tiss-hash`).
+#
+# GATE (vars.NPM_ENABLED): enquanto o lider NAO setar a variavel de repo
+# NPM_ENABLED=true, o job `npm-publish` e SKIPPED (verde, nao falha) e NADA vai
+# pro npm. Assim, uma tag v* HOJE NAO falha nem publica neste registry. Para
+# ligar: criar a Var `NPM_ENABLED=true` e o Secret `NPM_TOKEN` (token de
+# Automation/Publish do npmjs). Ver docs/RELEASING.md.
+#
+# SEGURANCA / SUPPLY CHAIN:
+#  - Token via secret `NPM_TOKEN` exposto SO no step de publish, como
+#    NODE_AUTH_TOKEN (mecanismo oficial do setup-node). Nao entra em `run:`.
+#  - Actions de terceiros PINADAS por SHA completo (comentario `# vX.Y.Z` e
+#    so leitura humana; o runner usa o SHA).
+#  - `npm ci` usa o package-lock.json commitado (build reproduzivel).
+#  - `permissions` minimas (contents: read).
+name: release-node
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-node-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  npm-publish:
+    name: publish to npm
+    runs-on: ubuntu-latest
+    # GATE: sem a Var NPM_ENABLED=true, este job nem cria.
+    if: vars.NPM_ENABLED == 'true' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+      # Proveniencia npm (sigstore) exige id-token. So este job o usa.
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node (com registry npmjs)
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install deps (lockfile)
+        working-directory: langs/node
+        run: npm ci
+
+      - name: Test (gate antes de publicar)
+        working-directory: langs/node
+        run: npm test
+
+      # `npm publish` le NODE_AUTH_TOKEN injetado pelo setup-node.
+      # --access public: escopo/visibilidade publica (pacote nao-escopado, mas
+      # explicito por seguranca). --provenance: attestation de proveniencia
+      # (sigstore) ligada ao workflow — requer id-token, habilitado no step.
+      - name: npm publish --access public
+        working-directory: langs/node
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance

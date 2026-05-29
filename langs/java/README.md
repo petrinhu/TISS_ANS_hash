@@ -1,9 +1,26 @@
 # tiss-hash (Java)
 
-Port Java da biblioteca multi-linguagem **TISS_ANS_hash**. Calcula o hash MD5
-canônico do epílogo `<ans:hash>` em XMLs do Padrão TISS/ANS (Troca de
-Informações em Saúde Suplementar, regulamentado pela Agência Nacional de
-Saúde Suplementar).
+Calcula a "impressão digital" do trecho final de um documento TISS/ANS. Antes
+do código, os termos essenciais:
+
+- **XML**: formato de arquivo de texto que organiza dados em etiquetas (tags)
+  aninhadas, como caixas dentro de caixas. O Padrão TISS é o XML que operadoras
+  de saúde e consultórios usam no Brasil para trocar dados de atendimento
+  (regulamentado pela Agência Nacional de Saúde Suplementar, a ANS).
+- **Hash**: sequência curta e fixa de caracteres calculada a partir de um
+  texto, como uma impressão digital. Mude uma letra, o hash muda inteiro.
+- **MD5**: a receita (algoritmo) que gera o hash; sempre 32 caracteres
+  hexadecimais (`0-9` e `a-f`).
+- **Epílogo**: a parte final do documento TISS, a etiqueta `<ans:hash>`, onde o
+  hash precisa ser gravado.
+- **Byte**: a menor unidade de dado do computador; um arquivo de texto é uma
+  fila de bytes.
+
+Em uma frase: você passa os bytes de um XML TISS e recebe os 32 caracteres do
+hash. Este é o port Java ("port" = a mesma lib reescrita em outra linguagem) da
+biblioteca multi-linguagem **TISS_ANS_hash**. Para entender o problema que a lib
+resolve, veja [`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
+[`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visão geral).
 
 - **Repo principal:** <https://github.com/petrinhu/TISS_ANS_hash>
 - **Spec canônica:** [`docs/SPEC.md`](../../docs/SPEC.md)
@@ -12,9 +29,33 @@ Saúde Suplementar).
 - **Status:** alpha, 20/20 vetores de conformidade passando (18 positivos + 2 negativos)
 - **Compat:** JDK 17+ (testado em OpenJDK 25)
 
+## Antes de começar: instalar o Java (JDK) e o Maven
+
+Para compilar e rodar código Java você precisa do **JDK** (Java Development Kit:
+compilador + máquina virtual Java). O **Maven** é a ferramenta que baixa as
+dependências e organiza o build.
+
+- Instale o JDK pelo site oficial (escolha a versão 17 ou mais nova):
+  <https://adoptium.net/>
+- Instale o Maven pelo site oficial: <https://maven.apache.org/install.html>
+- Confira a instalação:
+
+```bash
+java --version
+mvn --version
+```
+
+(Existe um caminho sem Maven, só com `javac`+`java`, descrito mais abaixo em
+"Fallback sem Maven".)
+
 ## Coordenadas Maven
 
-> Placeholder até publicação em Maven Central.
+Uma **dependência** é uma biblioteca de terceiros que o seu código usa; o Maven
+a baixa por você. As linhas abaixo declaram esta lib como dependência no seu
+`pom.xml`.
+
+> Placeholder até publicação em Maven Central (o repositório oficial de pacotes
+> Java).
 
 ```xml
 <dependency>
@@ -81,11 +122,16 @@ Detalhes e ambiguidades fixadas: [`conformance/AMBIGUITY_NOTES.md`](../../confor
 
 ### Maven (caminho padrão)
 
+A partir da raiz do repositório (a pasta que você baixou com `git clone`):
+
 ```bash
 cd langs/java
 mvn -q test     # roda os 20 vetores + testes auxiliares
 mvn -q package  # gera target/tiss-hash-0.1.0.jar
 ```
+
+Cada **vetor** é um par "arquivo de entrada -> hash esperado": 18 positivos
+(devem produzir um hash) e 2 negativos (devem ser rejeitados).
 
 ### Fallback sem Maven (apenas javac+java)
 
@@ -144,3 +190,14 @@ ConformanceTest > conformance(syn_utf16.xml)               OK  (rejeitado: UTF-1
 ## Licença
 
 MIT, veja `LICENSE` no diretório do port e na raiz do repositório.
+
+## Ver também
+
+- [`docs/USAGE.md`](../../docs/USAGE.md): guia de uso, receitas e perguntas
+  frequentes (comece por aqui se você quer só usar a lib).
+- [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md): conceitos e visão geral.
+- [`docs/SPEC.md`](../../docs/SPEC.md): especificação canônica do algoritmo.
+- [`docs/PORTING_GUIDE.md`](../../docs/PORTING_GUIDE.md): guia para portar para
+  outras linguagens.
+- [`conformance/reference.py`](../../conformance/reference.py): implementação de
+  referência (o "oráculo" que define a resposta certa).

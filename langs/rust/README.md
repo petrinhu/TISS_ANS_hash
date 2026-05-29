@@ -1,12 +1,51 @@
 # tiss-hash (Rust)
 
-Hash MD5 do epílogo XML **TISS/ANS** (Padrão TISS: Troca de
-Informações em Saúde Suplementar, ANS). Port Rust da biblioteca
-[`lib_hash_ans`](https://github.com/petrinhu/TISS_ANS_hash).
+Calcula a "impressão digital" do trecho final de um documento TISS/ANS. Antes
+do código, os termos essenciais:
+
+- **XML**: formato de arquivo de texto que organiza dados em etiquetas (tags)
+  aninhadas, como caixas dentro de caixas. O Padrão TISS é o XML usado por
+  operadoras de saúde e consultórios no Brasil para trocar dados de atendimento.
+- **Hash**: uma sequência curta e fixa de caracteres calculada a partir de um
+  texto, como uma impressão digital. Mude uma letra, o hash muda inteiro.
+- **MD5**: a receita (algoritmo) que produz esse hash; sempre 32 caracteres
+  hexadecimais (`0-9` e `a-f`).
+- **Epílogo**: a parte final do documento TISS, a etiqueta `<ans:hash>`, onde o
+  hash precisa ser gravado.
+- **Byte**: a menor unidade de dado do computador; um arquivo de texto é uma
+  fila de bytes.
+
+Em uma frase: você passa os bytes de um XML TISS e recebe os 32 caracteres do
+hash. Este é o port Rust ("port" = a mesma lib reescrita em outra linguagem) da
+biblioteca [`lib_hash_ans`](https://github.com/petrinhu/TISS_ANS_hash). Para
+entender o problema que a lib resolve, veja
+[`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
+[`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visão geral).
 
 Status: **alpha**. 20/20 vetores sintéticos PASS contra a referência Python (18 positivos + 2 negativos).
 
+## Antes de começar: instalar o Rust
+
+Rust é a linguagem deste port. A forma oficial de instalar é o `rustup`, que
+traz o compilador (`rustc`) e o gerenciador de pacotes/build (`cargo`):
+
+- Siga o site oficial: <https://www.rust-lang.org/tools/install>
+  (no Linux/macOS é um único comando que o site mostra; no Windows há um
+  instalador `.exe`).
+- Confira a instalação:
+
+```bash
+cargo --version
+```
+
+Precisa do `rustc` 1.75 ou mais novo. (O **MSRV**, "Minimum Supported Rust
+Version", é a versão mínima de Rust suportada.)
+
 ## Quickstart
+
+Uma **dependência** ("crate", no jargão Rust) é uma biblioteca de terceiros que
+o seu projeto usa. O comando abaixo adiciona esta lib como dependência do seu
+projeto:
 
 ```bash
 cargo add tiss-hash
@@ -115,17 +154,19 @@ diretório privado.
 
 ### Rodar localmente
 
-A partir da raiz do repositório:
+A partir da raiz do repositório (a pasta que você baixou com `git clone`):
 
 ```bash
 cd langs/rust
-cargo build
-cargo test
-cargo clippy -- -D warnings
-cargo fmt --check
+cargo build          # compila a biblioteca
+cargo test           # roda os 20 vetores de conformidade
+cargo clippy -- -D warnings   # checa boas práticas (opcional)
+cargo fmt --check    # confere formatação (opcional)
 ```
 
 Esperado: `20/20` no teste `todos_vetores_passam`, sem warnings de clippy.
+(Um **vetor de conformidade** é um par "arquivo de entrada -> hash esperado";
+positivo = deve produzir um hash, negativo = deve ser rejeitado.)
 
 ## Comparação com o port Python
 
@@ -158,11 +199,14 @@ Atribuição consolidada de todos os ports em
 
 ## Ver também
 
-- [`docs/SPEC.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/SPEC.md):
-  especificação canônica do algoritmo.
-- [`conformance/AMBIGUITY_NOTES.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/conformance/AMBIGUITY_NOTES.md):
+- [`docs/USAGE.md`](../../docs/USAGE.md): guia de uso, receitas e perguntas
+  frequentes (comece por aqui se você quer só usar a lib).
+- [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md): conceitos e visão geral
+  de como tudo se encaixa.
+- [`docs/SPEC.md`](../../docs/SPEC.md): especificação canônica do algoritmo.
+- [`conformance/AMBIGUITY_NOTES.md`](../../conformance/AMBIGUITY_NOTES.md):
   15 decisões canônicas fixadas pela referência.
-- [`conformance/reference.py`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/conformance/reference.py):
-  implementação canônica em Python.
-- [`docs/PORTING_GUIDE.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/PORTING_GUIDE.md):
-  guia para portar para outras linguagens.
+- [`conformance/reference.py`](../../conformance/reference.py): implementação
+  canônica em Python (o "oráculo" que define a resposta certa).
+- [`docs/PORTING_GUIDE.md`](../../docs/PORTING_GUIDE.md): guia para portar para
+  outras linguagens.

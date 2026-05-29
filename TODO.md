@@ -132,10 +132,8 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | ~~**W2**~~ | ~~Robustez conformance~~ | ✅ A-COV1-5 (3 vetores positivos + 2 negativos; reject multi-hash + UTF-16) | **FECHADA** |
 | ~~**W3**~~ | ~~Docs/legal accuracy~~ | ✅ A-DOC5/6/7/8/9/10/12/13/14 + A-LEG2/3 (+ ADR-0005) | **FECHADA** |
 | ~~**W4**~~ | ~~Hardening CI + supply-chain~~ | ✅ A-CI1-5 + A-SUP1-3 + A-QA1 (sanitizers, clang-tidy lint, coverage, dependabot, CVE gate, mutation) | **FECHADA** |
-| **W3** | Precisão de docs + atribuição legal — antes do anúncio | A-DOC5/6/7/8/9/10/12/13/14, A-LEG2/3 | README/CHANGELOG/ADR honestos |
-| **W4** | Hardening CI + supply-chain | A-CI1/2/3/4/5, A-SUP1/2/3, A-QA1 | sanitizer, lint, CVE, dependabot |
 | **W5** | Release v0.1.0 | F7.1 → F4.4 → F7.2 → A-REL1 | PyPI + GitHub/Codeberg + SBOM |
-| **W6** | Pós-release | F7.3/7.4, F8.7-8.10, F6.2/4/6/7, F4.2b, A-DOC11 | ports restantes, SEO Tier 3, anúncio |
+| **W6** | Pós-release | F7.3/7.4, F8.7-8.10, F6.2/4/6/7, F4.2b, A-DOC11, A-QA2 | ports restantes, SEO Tier 3, anúncio |
 
-- **Ordem de ataque:** W1 fecha tudo que bloqueia v0.1.0 (5 itens rápidos doc/legal, paralelos) → W2 fecha divergência cross-port → W3/W4 sobem a qualidade → **W5 = release** → W6 expande pós-release.
-- **Caminho crítico p/ v0.1.0:** W1 (A-DOC4) → W5 (F7.1 → F7.2). Demais ondas elevam qualidade/risco mas só W1 é hard-block.
+- **Ordem de ataque:** W1-W4 ✅ FECHADAS (auditoria inteira) → **W5 = release v0.1.0** → W6 expande pós-release.
+- **Caminho crítico p/ v0.1.0:** W5 (F7.1 → F7.2). Tudo que bloqueava já fechou; resta empacotar e publicar.

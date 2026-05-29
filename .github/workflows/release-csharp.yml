@@ -1,0 +1,67 @@
+# Publish do port C# (.NET) — projeto langs/csharp/src/TissHash, pacote NuGet
+# `TissHash` em nuget.org.
+#
+# GATE (vars.NUGET_ENABLED): o `dotnet pack` roda SEMPRE (gera o .nupkg e valida
+# o empacotamento). O `dotnet nuget push` REAL so roda quando o lider setar a
+# Var de repo NUGET_ENABLED=true. Sem ela, o step de push e SKIPPED (verde, nao
+# falha) e NADA vai pro nuget.org. Para ligar: criar a Var NUGET_ENABLED=true e
+# o Secret NUGET_API_KEY (API key do nuget.org). Ver docs/RELEASING.md.
+#
+# SEGURANCA / SUPPLY CHAIN:
+#  - API key via secret NUGET_API_KEY, passada ao dotnet via env e referenciada
+#    como "$NUGET_API_KEY" no shell (nao interpolada inline).
+#  - --skip-duplicate: re-run idempotente (nao falha se a versao ja existir).
+#  - Actions PINADAS por SHA (comentario `# vX.Y.Z` e so leitura humana).
+#  - `permissions` minimas (contents: read).
+name: release-csharp
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-csharp-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  nuget-publish:
+    name: publish to NuGet
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@3e891b0cb619bf60e2c25674b222b8940e2c1c25 # v4.1.0
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Test (gate antes de publicar)
+        working-directory: langs/csharp
+        run: dotnet test --configuration Release
+
+      # Pack SEMPRE: gera o .nupkg em ./nupkg e valida o empacotamento.
+      # Roda inclusive em workflow_dispatch e com o gate desligado.
+      - name: dotnet pack (sempre)
+        working-directory: langs/csharp
+        run: dotnet pack src/TissHash/TissHash.csproj --configuration Release --output nupkg
+
+      # Push REAL: so com a Var NUGET_ENABLED=true E em push de tag.
+      # Sem o gate, este step e SKIPPED (verde) e nada vai pro nuget.org.
+      - name: dotnet nuget push (gated)
+        if: vars.NUGET_ENABLED == 'true' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        working-directory: langs/csharp
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push "nupkg/*.nupkg" \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

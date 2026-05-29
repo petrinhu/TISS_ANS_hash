@@ -1,107 +1,132 @@
 ---
 title: Guia de uso do lib_hash_ans
 type: how-to
-audience: integrador (dev backend, fornecedor TISS, ERP hospitalar)
+audience: iniciante a intermediário (estudante de computação, dev backend, fornecedor TISS, ERP hospitalar)
 version: 0.1.0
-last-reviewed: 2026-05-28
+last-reviewed: 2026-05-29
 owner: petrinhu@yahoo.com.br
 status: estável (9 ports prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#)
 ---
 
 # Guia de uso
 
-Este documento mostra **como usar** as bibliotecas `lib_hash_ans` no dia-a-dia: instalação, exemplos práticos, receitas comuns, pegadinhas e perguntas frequentes. Para a especificação canônica do algoritmo, ver [`SPEC.md`](SPEC.md). Para implementar em uma linguagem nova, ver [`PORTING_GUIDE.md`](PORTING_GUIDE.md).
+Este documento mostra **como usar** as bibliotecas `lib_hash_ans` no dia a dia: como instalar a linguagem, como obter a lib, um exemplo mínimo que funciona, a saída esperada e como tratar erro. Tem uma seção dedicada para cada uma das 9 linguagens, sempre na mesma ordem.
+
+> **Não sabe o que é isto? Comece aqui.** Se as palavras "hash", "XML", "TISS" ou "epílogo" ainda não fazem sentido, leia primeiro o [`CONCEITOS.md`](CONCEITOS.md) (explicação sem código, em linguagem de iniciante). Para botar a mão na massa e ver um hash aparecer na tela passo a passo, siga o [`TUTORIAL.md`](TUTORIAL.md). Este guia aqui assume que você já sabe o que quer fazer e só precisa do "como".
+
+## Antes de tudo: o vocabulário mínimo
+
+Esta seção define os termos técnicos uma única vez. Se você já é da área, pule para a [seção 1](#1-visão-geral-por-linguagem).
+
+- **Byte:** a menor unidade de informação que um computador guarda. Um número de 0 a 255. Um arquivo de texto nada mais é do que uma sequência de bytes.
+- **XML:** um formato de arquivo de texto que organiza dados em "etiquetas" aninhadas, parecido com HTML de página web. Exemplo: `<nome>Maria</nome>`. A etiqueta `<nome>` abre, o valor `Maria` fica dentro, e `</nome>` fecha.
+- **TISS:** o "Padrão TISS" (Troca de Informações na Saúde Suplementar) é o conjunto de regras, definido pela ANS (a agência reguladora dos planos de saúde no Brasil), que diz como hospitais e clínicas devem mandar contas e guias para os planos. Esses dados viajam em arquivos XML.
+- **Epílogo:** a parte final de um arquivo XML TISS. Ela contém um campo chamado `<ans:hash>`, que serve de "selo de integridade" do arquivo.
+- **Hash:** uma espécie de "impressão digital" de um arquivo. É um número (mostrado como texto) calculado a partir de todo o conteúdo. Se um único caractere mudar, o hash muda completamente. Serve para detectar adulteração ou corrupção.
+- **MD5:** uma das fórmulas (algoritmos) que produzem hash. Sempre devolve 32 caracteres hexadecimais (os dígitos de 0 a 9 mais as letras de `a` a `f`), por exemplo `3aa0c578c95cdb861a125f480a8a4de5`. O padrão TISS exige MD5.
+- **Encoding:** a regra que diz como transformar texto (letras, acentos) em bytes. "UTF-8" e "ISO-8859-1" são dois encodings diferentes. A mesma letra "ç" vira bytes diferentes em cada um. Por isso o encoding importa para o hash.
+- **Parser:** o programa (dentro da lib) que lê o XML e o transforma em uma estrutura que o computador entende. "Parsear" = ler e interpretar.
+- **Namespace:** um prefixo que evita confusão entre etiquetas de XML de origens diferentes. No TISS, as etiquetas usam o prefixo `ans:` (como em `<ans:hash>`). O namespace é a URL completa por trás desse prefixo.
+- **Conformidade (ou conformance):** provar que a lib segue a regra exata. Os "vetores de conformidade" são casos de teste prontos que confirmam isso.
+- **CLI:** "Command-Line Interface", a tela preta onde você digita comandos (o terminal). Quando este guia mostra uma linha começando com `$` ou um comando como `pip install`, é para digitar no terminal.
+- **Dependência:** outra biblioteca que a lib precisa para funcionar. Ao instalar a lib, as dependências dela também são instaladas.
+- **Toolchain:** o conjunto de programas necessários para compilar e rodar código de uma linguagem (por exemplo, o interpretador Python, ou o compilador C). "Instalar a toolchain" = instalar a linguagem na sua máquina.
 
 ## 1. Visão geral por linguagem
 
-| Linguagem | Pacote / módulo                | Diretório do port | Instalação / build                                   |
-|-----------|--------------------------------|-------------------|------------------------------------------------------|
-| Python    | `tiss-hash`                    | `langs/python/`   | `pip install -e .`                                   |
-| Rust      | crate `tiss-hash`              | `langs/rust/`     | `cargo add tiss-hash` (ou `cargo build`)             |
-| C         | `tiss_hash` (lib + header)     | `langs/c/`        | `cmake -B build -S . && cmake --build build`         |
-| C++       | `tiss_hash` (header-only)      | `langs/cpp/`      | `cmake -B build -S . && cmake --build build`         |
-| Node.js   | `tiss-hash`                    | `langs/node/`     | `npm install`                                        |
-| PHP       | `petrinhu/tiss-hash`           | `langs/php/`      | `composer install`                                   |
-| Java      | `tiss-hash` (jar)              | `langs/java/`     | `mvn package`                                        |
-| Go        | módulo `tisshash`              | `langs/go/`       | `go get github.com/petrinhu/TISS_ANS_hash/langs/go`  |
-| C#        | `TissHash` (.NET)              | `langs/csharp/`   | `dotnet build`                                       |
+Cada uma das 9 linguagens tem uma seção própria, sempre com os mesmos 5 passos, nesta ordem:
 
-Os 9 ports reproduzem o **mesmo hash byte-a-byte** para o mesmo XML de entrada, validados contra os mesmos 20 vetores de conformidade. Não há diferença de comportamento entre linguagens. Cada port é autocontido e tem o seu próprio README com quickstart e referência de API completa (links na [seção 8](#8-uso-nas-demais-linguagens)).
+1. **Instalar a toolchain** (a linguagem em si), com link oficial e comando para conferir a versão.
+2. **Obter a lib** a partir do checkout do repositório (os pacotes ainda não foram publicados nos registries, por isso ainda não dá para baixar com um simples `install` da internet; o placeholder mostra como vai ser quando publicarem).
+3. **Snippet mínimo** (pedaço de código) que você pode copiar e colar.
+4. **Saída esperada** (um hash sintético, só para ilustrar).
+5. **Como tratar erro** (o tipo de erro que a lib usa naquela linguagem).
 
-> Os pacotes ainda não foram publicados nos registries (PyPI, crates.io, npm, Packagist, Maven Central, NuGet); até lá, instale a partir do checkout do repositório como mostrado acima.
+| Linguagem | Pacote / módulo            | Diretório do port | Seção                       |
+|-----------|----------------------------|-------------------|-----------------------------|
+| Python    | `tiss-hash`                | `langs/python/`   | [2](#2-python)              |
+| Rust      | crate `tiss-hash`          | `langs/rust/`     | [3](#3-rust)                |
+| C         | `tiss_hash` (lib + header) | `langs/c/`        | [4](#4-c)                   |
+| C++       | `tiss_hash` (header-only)  | `langs/cpp/`      | [5](#5-c-1)                 |
+| Node.js   | `tiss-hash`                | `langs/node/`     | [6](#6-nodejs)              |
+| PHP       | `petrinhu/tiss-hash`       | `langs/php/`      | [7](#7-php)                 |
+| Java      | `tiss-hash` (jar)          | `langs/java/`     | [8](#8-java)                |
+| Go        | módulo `tisshash`          | `langs/go/`       | [9](#9-go)                  |
+| C#        | `TissHash` (.NET)          | `langs/csharp/`   | [10](#10-c-net)             |
 
-## 2. Instalação (Python)
+> **Importante (vale para as 9 linguagens):** todas produzem **o mesmo hash, byte a byte**, para o mesmo XML de entrada. São validadas contra os mesmos 20 vetores de conformidade (18 positivos, que devem dar certo, e 2 negativos, que devem dar erro de propósito). Não existe diferença de resultado entre as linguagens. Cada port é autossuficiente e tem o seu próprio README com a referência de API completa.
 
-### Requisitos
+> **Sobre instalar pela internet:** os pacotes ainda não foram publicados nos repositórios públicos de cada linguagem (PyPI para Python, crates.io para Rust, npm para Node.js, Packagist para PHP, Maven Central para Java, NuGet para C#). Até lá, instale a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
 
-- Python **3.10** ou superior.
-- Sistema operacional independente (testado em Linux; deve funcionar em macOS e Windows sem ajustes).
-
-### Pacote padrão
-
-```bash
-pip install tiss-hash
-```
-
-Isso instala a lib com parser XML **da stdlib endurecido com `defusedxml`** (proteção contra XXE, billion-laughs). Zero dependência além de `defusedxml`.
-
-### Extra opcional para `lxml`
-
-Para parsing mais rápido em arquivos grandes:
-
-```bash
-pip install "tiss-hash[lxml]"
-```
-
-Reservado para uma implementação alternativa baseada em `lxml`. Atualmente o core continua usando stdlib mesmo com o extra instalado.
-
-### Instalação a partir do checkout (dev)
+**O primeiro passo, comum a quase todas as linguagens, é baixar o repositório:**
 
 ```bash
 git clone https://github.com/petrinhu/TISS_ANS_hash.git
-cd TISS_ANS_hash/langs/python
-pip install -e ".[dev]"
+cd TISS_ANS_hash
 ```
 
-## 3. Quickstart (Python)
+Isso cria uma pasta `TISS_ANS_hash` com todos os ports dentro de `langs/`.
 
-### Exemplo 1: Hash de bytes na memória
+## 2. Python
 
-Caso de uso: você já tem o XML em memória (recebeu de um endpoint HTTP, leu de um banco, gerou em runtime).
+### a. Instalar a toolchain
+
+Python 3.10 ou mais novo. Site oficial: <https://www.python.org/downloads/>. No Linux ele costuma já vir instalado; no macOS e Windows, baixe do site.
+
+Conferir a versão (deve mostrar 3.10 ou maior):
+
+```bash
+python3 --version
+```
+
+### b. Obter a lib
+
+A partir do checkout (a partir da raiz do repositório que você clonou):
+
+```bash
+cd langs/python
+pip install -e .
+```
+
+(`pip` é o instalador de pacotes do Python. O `-e .` instala a pasta atual em "modo editável".)
+
+> **Quando publicado:** `pip install tiss-hash`
+
+A única dependência é `defusedxml`, uma biblioteca que protege contra ataques via XML malicioso. O `pip install` cuida dela sozinho.
+
+### c. Snippet mínimo
+
+Salve como `exemplo.py` (a partir da raiz do repositório, para o caminho do arquivo de exemplo bater):
 
 ```python
 from tiss_hash import hash_tiss
 
-xml_bytes = b"""<?xml version="1.0" encoding="ISO-8859-1"?>
-<ans:mensagemTISS xmlns:ans="http://www.ans.gov.br/padroes/tiss/schemas">
-  <ans:cabecalho><ans:identificacaoTransacao>123</ans:identificacaoTransacao></ans:cabecalho>
-  <ans:epilogo><ans:hash></ans:hash></ans:epilogo>
-</ans:mensagemTISS>"""
+# Lê o XML como bytes (modo "rb" = read binary, ler em binário).
+# Use sempre bytes, nunca texto decodificado: a lib precisa controlar o encoding.
+with open("conformance/inputs/syn_minimal.xml", "rb") as arquivo:
+    xml_bytes = arquivo.read()
 
 digest = hash_tiss(xml_bytes)
-print(digest)   # 32 chars hex minúsculos
+print(digest)   # 32 caracteres hexadecimais minúsculos
 ```
 
-A função aceita `bytes`, `bytearray` ou `memoryview`. Não passe `str`: o algoritmo precisa controlar o decode.
+Rode com:
 
-### Exemplo 2: Hash de arquivo no disco
-
-Atalho conveniente que lê e calcula:
-
-```python
-from tiss_hash import hash_tiss_file
-
-digest = hash_tiss_file("envio.xml")
-print(digest)
-
-# Também aceita PathLike
-from pathlib import Path
-digest = hash_tiss_file(Path("./envios/lote_01.xml"))
+```bash
+python3 exemplo.py
 ```
 
-### Exemplo 3: Tratamento de erro
+### d. Saída esperada
 
-XML malformado, com DOCTYPE proibido ou contendo entidades externas dispara `InvalidTissXml` (subclasse de `ValueError`):
+```
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+Esse valor é o hash **ilustrativo** do vetor sintético `syn_minimal.xml` (um XML inventado, sem dados de paciente). Para XMLs de verdade o hash será outro.
+
+### e. Como tratar erro
+
+XML malformado dispara a exceção `InvalidTissXml` (uma subclasse de `ValueError`):
 
 ```python
 from tiss_hash import InvalidTissXml, hash_tiss
@@ -109,68 +134,684 @@ from tiss_hash import InvalidTissXml, hash_tiss
 try:
     hash_tiss(b"<isto-nao-fecha>")
 except InvalidTissXml as exc:
-    print(f"parse falhou: {exc}")
+    print(f"XML rejeitado: {exc}")
 
-# Também é capturável como ValueError (idiomático Python)
+# Passar texto (str) em vez de bytes dispara TypeError, não InvalidTissXml:
 try:
-    hash_tiss(b"<isto-nao-fecha>")
-except ValueError as exc:
-    print(f"input inválido: {exc}")
-
-# Tipo errado dispara TypeError (não InvalidTissXml)
-try:
-    hash_tiss("string nao eh bytes")   # type: ignore
+    hash_tiss("isto eh str, nao bytes")   # type: ignore
 except TypeError as exc:
     print(f"tipo errado: {exc}")
 ```
 
-### Exemplo 4: Validação local contra `conformance/vectors.json`
+README completo do port: [`../langs/python/README.md`](../langs/python/README.md).
 
-A suíte tem **20 vetores**: 18 positivos (cada um com `expected_md5`) e 2 negativos
-(`expect: "error"`, sem `expected_md5`), que o port deve rejeitar. O loop abaixo trata
-os dois casos:
+## 3. Rust
 
-```python
-import json
-from pathlib import Path
-from tiss_hash import InvalidTissXml, hash_tiss
+### a. Instalar a toolchain
 
-CONF = Path("conformance")   # caminho relativo à raiz do checkout
+Rust, via instalador oficial `rustup`: <https://www.rust-lang.org/tools/install>. Ele instala o compilador e o `cargo` (a ferramenta que compila e baixa dependências). Versão mínima: rustc 1.75.
 
-manifest = json.loads((CONF / "vectors.json").read_text(encoding="utf-8"))
+Conferir a versão:
 
-for vec in manifest["vectors"]:
-    raw = (CONF / vec["input"]).read_bytes()
-    if vec.get("expect") == "error":
-        # Vetor negativo: o port DEVE rejeitar este input.
-        try:
-            hash_tiss(raw)
-            print(f"FAIL  {vec['id']}  (esperava erro, mas hasheou)")
-        except InvalidTissXml:
-            print(f"OK    {vec['id']}  (rejeitado como esperado)")
-    else:
-        got = hash_tiss(raw)
-        status = "OK  " if got == vec["expected_md5"] else "FAIL"
-        print(f"{status}  {vec['id']}  {got}")
+```bash
+rustc --version
+cargo --version
 ```
 
-Saída esperada: `OK` em todas as 20 linhas.
+### b. Obter a lib
 
-## 4. Receitas comuns
+A partir do checkout, compile o port:
 
-### Receita 1: Pipeline de envio TISS
+```bash
+cd langs/rust
+cargo build
+```
 
-Fluxo padrão de quem gera uma mensagem TISS para enviar à operadora:
+> **Quando publicado:** `cargo add tiss-hash`
+
+### c. Snippet mínimo
+
+Substitua o conteúdo de `langs/rust/src/main.rs` (ou crie um projeto novo que dependa da crate) por:
+
+```rust
+use tiss_hash::{hash_tiss, hash_tiss_file, TissHashError};
+
+fn main() -> Result<(), TissHashError> {
+    // A partir de bytes
+    let raw = std::fs::read("../../conformance/inputs/syn_minimal.xml")?;
+    println!("{}", hash_tiss(&raw)?);   // 32 caracteres hex minúsculos
+
+    // Atalho que lê o arquivo direto
+    println!("{}", hash_tiss_file("../../conformance/inputs/syn_minimal.xml")?);
+    Ok(())
+}
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`. As duas linhas são iguais porque os dois caminhos calculam o mesmo arquivo.)
+
+### e. Como tratar erro
+
+O erro é o enum `TissHashError`, com duas variantes: `InvalidXml(String)` (XML inválido) e `Io(std::io::Error)` (falha ao ler o arquivo):
+
+```rust
+use tiss_hash::{hash_tiss, TissHashError};
+
+match hash_tiss(b"<isto-nao-fecha>") {
+    Ok(h) => println!("{h}"),
+    Err(TissHashError::InvalidXml(msg)) => eprintln!("XML inválido: {msg}"),
+    Err(TissHashError::Io(e)) => eprintln!("erro de leitura: {e}"),
+}
+```
+
+README completo do port: [`../langs/rust/README.md`](../langs/rust/README.md).
+
+## 4. C
+
+### a. Instalar a toolchain
+
+O port C precisa de um compilador C (gcc ou clang), do CMake (ferramenta de build) e de duas bibliotecas de sistema: `libxml2` (parser) e OpenSSL (para o MD5). Páginas oficiais: gcc <https://gcc.gnu.org/>, CMake <https://cmake.org/download/>.
+
+Pacotes por distribuição:
+
+| Distro          | Comando de instalação                                              |
+|-----------------|--------------------------------------------------------------------|
+| Fedora / RHEL   | `sudo dnf install libxml2-devel openssl-devel cmake gcc`           |
+| Debian / Ubuntu | `sudo apt install libxml2-dev libssl-dev cmake gcc`                |
+| Alpine          | `sudo apk add libxml2-dev openssl-dev cmake build-base`            |
+| macOS (brew)    | `brew install libxml2 openssl cmake`                               |
+
+Conferir as versões:
+
+```bash
+gcc --version
+cmake --version
+```
+
+### b. Obter a lib
+
+A partir do checkout, compile com CMake (não há registry para C: a "obtenção" é compilar a partir do código-fonte):
+
+```bash
+cd langs/c
+cmake -B build -S .
+cmake --build build -j
+```
+
+> **Quando publicado:** não se aplica. C não tem um gerenciador de pacotes central. Após `cmake --install build`, outros projetos a localizam via `pkg-config --cflags --libs tiss-hash` ou `find_package(tiss_hash)` no CMake.
+
+### c. Snippet mínimo
+
+Salve como `exemplo.c`:
+
+```c
+#include "tiss_hash.h"
+#include <stdio.h>
+
+int main(void) {
+    char out[TISS_HASH_HEX_LEN];   /* 33: 32 caracteres + o terminador de string */
+    tiss_hash_status_t rc = tiss_hash_file("conformance/inputs/syn_minimal.xml", out);
+    if (rc != TISS_HASH_OK) {
+        fprintf(stderr, "erro: %s\n", tiss_hash_strerror(rc));
+        return 1;
+    }
+    printf("%s\n", out);   /* 32 caracteres hex minúsculos */
+    return 0;
+}
+```
+
+Compile e rode (após `cmake --install build`, usando o pkg-config):
+
+```bash
+gcc exemplo.c $(pkg-config --cflags --libs tiss-hash) -o exemplo
+./exemplo
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+C não tem exceções. O retorno é o enum `tiss_hash_status_t`. `TISS_HASH_OK` (valor 0) é sucesso; qualquer outro valor é erro. Sempre verifique o retorno:
+
+```c
+char out[TISS_HASH_HEX_LEN];
+tiss_hash_status_t rc = tiss_hash_file("nao_existe.xml", out);
+switch (rc) {
+    case TISS_HASH_OK:               printf("%s\n", out); break;
+    case TISS_HASH_ERR_INVALID_XML:  fprintf(stderr, "XML inválido\n"); break;
+    case TISS_HASH_ERR_IO:           fprintf(stderr, "erro de leitura\n"); break;
+    default:                         fprintf(stderr, "%s\n", tiss_hash_strerror(rc));
+}
+```
+
+A função `tiss_hash_strerror(rc)` devolve uma mensagem de texto para qualquer código. Para bytes na memória, use `tiss_hash_bytes(xml, len, out)`.
+
+README completo do port: [`../langs/c/README.md`](../langs/c/README.md).
+
+## 5. C++
+
+### a. Instalar a toolchain
+
+O port C++ precisa de um compilador C++20 (g++ ou clang++), CMake e duas bibliotecas: `pugixml` (parser) e OpenSSL (MD5). Se o `pugixml` não estiver instalado, o CMake baixa automaticamente. Páginas oficiais: <https://gcc.gnu.org/>, <https://cmake.org/download/>.
+
+Pacotes por distribuição:
+
+| Distro          | Comando de instalação                                                |
+|-----------------|----------------------------------------------------------------------|
+| Fedora / RHEL   | `sudo dnf install pugixml-devel openssl-devel cmake gcc-c++`          |
+| Debian / Ubuntu | `sudo apt install libpugixml-dev libssl-dev cmake g++`               |
+| Arch            | `sudo pacman -S pugixml openssl cmake gcc`                            |
+| macOS (brew)    | `brew install pugixml openssl cmake`                                 |
+
+Conferir as versões:
+
+```bash
+g++ --version
+cmake --version
+```
+
+### b. Obter a lib
+
+A partir do checkout (o port é header-only, ou seja, basta incluir o cabeçalho; o build serve para os testes e para a instalação de sistema):
+
+```bash
+cd langs/cpp
+cmake -B build -S .
+cmake --build build -j
+```
+
+> **Quando publicado:** não se aplica. C++ não tem registry central padrão. Após `cmake --install build`, projetos a localizam via `find_package(tiss_hash_cpp)`.
+
+### c. Snippet mínimo
+
+Salve como `exemplo.cpp`:
+
+```cpp
+#include <tiss_hash/tiss_hash.hpp>
+#include <iostream>
+
+int main() {
+    try {
+        const std::string h = tiss_hash::HashTissFile("conformance/inputs/syn_minimal.xml");
+        std::cout << h << '\n';   // 32 caracteres hex minúsculos
+    } catch (const tiss_hash::InvalidTissXml& e) {
+        std::cerr << "XML inválido: " << e.what() << '\n';
+        return 1;
+    }
+}
+```
+
+Compile e rode (após `cmake --install build`, usando o pkg-config):
+
+```bash
+g++ -std=c++20 exemplo.cpp $(pkg-config --cflags --libs tiss-hash-cpp) -o exemplo
+./exemplo
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+C++ usa exceções. A exceção é `tiss_hash::InvalidTissXml` (subclasse de `std::runtime_error`). Capture com `try`/`catch`, como no snippet acima. Para bytes na memória, use `tiss_hash::HashTiss(std::string_view)`.
+
+README completo do port: [`../langs/cpp/README.md`](../langs/cpp/README.md).
+
+## 6. Node.js
+
+### a. Instalar a toolchain
+
+Node.js 20 ou mais novo (versões LTS recomendadas: 20 ou 22). Site oficial: <https://nodejs.org/>. O instalador já traz o `npm` (gerenciador de pacotes do Node).
+
+Conferir as versões:
+
+```bash
+node --version
+npm --version
+```
+
+### b. Obter a lib
+
+A partir do checkout:
+
+```bash
+cd langs/node
+npm install
+```
+
+> **Quando publicado:** `npm install tiss-hash`
+
+Para usar em outro projeto seu, aponte o `npm install` para a pasta do port:
+
+```bash
+npm install /caminho/para/TISS_ANS_hash/langs/node
+```
+
+A única dependência é `@xmldom/xmldom` (parser em JavaScript puro). O `npm install` cuida dela.
+
+### c. Snippet mínimo
+
+Salve como `exemplo.mjs` dentro de `langs/node` (a extensão `.mjs` ativa o modo de módulos ESM):
+
+```js
+import { hashTiss, hashTissFile } from 'tiss-hash';
+import { readFileSync } from 'node:fs';
+
+// A partir de bytes (síncrono)
+const md5 = hashTiss(readFileSync('../../conformance/inputs/syn_minimal.xml'));
+console.log(md5);   // 32 caracteres hex minúsculos
+
+// A partir do caminho do arquivo (assíncrono: precisa de await)
+const md5File = await hashTissFile('../../conformance/inputs/syn_minimal.xml');
+console.log(md5File);
+```
+
+Rode com:
+
+```bash
+node exemplo.mjs
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+O erro é a classe `InvalidTissXmlError` (subclasse de `Error`). Capture com `try`/`catch`:
+
+```js
+import { hashTiss, InvalidTissXmlError } from 'tiss-hash';
+
+try {
+  hashTiss(Buffer.from('<isto-nao-fecha'));
+} catch (err) {
+  if (err instanceof InvalidTissXmlError) {
+    console.error('XML rejeitado:', err.message);
+  } else {
+    throw err;   // outro erro inesperado: repassa
+  }
+}
+```
+
+README completo do port: [`../langs/node/README.md`](../langs/node/README.md).
+
+## 7. PHP
+
+### a. Instalar a toolchain
+
+PHP 8.1 ou mais novo, mais o Composer (gerenciador de dependências do PHP). Sites oficiais: PHP <https://www.php.net/downloads>, Composer <https://getcomposer.org/download/>. Precisa também das extensões `dom`, `libxml` e `mbstring` (vêm ativadas na maioria das instalações).
+
+Conferir as versões:
+
+```bash
+php --version
+composer --version
+```
+
+### b. Obter a lib
+
+A partir do checkout, instale via Composer apontando para a pasta do port:
+
+```bash
+cd langs/php
+composer install
+```
+
+Para usar em outro projeto seu:
+
+```bash
+composer config repositories.tiss-hash path /caminho/para/TISS_ANS_hash/langs/php
+composer require petrinhu/tiss-hash:@dev
+```
+
+> **Quando publicado:** `composer require petrinhu/tiss-hash`
+
+### c. Snippet mínimo
+
+Salve como `exemplo.php` dentro de `langs/php`:
+
+```php
+<?php
+require 'vendor/autoload.php';   // carregador automático que o Composer gera
+
+use TissHash\TissHash;
+
+// A partir de bytes do arquivo
+$hash = TissHash::hashTiss(file_get_contents('../../conformance/inputs/syn_minimal.xml'));
+echo $hash . "\n";   // 32 caracteres hex minúsculos
+
+// Ou direto pelo caminho
+echo TissHash::hashTissFile('../../conformance/inputs/syn_minimal.xml') . "\n";
+```
+
+Rode com:
+
+```bash
+php exemplo.php
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+O erro é a exceção `TissHash\InvalidTissXmlException` (subclasse de `\RuntimeException`). Capture com `try`/`catch`:
+
+```php
+use TissHash\InvalidTissXmlException;
+use TissHash\TissHash;
+
+try {
+    $hash = TissHash::hashTiss('<isto-nao-eh-xml-valido');
+} catch (InvalidTissXmlException $e) {
+    error_log('XML rejeitado: ' . $e->getMessage());
+}
+```
+
+A mensagem de erro nunca contém o XML original (só o erro técnico do parser), para não vazar dados de paciente nos logs.
+
+README completo do port: [`../langs/php/README.md`](../langs/php/README.md).
+
+## 8. Java
+
+### a. Instalar a toolchain
+
+JDK (Java Development Kit) 17 ou mais novo, mais o Maven (ferramenta de build). Sites oficiais: JDK <https://adoptium.net/> (build aberto Temurin), Maven <https://maven.apache.org/download.cgi>.
+
+Conferir as versões:
+
+```bash
+java -version
+mvn -version
+```
+
+### b. Obter a lib
+
+A partir do checkout, gere o jar (o arquivo empacotado da biblioteca Java):
+
+```bash
+cd langs/java
+mvn -q package
+```
+
+> **Quando publicado (Maven Central):** adicione ao `pom.xml` do seu projeto:
+>
+> ```xml
+> <dependency>
+>   <groupId>dev.petrus</groupId>
+>   <artifactId>tiss-hash</artifactId>
+>   <version>0.1.0</version>
+> </dependency>
+> ```
+
+### c. Snippet mínimo
+
+Salve como `Exemplo.java`:
+
+```java
+import dev.petrus.tisshash.TissHash;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public class Exemplo {
+    public static void main(String[] args) throws Exception {
+        // A partir de bytes
+        byte[] xml = Files.readAllBytes(Path.of("conformance/inputs/syn_minimal.xml"));
+        System.out.println(TissHash.hashTiss(xml));   // 32 caracteres hex minúsculos
+
+        // Atalho de arquivo (recebe um Path)
+        System.out.println(TissHash.hashTissFile(Path.of("conformance/inputs/syn_minimal.xml")));
+    }
+}
+```
+
+Compile e rode apontando para o jar gerado em `langs/java/target/`:
+
+```bash
+javac -cp langs/java/target/tiss-hash-0.1.0.jar Exemplo.java
+java  -cp .:langs/java/target/tiss-hash-0.1.0.jar Exemplo
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+O erro é a exceção `dev.petrus.tisshash.InvalidTissXmlException`. Capture com `try`/`catch`:
+
+```java
+import dev.petrus.tisshash.InvalidTissXmlException;
+import dev.petrus.tisshash.TissHash;
+
+try {
+    String hash = TissHash.hashTiss("<isto-nao-fecha".getBytes());
+} catch (InvalidTissXmlException e) {
+    System.err.println("XML rejeitado: " + e.getMessage());
+}
+```
+
+README completo do port: [`../langs/java/README.md`](../langs/java/README.md).
+
+## 9. Go
+
+### a. Instalar a toolchain
+
+Go 1.22 ou mais novo. Site oficial: <https://go.dev/dl/>. O instalador já traz tudo (compilador e gerenciador de módulos).
+
+Conferir a versão:
+
+```bash
+go version
+```
+
+### b. Obter a lib
+
+A partir do checkout, dentro da pasta do port, resolva as dependências:
+
+```bash
+cd langs/go
+go mod tidy
+```
+
+> **Quando publicado (com tag de versão):** `go get github.com/petrinhu/TISS_ANS_hash/langs/go`
+
+A única dependência externa é `golang.org/x/text` (para decodificar ISO-8859-1). O `go mod tidy` cuida dela.
+
+### c. Snippet mínimo
+
+Salve como `exemplo.go` dentro de `langs/go`:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+
+    tisshash "github.com/petrinhu/TISS_ANS_hash/langs/go"
+)
+
+func main() {
+    // A partir de bytes
+    data, err := os.ReadFile("../../conformance/inputs/syn_minimal.xml")
+    if err != nil {
+        panic(err)
+    }
+    hash, err := tisshash.HashTiss(data)
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(hash)   // 32 caracteres hex minúsculos
+
+    // Ou direto do arquivo
+    hashFile, err := tisshash.HashTissFile("../../conformance/inputs/syn_minimal.xml")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(hashFile)
+}
+```
+
+Rode com:
+
+```bash
+go run exemplo.go
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+Go não usa exceções: funções devolvem um valor de erro (`error`) junto com o resultado. Quando o `error` não é nulo, deu problema. Para distinguir XML inválido de outros erros, use `errors.As` com o tipo `*tisshash.InvalidTissXMLError`:
+
+```go
+import (
+    "errors"
+    "log"
+)
+
+hash, err := tisshash.HashTiss([]byte("<isto-nao-fecha"))
+if err != nil {
+    var invErr *tisshash.InvalidTissXMLError
+    if errors.As(err, &invErr) {
+        log.Printf("XML inválido: %v", invErr.Unwrap())
+    } else {
+        log.Printf("outro erro: %v", err)
+    }
+    return
+}
+```
+
+README completo do port: [`../langs/go/README.md`](../langs/go/README.md).
+
+## 10. C# / .NET
+
+### a. Instalar a toolchain
+
+.NET SDK 8.0 ou mais novo (versão LTS). Site oficial: <https://dotnet.microsoft.com/download>. O SDK traz o comando `dotnet`, que compila e roda.
+
+Conferir a versão:
+
+```bash
+dotnet --version
+```
+
+### b. Obter a lib
+
+A partir do checkout, adicione o projeto como referência ao seu projeto (não há registry usado ainda):
+
+```bash
+dotnet add reference /caminho/para/TISS_ANS_hash/langs/csharp/src/TissHash/TissHash.csproj
+```
+
+> **Quando publicado (NuGet):** `dotnet add package TissHash --version 0.1.0`
+
+### c. Snippet mínimo
+
+Em um projeto de console (`dotnet new console`), use no `Program.cs`:
+
+```csharp
+using TissHashLib = TissHash.TissHash;   // alias evita confusão entre o namespace e a classe (têm o mesmo nome)
+
+// A partir de bytes
+byte[] xml = File.ReadAllBytes("conformance/inputs/syn_minimal.xml");
+Console.WriteLine(TissHashLib.HashTiss(xml));   // 32 caracteres hex minúsculos
+
+// Atalho a partir do caminho
+Console.WriteLine(TissHashLib.HashTissFile("conformance/inputs/syn_minimal.xml"));
+```
+
+Rode com:
+
+```bash
+dotnet run
+```
+
+### d. Saída esperada
+
+```
+3aa0c578c95cdb861a125f480a8a4de5
+3aa0c578c95cdb861a125f480a8a4de5
+```
+
+(Hash ilustrativo do vetor sintético `syn_minimal.xml`.)
+
+### e. Como tratar erro
+
+O erro é a exceção `TissHash.InvalidTissXmlException`. A causa técnica original fica em `InnerException`. Capture com `try`/`catch`:
+
+```csharp
+using TissHashLib = TissHash.TissHash;
+
+try {
+    string hash = TissHashLib.HashTiss(System.Text.Encoding.UTF8.GetBytes("<isto-nao-fecha"));
+} catch (TissHash.InvalidTissXmlException e) {
+    Console.Error.WriteLine($"XML rejeitado: {e.Message}");
+}
+```
+
+Entrada nula dispara `ArgumentNullException`.
+
+README completo do port: [`../langs/csharp/README.md`](../langs/csharp/README.md).
+
+## 11. Receitas comuns (Python, como exemplo)
+
+As receitas abaixo usam Python porque é o port mais maduro, mas a ideia vale para qualquer linguagem (a lib só **calcula** o hash; montar o XML, assinar e enviar é com você).
+
+### Receita 1: preencher o `<ans:hash>` antes de enviar
+
+Fluxo de quem gera uma mensagem TISS para mandar à operadora:
 
 ```python
 from tiss_hash import hash_tiss
-from lxml import etree   # você provavelmente já usa pra montar o XML
+from lxml import etree   # biblioteca para montar/editar XML
 
 def preparar_envio(raw_xml: bytes) -> bytes:
-    """Calcula o hash, preenche <ans:hash> e devolve XML pronto pra assinar."""
+    """Calcula o hash, grava em <ans:hash> e devolve o XML pronto para assinar."""
     digest = hash_tiss(raw_xml)
 
-    # Reabre o XML para escrever o hash no lugar
     root = etree.fromstring(raw_xml)
     ns = {"ans": "http://www.ans.gov.br/padroes/tiss/schemas"}
     hash_el = root.find(".//ans:hash", ns)
@@ -178,26 +819,22 @@ def preparar_envio(raw_xml: bytes) -> bytes:
 
     return etree.tostring(root, xml_declaration=True, encoding="ISO-8859-1")
 
-# Em produção:
-# 1. monte o XML TISS com a sua lib preferida (lxml, xml.etree, geradores próprios)
-# 2. zere <ans:hash> antes de chamar hash_tiss (a lib zera internamente, mas o
-#    XML que vai pra ANS precisa ter o hash gravado, então quem grava é você)
-# 3. assine com XAdES (lib externa, fora do escopo deste projeto)
-# 4. envie via SOAP (também fora do escopo)
+# Passos em produção:
+# 1. monte o XML TISS (a lib calcula o hash do passo 1).
+# 2. grave o hash em <ans:hash> (a lib zera o campo internamente para o cálculo,
+#    mas quem grava o valor final no arquivo é você).
+# 3. assine com XAdES (biblioteca externa, fora do escopo deste projeto).
+# 4. envie via SOAP (também fora do escopo).
 ```
 
-A lib `tiss-hash` faz apenas o passo 1 (cálculo). Os passos 2-4 são responsabilidade do integrador.
-
-### Receita 2: Batch de múltiplos lotes
-
-Para processar uma pasta inteira de lotes:
+### Receita 2: processar uma pasta inteira de lotes
 
 ```python
 from pathlib import Path
 from tiss_hash import InvalidTissXml, hash_tiss_file
 
 def hashear_pasta(pasta: str) -> dict[str, str]:
-    """Devolve {nome_arquivo: hash_ou_erro}."""
+    """Devolve {nome_do_arquivo: hash_ou_mensagem_de_erro}."""
     resultados: dict[str, str] = {}
     for xml in Path(pasta).glob("*.xml"):
         try:
@@ -210,11 +847,9 @@ for arquivo, valor in hashear_pasta("envios_pendentes").items():
     print(f"{valor}  {arquivo}")
 ```
 
-A função é **pura** (sem estado mutável). Pode rodar em pool de threads ou processos sem proteção adicional.
+A função é **pura** (sem estado guardado entre chamadas), então pode rodar em paralelo sem cuidado extra.
 
-### Receita 3: Integração com FastAPI
-
-Endpoint HTTP que recebe XML e devolve hash:
+### Receita 3: endpoint HTTP (FastAPI)
 
 ```python
 from fastapi import FastAPI, HTTPException, Request
@@ -231,353 +866,115 @@ async def calcular_hash(request: Request) -> dict[str, str]:
         raise HTTPException(status_code=422, detail=str(exc))
 ```
 
-Lembre-se: o XML contém PII de pacientes. Esse endpoint **não deve logar o body** e idealmente roda em rede interna apenas. Ver [`legal/LGPD-NOTE.md`](legal/LGPD-NOTE.md).
+Atenção: o XML contém dados pessoais de pacientes. Esse endpoint **não deve registrar (logar) o corpo da requisição** e idealmente roda só em rede interna. Ver [`legal/LGPD-NOTE.md`](legal/LGPD-NOTE.md).
 
-### Receita 4: Integração com Flask
+## 12. Pegadinhas (valem para os 9 ports)
 
-```python
-from flask import Flask, request, jsonify
-from tiss_hash import InvalidTissXml, hash_tiss
+### 12.1 O encoding dos bytes do MD5 é UTF-8, não ISO-8859-1
 
-app = Flask(__name__)
+O manual TISS diz que tudo deve ser ISO-8859-1. **Isso não vale para o cálculo do hash.** Os bytes que alimentam o MD5 são sempre **UTF-8**, mesmo que o arquivo XML esteja declarado como ISO-8859-1.
 
-@app.post("/v1/tiss/hash")
-def calcular_hash():
-    try:
-        return jsonify(hash=hash_tiss(request.get_data()))
-    except InvalidTissXml as exc:
-        return jsonify(error=str(exc)), 422
-```
-
-## 5. Pegadinhas
-
-### 5.1 Encoding UTF-8 vs ISO-8859-1
-
-O manual TISS diz que tudo deve ser ISO-8859-1. **Não é o caso para o cálculo do hash.** Os bytes alimentados ao MD5 são **UTF-8** mesmo que o arquivo seja lido como ISO-8859-1.
-
-A lib trata isso internamente: você passa os bytes brutos (qualquer encoding declarado no XML), e a lib re-encoda os valores extraídos em UTF-8 antes do MD5.
-
-**Não faça** decode manual antes de chamar:
+A lib trata isso sozinha: você passa os bytes brutos (no encoding que o XML declarar) e a lib reconverte para UTF-8 internamente antes do MD5. **Não decodifique manualmente antes de chamar:**
 
 ```python
-# ERRADO
+# ERRADO: vai dar hash diferente
 texto = open("envio.xml", encoding="iso-8859-1").read()
-hash_tiss(texto.encode("iso-8859-1"))   # vai dar hash diferente
+hash_tiss(texto.encode("iso-8859-1"))
 
-# CERTO
+# CERTO: leia em binário e passe os bytes crus
 raw = open("envio.xml", "rb").read()
 hash_tiss(raw)
 ```
 
-Detalhes em [`SPEC.md §4`](SPEC.md#4-caveat-crítica-encoding-do-md5-é-utf-8-não-iso-8859-1).
+Por que isso acontece? Veja a entrada no [FAQ](#por-que-utf-8-e-não-iso-8859-1) e [`SPEC.md §4`](SPEC.md#4-caveat-crítica-encoding-do-md5-é-utf-8-não-iso-8859-1).
 
-### 5.2 Não normalize o XML antes de hashear
+### 12.2 Não "arrume" o XML antes de hashear
 
-**Não rode** `xmllint --c14n`, `xmllint --format`, `etree.tostring(pretty_print=True)` ou qualquer outra normalização antes de passar para `hash_tiss`. O algoritmo já é robusto a whitespace de indentação (porque ignora `.text` de elementos não-folha), mas **é sensível** a:
+Não rode `xmllint --format`, `xmllint --c14n`, nem qualquer "embelezador" de XML antes de passar para a lib. O algoritmo já ignora a indentação entre etiquetas, mas é **sensível** a:
 
-- Espaços DENTRO de valores de elemento-folha (`<numeroGuia>00123 </numeroGuia>` é diferente de `<numeroGuia>00123</numeroGuia>`).
-- Quebras de linha CR/LF dentro de valores.
-- Adicionar/remover comentários (eles entram no concat; ver [`conformance/AMBIGUITY_NOTES.md`](../conformance/AMBIGUITY_NOTES.md) §2).
+- Espaços dentro de um valor: `<numeroGuia>00123 </numeroGuia>` é diferente de `<numeroGuia>00123</numeroGuia>`.
+- Quebras de linha (CR/LF) dentro de um valor.
+- Comentários adicionados ou removidos (eles entram no cálculo; ver [`conformance/AMBIGUITY_NOTES.md`](../conformance/AMBIGUITY_NOTES.md)).
 
-Passe os bytes que serão efetivamente enviados à ANS. Nada mais.
+Passe exatamente os bytes que serão enviados à ANS. Nada mais.
 
-### 5.3 Thread safety
+### 12.3 As funções são puras (seguras para usar em paralelo)
 
-`hash_tiss` e `hash_tiss_file` são **puras**: sem estado mutável, sem singletons, sem cache. Podem ser chamadas em paralelo de qualquer número de threads ou processos. O parser é instanciado por chamada.
+As funções não guardam estado entre chamadas. Você pode chamá-las de várias threads ou processos ao mesmo tempo, sem proteção extra.
 
-### 5.4 Não confie no hash gravado dentro do arquivo
+### 12.4 Não confie no hash já gravado no arquivo
 
-XMLs legados frequentemente têm um valor **errado** dentro de `<ans:hash>` (gravado com encoding ISO-8859-1, gerando hash que a ANS rejeita). Sempre recalcule com esta lib antes de enviar.
+XMLs antigos costumam trazer um valor **errado** dentro de `<ans:hash>` (calculado com ISO-8859-1, que a ANS rejeita). Sempre recalcule com esta lib antes de enviar.
 
-## 6. API de referência (Python)
+## 13. Validar a lib na sua máquina
 
-### `hash_tiss(xml: bytes) -> str`
+Cada port traz a suíte de 20 vetores de conformidade. Rodá-la confirma que a instalação ficou correta. Resultado esperado: **20/20 PASS** (os 2 vetores negativos "passam" porque a lib os rejeita, que é o comportamento esperado).
 
-Calcula o hash MD5 do epílogo TISS/ANS a partir dos bytes do XML.
+| Linguagem | Comando (dentro de `langs/<lang>/`)          |
+|-----------|----------------------------------------------|
+| Python    | `pip install -e ".[dev]" && pytest -v`       |
+| Rust      | `cargo test`                                 |
+| C         | `cmake -B build -S . && cmake --build build && ctest --test-dir build --output-on-failure` |
+| C++       | `cmake -B build -S . && cmake --build build && ctest --test-dir build --output-on-failure` |
+| Node.js   | `npm install && npm test`                    |
+| PHP       | `composer install && composer test`          |
+| Java      | `mvn -q test`                                |
+| Go        | `go test -v ./...`                           |
+| C#        | `dotnet test`                                |
 
-**Argumentos:**
+> O port Python tem 24 testes no total: os 20 vetores de conformidade mais 4 testes auxiliares de API.
 
-- `xml` (`bytes` | `bytearray` | `memoryview`): bytes do documento XML completo.
+## 14. FAQ
 
-**Retorno:** string com 32 caracteres hex minúsculos (ex.: `"3aa0c578c95cdb861a125f480a8a4de5"`, do vetor sintético `syn_minimal.xml`).
+### Qual linguagem escolher?
 
-**Exceções:**
+Escolha a linguagem que o **resto do seu sistema** já usa. As 9 produzem o mesmo hash, então não há vantagem técnica de hash em uma sobre as outras: a melhor é a que se encaixa no seu projeto sem você ter que aprender uma stack nova.
 
-- `InvalidTissXml`: XML malformado, com DOCTYPE proibido, com entidade externa, com construção tipo billion-laughs ou que não parseou.
-- `TypeError`: argumento não é bytes-like.
+- Já tem um backend **Python / Node.js / PHP / Java / C# / Go**? Use o port da mesma linguagem.
+- Precisa de **desempenho máximo** ou rodar em ambiente sem runtime (firmware, binário pequeno)? **Rust** ou **C/C++**.
+- Vai embutir em outra aplicação **C/C++** existente? Os ports C (API estilo C) e C++ (API com exceções) existem justamente para isso.
 
-**Exemplo:**
+Na dúvida, comece pelo **Python**: é o port mais maduro e o de referência.
 
-```python
-from tiss_hash import hash_tiss
+### Os resultados são iguais entre linguagens?
 
-with open("envio.xml", "rb") as fh:
-    digest = hash_tiss(fh.read())
-```
-
-### `hash_tiss_file(path: str | os.PathLike) -> str`
-
-Atalho que abre o arquivo em modo binário e delega para `hash_tiss`.
-
-**Argumentos:**
-
-- `path`: caminho do arquivo (`str` ou `pathlib.Path`).
-
-**Retorno:** idem `hash_tiss`.
-
-**Exceções:**
-
-- `InvalidTissXml`: idem `hash_tiss`.
-- `OSError`: arquivo não pôde ser aberto/lido (`FileNotFoundError`, `PermissionError`, etc., são subclasses).
-
-**Exemplo:**
-
-```python
-from pathlib import Path
-from tiss_hash import hash_tiss_file
-
-digest = hash_tiss_file(Path("envios/lote_01.xml"))
-```
-
-### `InvalidTissXml`
-
-Exceção disparada quando o XML não pôde ser parseado ou foi rejeitado pela política de segurança do `defusedxml`. Subclasse de `ValueError`, então tanto
-
-```python
-except InvalidTissXml: ...
-```
-
-quanto
-
-```python
-except ValueError: ...
-```
-
-funcionam.
-
-### `__version__`
-
-Versão do pacote instalado (resolvida via metadados PEP 621). Em execução in-tree (sem `pip install`), vale `"0.0.0+unknown"`.
-
-## 7. Como rodar a fixture localmente
-
-```bash
-git clone https://github.com/petrinhu/TISS_ANS_hash.git
-cd TISS_ANS_hash/langs/python
-pip install -e ".[dev]"
-pytest -v
-```
-
-Saída esperada (resumida):
-
-```
-tests/test_conformance.py::test_vector_matches_expected[syn_minimal.xml] PASSED
-tests/test_conformance.py::test_vector_matches_expected[syn_acento.xml] PASSED
-...
-tests/test_conformance.py::test_vector_matches_expected[syn_multi_hash.xml] PASSED
-tests/test_conformance.py::test_invalid_xml_raises_invalid_tiss_xml PASSED
-tests/test_conformance.py::test_non_bytes_input_raises_type_error PASSED
-============================== 24 passed ==============================
-```
-
-Os 24 testes cobrem: 20 vetores de conformidade (18 positivos + 2 negativos) + 4 testes de API auxiliares (manifest core, equivalência file/bytes, erro com XML inválido, erro com tipo errado).
-
-## 8. Uso nas demais linguagens
-
-Os 8 ports além do Python seguem o mesmo contrato:
-
-- 1 função `bytes/arquivo → string hex 32 chars minúsculos`.
-- 1 erro tipado para XML inválido (exceção ou valor de erro, conforme idioma).
-- 0 estado mutável (função pura, thread-safe).
-- Mesmos 20 vetores de conformidade, byte-a-byte.
-
-Abaixo, o mínimo para instalar e calcular um hash em cada linguagem. Para a referência de API completa, opções de build alternativas e detalhes de packaging, consulte o README do port (link em cada subseção).
-
-### 8.1 Rust — [`langs/rust/README.md`](../langs/rust/README.md)
-
-```bash
-cargo add tiss-hash   # ou, no checkout: cd langs/rust && cargo build
-```
-
-```rust
-use tiss_hash::{hash_tiss, hash_tiss_file, TissHashError};
-
-fn main() -> Result<(), TissHashError> {
-    let raw = std::fs::read("envio.xml")?;
-    println!("{}", hash_tiss(&raw)?);   // 32 chars hex minúsculos
-    println!("{}", hash_tiss_file("envio.xml")?);
-    Ok(())
-}
-```
-
-Erro tipado: `TissHashError` (`InvalidXml(String)` / `Io(std::io::Error)`).
-
-### 8.2 C — [`langs/c/README.md`](../langs/c/README.md)
-
-```bash
-cd langs/c
-cmake -B build -S . && cmake --build build -j
-ctest --test-dir build --output-on-failure
-```
-
-```c
-#include "tiss_hash.h"
-
-char out_hex[33];   /* 32 chars + terminador */
-tiss_hash_status_t st = tiss_hash_file("envio.xml", out_hex, sizeof out_hex);
-if (st == TISS_HASH_OK) {
-    /* out_hex contém o digest */
-}
-/* tiss_hash_bytes(xml, len, out_hex, out_len) para bytes em memória */
-```
-
-Erro tipado: `tiss_hash_status_t` (não-`OK` indica XML inválido ou falha de I/O).
-
-### 8.3 C++ — [`langs/cpp/README.md`](../langs/cpp/README.md)
-
-Header-only.
-
-```bash
-cd langs/cpp
-cmake -B build -S . && cmake --build build -j
-ctest --test-dir build --output-on-failure
-```
-
-```cpp
-#include <tiss_hash/tiss_hash.hpp>
-
-try {
-    std::string h = tiss_hash::HashTissFile("envio.xml");   // 32 hex minúsculos
-    // tiss_hash::HashTiss(bytes) para dados em memória
-} catch (const tiss_hash::InvalidTissXml& e) {
-    // XML inválido
-}
-```
-
-### 8.4 Node.js — [`langs/node/README.md`](../langs/node/README.md)
-
-```bash
-cd langs/node && npm install
-```
-
-```js
-import { hashTiss, hashTissFile } from 'tiss-hash';
-import { readFileSync } from 'node:fs';
-
-const md5 = hashTiss(readFileSync('envio.xml'));   // síncrono, 32 hex minúsculos
-const md5File = await hashTissFile('envio.xml');   // assíncrono
-```
-
-Erro tipado: `InvalidTissXmlError` (subclasse de `Error`, `name === 'InvalidTissXmlError'`).
-
-### 8.5 PHP — [`langs/php/README.md`](../langs/php/README.md)
-
-```bash
-cd langs/php && composer install
-```
-
-```php
-<?php
-require 'vendor/autoload.php';
-use TissHash\TissHash;
-
-$hash = TissHash::hashTiss(file_get_contents('envio.xml'));  // 32 hex minúsculos
-$hash = TissHash::hashTissFile('envio.xml');
-```
-
-Erro tipado: `TissHash\InvalidTissXmlException`.
-
-### 8.6 Java — [`langs/java/README.md`](../langs/java/README.md)
-
-```bash
-cd langs/java
-mvn -q test       # roda os vetores + testes auxiliares
-mvn -q package    # gera o jar
-```
-
-```java
-import dev.petrus.tisshash.TissHash;
-import java.nio.file.Path;
-import java.nio.file.Files;
-
-String hash = TissHash.hashTiss(Files.readAllBytes(Path.of("envio.xml")));  // 32 hex minúsculos
-String hashFile = TissHash.hashTissFile(Path.of("envio.xml"));              // recebe Path
-```
-
-Erro tipado: `dev.petrus.tisshash.InvalidTissXmlException`.
-
-### 8.7 Go — [`langs/go/README.md`](../langs/go/README.md)
-
-```bash
-go get github.com/petrinhu/TISS_ANS_hash/langs/go
-```
-
-```go
-import tisshash "github.com/petrinhu/TISS_ANS_hash/langs/go"
-
-raw, _ := os.ReadFile("envio.xml")
-h, err := tisshash.HashTiss(raw)        // 32 hex minúsculos
-hf, err := tisshash.HashTissFile("envio.xml")
-```
-
-Erro idiomático Go: `error` não-nil para XML inválido.
-
-### 8.8 C# / .NET — [`langs/csharp/README.md`](../langs/csharp/README.md)
-
-```bash
-cd langs/csharp && dotnet build
-# ou referenciar o projeto:
-# dotnet add reference path/to/langs/csharp/src/TissHash/TissHash.csproj
-```
-
-```csharp
-using TissHashLib = TissHash.TissHash;   // alias evita ambiguidade namespace vs classe
-
-string hash = TissHashLib.HashTiss(File.ReadAllBytes("envio.xml"));   // 32 hex minúsculos
-string hashFile = TissHashLib.HashTissFile("envio.xml");
-```
-
-Erro tipado: `TissHash.InvalidTissXmlException`.
-
----
-
-Quer ajudar a portar para uma nova linguagem? Ver [`PORTING_GUIDE.md`](PORTING_GUIDE.md) e [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
-
-## 9. FAQ
+**Sim, byte a byte.** Para o mesmo XML de entrada, as 9 linguagens devolvem exatamente o mesmo hash de 32 caracteres. Todas são testadas contra os **mesmos 20 vetores de conformidade** (18 positivos, que devem dar certo, e 2 negativos, que devem ser rejeitados). Você pode calcular o hash em Python e conferir em Go, por exemplo, e o valor será idêntico. Foi assim de propósito: o algoritmo é único; o que muda é só a linguagem que o implementa.
 
 ### Por que UTF-8 e não ISO-8859-1?
 
-Porque o algoritmo real (validado contra hashes confirmados pela ANS) usa UTF-8 nos bytes do MD5, apesar de o manual TISS dizer "ISO-8859-1". É um defeito documental do padrão. Detalhes em [`SPEC.md §4`](SPEC.md#4-caveat-crítica-encoding-do-md5-é-utf-8-não-iso-8859-1) e [`conformance/AMBIGUITY_NOTES.md §1`](../conformance/AMBIGUITY_NOTES.md).
+Porque o algoritmo de verdade (conferido contra hashes que a ANS já aprovou) usa UTF-8 nos bytes do MD5, apesar de o manual TISS dizer "ISO-8859-1". É uma falha de redação do padrão. Detalhes em [`SPEC.md §4`](SPEC.md#4-caveat-crítica-encoding-do-md5-é-utf-8-não-iso-8859-1) e [`conformance/AMBIGUITY_NOTES.md`](../conformance/AMBIGUITY_NOTES.md).
 
 ### Posso usar em produção?
 
-Os 9 ports estão prontos e passam os 20 vetores de conformidade byte-a-byte (o port Python tem ainda 4 testes de API auxiliares, total 24). Os parsers são endurecidos contra XXE/billion-laughs. **Recomendação:** valide você mesmo contra alguns lotes seus que já foram aceitos pela operadora, antes de colocar em prod. A licença [MIT](../LICENSE) é explícita: sem garantias.
+Os 9 ports estão prontos e passam os 20 vetores byte a byte. Os parsers são endurecidos contra ataques via XML (XXE, "billion-laughs"). **Recomendação:** antes de pôr em produção, valide você mesmo contra alguns lotes seus que a operadora já aceitou. A licença [MIT](../LICENSE) é explícita: sem garantias.
 
 ### E se a ANS mudar o algoritmo?
 
-A spec em [`SPEC.md`](SPEC.md) está versionada (SemVer). O algoritmo de hash é estável entre versões do Padrão TISS, então a lib é agnóstica à versão vigente. Caso a ANS introduza mudança incompatível no padrão, dispara nova major (2.0.0) com migração documentada.
+A especificação em [`SPEC.md`](SPEC.md) é versionada. O algoritmo de hash tem sido estável entre as edições anuais do Padrão TISS, então a lib é agnóstica à edição vigente. Se a ANS introduzir uma mudança incompatível, sai uma nova versão maior (2.0.0) com guia de migração.
 
-### Por que MD5 sendo fraco criptograficamente?
+### Por que MD5, se ele é fraco em criptografia?
 
-Porque é o que o padrão TISS exige. MD5 aqui não é primitiva de segurança: serve como checksum de integridade do conteúdo do lote. Para autenticidade e não-repúdio, o padrão usa assinatura digital XAdES (fora do escopo desta lib). Mais em [`legal/DISCLAIMER.md`](legal/DISCLAIMER.md).
+Porque é o que o padrão TISS exige. Aqui o MD5 não serve de proteção de segurança: é só um "selo de integridade" do conteúdo do lote (detectar adulteração/corrupção). Autenticidade e não-repúdio ficam com a assinatura digital XAdES (fora do escopo desta lib). Mais em [`legal/DISCLAIMER.md`](legal/DISCLAIMER.md).
 
 ### Posso processar XML grande?
 
-Sim. A lib carrega o XML inteiro na memória (não é streaming) e itera elementos com `root.iter()`. O vetor `syn_perf_grande.xml` (~600KB, ~1500 guias) processa em poucos milissegundos. Para arquivos na ordem de centenas de MB, o gargalo será o parser DOM; nesse caso considere paralelizar entre arquivos, não otimizar dentro de um.
+Sim. A lib carrega o XML inteiro na memória. O vetor `syn_perf_grande.xml` (cerca de 600 KB, em torno de 1500 guias) processa em poucos milissegundos. Para arquivos de centenas de MB, o gargalo é o parser; nesse caso, processe vários arquivos em paralelo em vez de tentar otimizar um só.
 
-### Posso passar `str` em vez de `bytes`?
+### Por que não posso passar texto (string) em vez de bytes (em Python)?
 
-Não. `hash_tiss` exige bytes-like (`bytes`, `bytearray`, `memoryview`). Se passar `str`, dispara `TypeError`. A razão é controle de encoding: o algoritmo precisa decodar o XML conforme a declaração `<?xml encoding="..."?>`, e isso só é confiável a partir dos bytes brutos.
+Porque a lib precisa controlar o encoding. O algoritmo decodifica o XML conforme a declaração `<?xml encoding="..."?>`, e isso só é confiável a partir dos bytes crus. Passar `str` dispara `TypeError`. Nas outras linguagens, a regra equivalente é: passe sempre os bytes lidos em modo binário.
 
-### Tem WASM para usar no browser?
+### Tem versão para rodar no navegador (WASM)?
 
-Ainda não, está no roadmap (Tier 2). Argumento LGPD: rodar o hash client-side evita que o XML transite até o servidor.
+Ainda não, está no roadmap. A motivação é de privacidade (LGPD): rodar o hash no navegador do usuário evita que o XML com dados de paciente trafegue até o servidor.
 
-## 10. Ver também
+## 15. Ver também
 
-- [`SPEC.md`](SPEC.md): especificação canônica (o quê e por quê).
-- [`PORTING_GUIDE.md`](PORTING_GUIDE.md): contribuir com nova linguagem.
+- [`CONCEITOS.md`](CONCEITOS.md): o que é tudo isto, sem código (explicação para iniciantes).
+- [`TUTORIAL.md`](TUTORIAL.md): primeiro hash na tela, passo a passo.
+- [`SPEC.md`](SPEC.md): especificação canônica do algoritmo (o quê e por quê).
+- [`PORTING_GUIDE.md`](PORTING_GUIDE.md): como portar para uma nova linguagem.
 - [`../conformance/TEST_PLAN.md`](../conformance/TEST_PLAN.md): cobertura dos vetores.
 - [`../conformance/AMBIGUITY_NOTES.md`](../conformance/AMBIGUITY_NOTES.md): decisões fixadas.
-- [`legal/LGPD-NOTE.md`](legal/LGPD-NOTE.md): obrigações do integrador.
+- [`legal/LGPD-NOTE.md`](legal/LGPD-NOTE.md): obrigações de quem integra.
 - [`legal/DISCLAIMER.md`](legal/DISCLAIMER.md): limites de responsabilidade.

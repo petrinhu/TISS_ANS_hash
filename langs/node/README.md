@@ -1,26 +1,60 @@
 # tiss-hash (Node.js)
 
-Hash MD5 do epílogo `<ans:hash>` em XMLs do **Padrão TISS/ANS** (Troca de
-Informações em Saúde Suplementar, regulamentado pela Agência Nacional de
-Saúde Suplementar).
+Calcula a "impressão digital" do trecho final de um documento TISS/ANS. Antes
+do código, os termos essenciais:
 
-Este é o port Node.js da biblioteca [`lib_hash_ans`](https://github.com/petrinhu/TISS_ANS_hash).
-Outras linguagens (Python, Rust, C, C++, PHP, etc.) seguem o mesmo
-contrato e os mesmos vetores de conformidade.
+- **XML**: formato de arquivo de texto que organiza dados em etiquetas (tags)
+  aninhadas, como caixas dentro de caixas. O Padrão TISS é o XML que operadoras
+  de saúde e consultórios usam no Brasil para trocar dados de atendimento
+  (regulamentado pela Agência Nacional de Saúde Suplementar, a ANS).
+- **Hash**: sequência curta e fixa de caracteres calculada a partir de um
+  texto, como uma impressão digital. Mude uma letra, o hash muda inteiro.
+- **MD5**: a receita (algoritmo) que gera o hash; sempre 32 caracteres
+  hexadecimais (`0-9` e `a-f`).
+- **Epílogo**: a parte final do documento TISS, a etiqueta `<ans:hash>`, onde o
+  hash precisa ser gravado.
+- **Byte**: a menor unidade de dado do computador; um arquivo de texto é uma
+  fila de bytes.
+
+Em uma frase: você passa os bytes de um XML TISS e recebe os 32 caracteres do
+hash. Este é o port Node.js ("port" = a mesma lib reescrita em outra linguagem)
+da biblioteca [`lib_hash_ans`](https://github.com/petrinhu/TISS_ANS_hash).
+Outras linguagens (Python, Rust, C, C++, PHP, etc.) seguem o mesmo contrato e os
+mesmos vetores de conformidade. Para entender o problema que a lib resolve, veja
+[`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
+[`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visão geral).
 
 - **Status:** alpha. 20/20 vetores sintéticos PASS (18 positivos + 2 negativos) em `conformance/vectors.json`.
 - **Licença:** MIT.
 - **Engines:** Node.js `>=20` (testado em 20 LTS e 22 LTS).
 - **Dependência runtime única:** [`@xmldom/xmldom`](https://github.com/xmldom/xmldom) (DOM puro, pure-JS, sem deps nativas).
 
+## Antes de começar: instalar o Node.js
+
+Node.js é o ambiente que executa JavaScript fora do navegador. Ele já vem com o
+`npm`, o gerenciador que baixa e instala bibliotecas (dependências).
+
+- Baixe e instale pelo site oficial: <https://nodejs.org/> (escolha a versão
+  "LTS"; precisa da 20 ou mais nova).
+- Confira a instalação:
+
+```bash
+node --version
+npm --version
+```
+
 ## Instalação
+
+Uma **dependência** é uma biblioteca de terceiros que o seu código usa; o `npm`
+a baixa e instala. O comando abaixo adiciona esta lib ao seu projeto:
 
 ```bash
 npm install tiss-hash
 ```
 
-> A publicação no npm registry ainda não foi feita. Por enquanto, instalar
-> diretamente a partir do checkout do repositório:
+> A publicação no npm registry (o repositório oficial de pacotes Node.js) ainda
+> não foi feita. Por enquanto, instale diretamente a partir do checkout do
+> repositório (a pasta que você baixou com `git clone`):
 >
 > ```bash
 > npm install /caminho/para/lib_hash_ans/langs/node
@@ -138,11 +172,15 @@ cobrindo:
 
 A lista canônica vive em `conformance/vectors.json`.
 
+Cada **vetor** é um par "arquivo de entrada -> hash esperado": positivo deve
+produzir um hash, negativo deve ser rejeitado (a lib precisa recusar o arquivo,
+em vez de inventar um hash).
+
 Rodar os testes localmente, a partir desta pasta:
 
 ```bash
-npm install
-npm test
+npm install   # baixa as dependências
+npm test      # roda os 20 vetores de conformidade
 ```
 
 Saída esperada: 20 vetores passando (incluindo os 2 negativos que devem
@@ -173,3 +211,14 @@ Atribuição consolidada de todos os ports em
 ## Licença
 
 [MIT](LICENSE) Copyright (c) 2026 Petrus Silva Costa
+
+## Ver também
+
+- [`docs/USAGE.md`](../../docs/USAGE.md): guia de uso, receitas e perguntas
+  frequentes (comece por aqui se você quer só usar a lib).
+- [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md): conceitos e visão geral.
+- [`docs/SPEC.md`](../../docs/SPEC.md): especificação canônica do algoritmo.
+- [`docs/PORTING_GUIDE.md`](../../docs/PORTING_GUIDE.md): guia para portar para
+  outras linguagens.
+- [`conformance/reference.py`](../../conformance/reference.py): implementação de
+  referência (o "oráculo" que define a resposta certa).

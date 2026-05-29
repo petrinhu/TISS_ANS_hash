@@ -1,32 +1,70 @@
 # tiss-hash (PHP)
 
-Hash MD5 do epilogo XML TISS/ANS (Padrao TISS, Troca de Informacoes em
-Saude Suplementar, regulamentado pela ANS). Implementacao PHP portavel,
-com parsing endurecido contra XXE e billion-laughs.
+Calcula a "impressao digital" do trecho final de um documento TISS/ANS. Os
+termos antes do codigo:
 
-Este e o port PHP da biblioteca `lib_hash_ans`. Outras linguagens
-(Python, Rust, C, C++, Node.js, etc.) seguem o mesmo contrato e os mesmos
-vetores de conformidade.
+- **XML**: formato de arquivo de texto que organiza dados em etiquetas (tags)
+  aninhadas, como caixas dentro de caixas. O Padrao TISS e o XML que operadoras
+  de saude e consultorios usam no Brasil para trocar dados de atendimento
+  (regulamentado pela ANS, a Agencia Nacional de Saude Suplementar).
+- **Hash**: sequencia curta e fixa de caracteres calculada a partir de um
+  texto, como uma impressao digital. Mude uma letra, o hash muda inteiro.
+- **MD5**: a receita (algoritmo) que gera o hash; sempre 32 caracteres
+  hexadecimais (`0-9` e `a-f`).
+- **Epilogo**: a parte final do documento TISS, a etiqueta `<ans:hash>`, onde o
+  hash precisa ser gravado.
+- **Parser**: o componente que le o texto do XML e monta a arvore de etiquetas
+  na memoria. Aqui o parser e o `DOMDocument`, nativo do PHP.
+
+Em uma frase: voce passa os bytes de um XML TISS e recebe os 32 caracteres do
+hash. (Um **byte** e a menor unidade de dado do computador.) Este e o port PHP
+("port" = a mesma lib reescrita em outra linguagem). Outras linguagens (Python,
+Rust, C, C++, Node.js, etc.) seguem o mesmo contrato e os mesmos vetores de
+conformidade.
+
+Para entender o problema que a lib resolve, veja
+[`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
+[`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visao geral).
 
 - Repositorio principal: <https://github.com/petrinhu/TISS_ANS_hash>
-- Spec canonica: [`docs/SPEC.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/SPEC.md)
-- Implementacao de referencia: `conformance/reference.py` (Python + lxml)
+- Spec canonica: [`docs/SPEC.md`](../../docs/SPEC.md)
+- Implementacao de referencia: [`conformance/reference.py`](../../conformance/reference.py) (Python + lxml)
 - Status: **alpha**, 20/20 vetores sinteticos PASS (18 positivos + 2 negativos)
+
+## Antes de comecar: instalar o PHP e o Composer
+
+PHP e a linguagem deste port. O **Composer** e o gerenciador que baixa e instala
+bibliotecas (dependencias) de projetos PHP.
+
+- Instale o PHP pelo site oficial: <https://www.php.net/manual/pt_BR/install.php>
+  (precisa da versao 8.1 ou mais nova). Em Linux costuma estar no gerenciador de
+  pacotes da distro (ex.: `sudo dnf install php php-dom php-mbstring`).
+- Instale o Composer pelo site oficial: <https://getcomposer.org/download/>
+- Confira a instalacao:
+
+```bash
+php --version
+composer --version
+```
 
 ## Requisitos
 
 - PHP **8.1+** (testado em 8.5).
-- Extensoes: `ext-dom`, `ext-libxml`, `ext-mbstring` (todas standard na maioria das builds).
+- Extensoes: `ext-dom`, `ext-libxml`, `ext-mbstring` (todas standard na maioria das builds). Uma **extensao** e um modulo que acrescenta funcoes ao PHP; estas tres costumam ja vir habilitadas.
 
 ## Instalacao
+
+Uma **dependencia** e uma biblioteca de terceiros que o seu codigo usa; o
+Composer a baixa e instala. O comando abaixo adiciona esta lib ao seu projeto:
 
 ```bash
 composer require petrinhu/tiss-hash
 ```
 
-> **Nota:** ainda nao publicado no Packagist. Por enquanto, adicione o
-> repositorio manualmente em `composer.json` ou instale a partir do
-> checkout do monorepo:
+> **Nota:** ainda nao publicado no Packagist (o repositorio oficial de pacotes
+> PHP). Por enquanto, adicione o repositorio manualmente em `composer.json` ou
+> instale a partir do checkout do monorepo (a pasta que voce baixou com
+> `git clone`):
 >
 > ```bash
 > composer config repositories.tiss-hash path /caminho/para/lib_hash_ans/langs/php
@@ -89,12 +127,17 @@ ISO-8859-1. O manual TISS afirma o contrario, mas o valor validado contra
 goldens reais (privados, fora do repo) e os vetores sinteticos publicos e
 UTF-8.
 
-Especificacao canonica completa: [`docs/SPEC.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/SPEC.md).
+Especificacao canonica completa: [`docs/SPEC.md`](../../docs/SPEC.md).
 
 Catalogo de 15 ambiguidades canonicas que cada port deve reproduzir:
-[`conformance/AMBIGUITY_NOTES.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/conformance/AMBIGUITY_NOTES.md).
+[`conformance/AMBIGUITY_NOTES.md`](../../conformance/AMBIGUITY_NOTES.md).
 
 ## Conformidade
+
+"Conformidade" significa provar que este port produz o mesmo hash da
+implementacao oficial em todos os casos previstos. Cada **vetor** e um par
+"arquivo de entrada -> hash esperado": positivo deve produzir um hash, negativo
+deve ser rejeitado (a lib precisa recusar o arquivo, em vez de inventar um hash).
 
 20/20 vetores sinteticos do manifesto publico (`conformance/vectors.json`):
 18 positivos + 2 negativos. A lista canonica vive em
@@ -125,12 +168,13 @@ Mais 2 vetores **negativos** (esperam erro): `syn_multi_hash.xml`
 (multiplos `<ans:hash>` -> rejeitado) e `syn_utf16.xml` (UTF-16 fora de
 escopo -> rejeitado). Encodings suportados: ISO-8859-1 e UTF-8.
 
-Rodar os testes localmente:
+Rodar os testes localmente, a partir da raiz do repositorio (a pasta que voce
+baixou com `git clone`):
 
 ```bash
 cd langs/php
-composer install
-composer test
+composer install   # baixa as dependencias de teste
+composer test      # roda os 20 vetores de conformidade
 ```
 
 Saida esperada: `OK (... tests)`: 20 vetores de conformidade (data
@@ -149,3 +193,14 @@ provider) mais testes auxiliares de API.
 ## Licenca
 
 [MIT](LICENSE).
+
+## Ver também
+
+- [`docs/USAGE.md`](../../docs/USAGE.md): guia de uso, receitas e perguntas
+  frequentes (comece por aqui se voce quer so usar a lib).
+- [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md): conceitos e visao geral.
+- [`docs/SPEC.md`](../../docs/SPEC.md): especificacao canonica do algoritmo.
+- [`docs/PORTING_GUIDE.md`](../../docs/PORTING_GUIDE.md): guia para portar para
+  outras linguagens.
+- [`conformance/reference.py`](../../conformance/reference.py): implementacao de
+  referencia (o "oraculo" que define a resposta certa).

@@ -1,6 +1,28 @@
 # tiss-hash (port C++)
 
-Hash MD5 do epilogo `<ans:hash>` em XMLs do **Padrao TISS/ANS**. Implementacao em C++20 com `pugixml` (parser) + `OpenSSL EVP` (MD5).
+Calcula a "impressao digital" do trecho final de um documento TISS/ANS. Os
+termos antes do codigo:
+
+- **XML**: formato de arquivo de texto que organiza dados em etiquetas (tags)
+  aninhadas, como caixas dentro de caixas. O Padrao TISS e o XML que operadoras
+  de saude e consultorios usam no Brasil para trocar dados de atendimento.
+- **Hash**: sequencia curta e fixa de caracteres calculada a partir de um
+  texto, como uma impressao digital. Mude uma letra, o hash muda inteiro.
+- **MD5**: a receita (algoritmo) que gera o hash; sempre 32 caracteres
+  hexadecimais (`0-9` e `a-f`).
+- **Epilogo**: a parte final do documento TISS, a etiqueta `<ans:hash>`, onde o
+  hash precisa ser gravado.
+- **Parser**: o componente que le o texto do XML e monta a arvore de etiquetas
+  na memoria. Aqui o parser e o `pugixml`.
+
+Em uma frase: voce passa os bytes de um XML TISS e recebe os 32 caracteres do
+hash. (Um **byte** e a menor unidade de dado do computador.) Este e o port C++
+("port" = a mesma lib reescrita em outra linguagem), em C++20 com `pugixml`
+(parser) + `OpenSSL EVP` (calculo do MD5).
+
+Para entender o problema que a lib resolve, veja
+[`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
+[`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visao geral).
 
 - Spec canonica: [`docs/SPEC.md`](../../docs/SPEC.md) (raiz do repo).
 - Referencia executavel: [`conformance/reference.py`](../../conformance/reference.py).
@@ -10,6 +32,40 @@ Hash MD5 do epilogo `<ans:hash>` em XMLs do **Padrao TISS/ANS**. Implementacao e
 ## Status
 
 Alpha. **20/20 vetores PASS** (18 positivos + 2 negativos: multi-hash e UTF-16 sao rejeitados). API publica estavel; ABI nao garantido ainda.
+
+## Antes de comecar: instalar a toolchain C++
+
+Para compilar codigo C++ voce precisa de uma **toolchain**: o compilador mais
+as ferramentas de build. Este port usa `g++` (ou `clang++`), `cmake` e duas
+bibliotecas (`pugixml` e `OpenSSL`).
+
+- Em Linux a forma mais simples e instalar pelo gerenciador de pacotes da sua
+  distro (veja a tabela "Dependencias de sistema" logo abaixo).
+- Documentacao oficial do compilador GCC: <https://gcc.gnu.org/install/>
+- Documentacao oficial do CMake (ferramenta de build): <https://cmake.org/download/>
+
+Confira que o compilador e o CMake estao instalados:
+
+```bash
+g++ --version
+cmake --version
+```
+
+Exemplo de instalacao completa no Fedora (uma unica linha):
+
+```bash
+sudo dnf install pugixml-devel openssl-devel cmake gcc-c++ python3
+```
+
+No Debian/Ubuntu:
+
+```bash
+sudo apt install libpugixml-dev libssl-dev cmake g++ python3
+```
+
+(Um pacote terminado em `-devel` ou `-dev` traz os "cabecalhos" da biblioteca,
+arquivos que o compilador precisa para usa-la. Se o `pugixml` nao existir na
+sua distro, o build baixa a versao certa sozinho via `FetchContent`.)
 
 ## Dependencias de sistema
 
@@ -30,14 +86,18 @@ Versoes usadas no desenvolvimento:
 
 ## Build & test
 
+A partir da raiz do repositorio (a pasta que voce baixou com `git clone`):
+
 ```bash
 cd langs/cpp
-cmake -B build -S .
-cmake --build build -j
-ctest --test-dir build --output-on-failure
+cmake -B build -S .            # configura o build na pasta build/
+cmake --build build -j         # compila a biblioteca e os testes
+ctest --test-dir build --output-on-failure   # roda os 20 vetores
 ```
 
-Resultado esperado: `20/20 PASS` no test case de conformidade.
+Resultado esperado: `20/20 PASS` no test case de conformidade. Cada vetor e um
+par "arquivo de entrada -> hash esperado": 18 positivos (devem produzir um hash)
+e 2 negativos (devem ser rejeitados).
 
 ### Sanitizers (recomendado em dev)
 
@@ -180,3 +240,14 @@ Os dois ports rodam o mesmo conjunto de 20 vetores e devem produzir hashes ident
 ## Licenca
 
 MIT, ver [`LICENSE`](LICENSE). doctest distribuido sob MIT (ver [`third_party/doctest.h`](third_party/doctest.h)).
+
+## Ver também
+
+- [`docs/USAGE.md`](../../docs/USAGE.md): guia de uso, receitas e perguntas
+  frequentes (comece por aqui se voce quer so usar a lib).
+- [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md): conceitos e visao geral.
+- [`docs/SPEC.md`](../../docs/SPEC.md): especificacao canonica do algoritmo.
+- [`docs/PORTING_GUIDE.md`](../../docs/PORTING_GUIDE.md): guia para portar para
+  outras linguagens.
+- [`conformance/reference.py`](../../conformance/reference.py): implementacao de
+  referencia (o "oraculo" que define a resposta certa).

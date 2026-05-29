@@ -1,0 +1,177 @@
+# Release do port Python (langs/python, pacote PyPI `tiss-hash`).
+#
+# Dispara SÓ quando uma tag `v*` é empurrada (ou manualmente via
+# workflow_dispatch para um dry-run que NÃO publica no PyPI — ver guarda
+# `if:` no job pypi-publish). Tudo abaixo é inerte até a tag existir.
+#
+# Pipeline: build (sdist+wheel) -> {pypi-publish via OIDC, github-release}.
+#
+# GATE DE PUBLISH (vars.PYPI_ENABLED):
+#  - O job `pypi-publish` so roda quando a VARIAVEL de repo PYPI_ENABLED=true.
+#    Sem ela, o job e SKIPPED (verde) e NADA vai pro PyPI — mas o job
+#    `github-release` (depende so de `build`) cria o Release do GitHub normal.
+#    Assim uma tag v* HOJE produz Release sem exigir conta/OIDC no PyPI.
+#
+# SEGURANCA / SUPPLY CHAIN:
+#  - Trusted Publishing (OIDC): sem token/senha no repo. O PyPI confia neste
+#    workflow via "pending publisher" configurado no projeto (ver README ao
+#    pe deste arquivo / mensagem de entrega). Requer o environment `pypi`.
+#  - Todas as actions de terceiros estao PINADAS por SHA completo (nao por
+#    tag movel), conforme hardening de supply chain. O comentario `# vX.Y.Z`
+#    ao lado de cada SHA e so para leitura humana; o que o runner usa e o SHA.
+#  - Artefatos sao construidos UMA vez (job build) e reutilizados pelos jobs
+#    downstream via artifact, garantindo que o que vai pro PyPI e o que vai
+#    pro GitHub Release sao bit-a-bit identicos.
+name: release-python
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+# Default minimo; cada job eleva so o que precisa.
+permissions:
+  contents: read
+
+concurrency:
+  group: release-python-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Install build backend
+        run: python -m pip install --upgrade pip build
+
+      - name: Build (sdist + wheel)
+        working-directory: langs/python
+        run: python -m build
+
+      # twine check valida os metadados do PyPI antes de qualquer publish.
+      # Falha o release cedo se o long_description / classifiers quebrarem.
+      - name: Validate metadata (twine check)
+        working-directory: langs/python
+        run: |
+          pip install twine
+          python -m twine check dist/*
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: python-dist
+          path: langs/python/dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  pypi-publish:
+    name: publish to PyPI (Trusted Publishing)
+    needs: build
+    runs-on: ubuntu-latest
+    # GATE (vars.PYPI_ENABLED): enquanto o lider nao setar a variavel de repo
+    # PYPI_ENABLED=true, este job e SKIPPED (verde, nao falha) e NADA vai pro
+    # PyPI. O job `github-release` abaixo depende so de `build`, entao o Release
+    # do GitHub continua sendo criado normalmente mesmo com o publish desligado.
+    # SO publica em push de tag. workflow_dispatch nao publica (dry-run de build).
+    if: vars.PYPI_ENABLED == 'true' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    # O environment `pypi` deve existir no repo e bater com o pending publisher.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/tiss-hash/
+    permissions:
+      # OIDC: o unico privilegio necessario. Sem contents/packages.
+      id-token: write
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: python-dist
+          path: dist/
+
+      # Trusted Publishing: sem `password`. A action troca o token OIDC do
+      # GitHub por uma credencial efemera junto ao PyPI. `packages-dir`
+      # default e `dist/`, que e exatamente onde baixamos o artifact.
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
+        with:
+          print-hash: true
+
+  github-release:
+    name: GitHub Release (notes + checksums + SBOM)
+    needs: build
+    runs-on: ubuntu-latest
+    # GitHub Release so faz sentido com uma tag. Pula em workflow_dispatch.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      # Necessario para criar o Release e anexar assets.
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: python-dist
+          path: dist/
+
+      # Checksums dos artefatos (sdist + wheel). Nomes relativos (cd dist)
+      # para o SHA256SUMS conter so o basename, facilitando `sha256sum -c`.
+      - name: Generate SHA256SUMS
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+
+      # SBOM CycloneDX via syft. Escaneia o diretorio do port (le pyproject +
+      # deps declaradas). Mais confiavel e simples que cyclonedx-py porque nao
+      # exige resolver/instalar o ambiente exato. Saida JSON CycloneDX.
+      - name: Generate SBOM (CycloneDX)
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: langs/python
+          format: cyclonedx-json
+          output-file: dist/sbom.cdx.json
+          # Nao deixar a action criar seu proprio Release; nos controlamos isso.
+          upload-release-assets: false
+          upload-artifact: false
+
+      # Corpo do release: usa RELEASE_NOTES.md da raiz se existir; senao deixa
+      # o action-gh-release auto-gerar a partir dos commits.
+      - name: Resolve release body
+        id: body
+        run: |
+          if [ -f RELEASE_NOTES.md ]; then
+            echo "Using RELEASE_NOTES.md as release body"
+            echo "use_file=true"  >> "$GITHUB_OUTPUT"
+            echo "generate=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "RELEASE_NOTES.md absent; falling back to auto-generated notes"
+            echo "use_file=false" >> "$GITHUB_OUTPUT"
+            echo "generate=true"  >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          # Em push de tag, a action usa github.ref_name como tag/name por default.
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body_path: ${{ steps.body.outputs.use_file == 'true' && 'RELEASE_NOTES.md' || '' }}
+          generate_release_notes: ${{ steps.body.outputs.generate == 'true' }}
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.tar.gz
+            dist/*.whl
+            dist/SHA256SUMS
+            dist/sbom.cdx.json

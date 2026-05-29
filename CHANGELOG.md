@@ -10,102 +10,44 @@ A versão de **cada port** é independente, declarada em seu próprio pacote (ex
 
 ## [Unreleased]
 
-### Added
+## [0.1.0] - 2026-05-29
 
-- **8 ports Tier 2**, todos passando os mesmos vetores de conformidade byte-a-byte
-  contra a referência Python e entre si:
-  - **Rust** (`langs/rust/`, crate `tiss-hash`): `hash_tiss(&[u8])`, `hash_tiss_file(P)`,
-    erro `TissHashError` (`InvalidXml` / `Io`).
-  - **C** (`langs/c/`, lib + header `tiss_hash.h`): `tiss_hash_bytes(...)`,
-    `tiss_hash_file(...)`, status `tiss_hash_status_t`; build via CMake e Makefile.
-  - **C++** (`langs/cpp/`, header-only): `tiss_hash::HashTiss(...)`,
-    `tiss_hash::HashTissFile(...)`, exceção `tiss_hash::InvalidTissXml`; build via CMake.
-  - **Node.js** (`langs/node/`, `tiss-hash`): `hashTiss(bytes)` (síncrono),
-    `hashTissFile(path)` (assíncrono), erro `InvalidTissXmlError`; ESM.
-  - **PHP** (`langs/php/`, `petrinhu/tiss-hash`): `TissHash::hashTiss(string)`,
-    `TissHash::hashTissFile(string)`, exceção `TissHash\InvalidTissXmlException`.
-  - **Java** (`langs/java/`, pacote `dev.petrus.tisshash`): `TissHash.hashTiss(byte[])`,
-    `TissHash.hashTissFile(Path)`, exceção `InvalidTissXmlException`; build via Maven
-    (com fallback `javac`/`java`).
-  - **Go** (`langs/go/`, módulo `tisshash`): `HashTiss([]byte)`, `HashTissFile(string)`,
-    `error` idiomático para XML inválido.
-  - **C#/.NET** (`langs/csharp/`, `TissHash`): `TissHash.HashTiss(byte[])`,
-    `TissHash.HashTissFile(string)`, exceção `InvalidTissXmlException`; build via `dotnet`.
-- **Expansão da suíte de conformidade** de 5 vetores sintéticos iniciais para 15 e, em
-  seguida, para **20 vetores** (18 positivos + 2 negativos). Os vetores negativos exercem
-  comportamentos de **rejeição** que todos os ports devem honrar:
-  - múltiplos elementos `<ans:hash>` no mesmo documento (ambiguidade de alvo): `expect: "error"`;
-  - documentos em **UTF-16/UTF-32**, fora do escopo do padrão (que usa ISO-8859-1/UTF-8):
-    `expect: "error"`.
-- **`THIRD_PARTY_LICENSES.md`** na raiz: inventário das dependências de terceiros de cada
-  port e suas licenças.
-- **Documentação de uso multi-linguagem** em [`docs/USAGE.md`](docs/USAGE.md): quickstart
-  resumido por port com ponteiro para o README de cada `langs/<lang>/`.
-
-### Changed
-
-- **Manifesto de conformidade** (`conformance/vectors.json`) passou a distinguir vetores
-  positivos (`expected_md5`) de negativos (`expect: "error"`, `expected_md5` nulo).
-- **Algoritmo de referência** e ports atualizados para **rejeitar explicitamente** os casos
-  cobertos pelos vetores negativos (multi-`<ans:hash>`, UTF-16/UTF-32) em vez de produzir
-  hash silenciosamente.
-
-### Security
-
-- **Remoção de PII das docs**: exemplos e trechos foram revisados para não exporem hashes
-  de XML real nem dados de pacientes; toda a documentação pública usa apenas vetores
-  sintéticos. Validação contra XMLs reais permanece fora do repositório (LGPD).
-
-## [0.1.0] - 2026-05-27
-
-Primeiro release público. Algoritmo extraído, especificado, validado e empacotado em Python.
+Primeiro release público. Algoritmo do hash MD5 do epílogo do Padrão TISS/ANS extraído, especificado, validado e empacotado em **9 linguagens**, todas passando os mesmos vetores de conformidade byte-a-byte.
 
 ### Added
 
 - **Algoritmo de referência** em Python (`conformance/reference.py`), validado byte-a-byte contra 3 XMLs reais com hashes confirmados pela ANS (validação privada, fora do repo).
-- **Fixture de conformidade pública** com 15 vetores sintéticos cobrindo todos os casos de borda relevantes:
-  - `syn_minimal.xml`: cabeçalho + epílogo mínimo.
-  - `syn_acento.xml`: discriminador de encoding UTF-8 vs ISO-8859-1.
-  - `syn_empty.xml`: campos vazios (`<x></x>` e self-closing `<y/>`).
-  - `syn_crlf_value.xml`: CR/LF preservado dentro de valor.
-  - `syn_multi_guia.xml`: múltiplas guias, ordem documental.
-  - `syn_entidades_xml.xml`: entidades XML predefinidas decodificadas pelo parser.
-  - `syn_cdata.xml`: seção CDATA tratada como texto literal.
-  - `syn_comentario.xml`: comentários XML entram no concat (ambiguidade fixada).
-  - `syn_atributo_folha.xml`: atributos não entram no concat.
-  - `syn_namespace_xsi.xml`: prefixo de namespace em atributo ignorado.
-  - `syn_whitespace_puro.xml`: espaços puros preservados literalmente.
-  - `syn_leading_zero.xml`: zeros à esquerda preservados.
-  - `syn_iso8859_simbolos.xml`: símbolos ISO-8859-1 puros.
-  - `syn_perf_grande.xml`: ~600KB, ~1500 guias (performance).
-  - `syn_bom_utf8.xml`: BOM UTF-8 (TISS proíbe, mas a referência aceita).
-- **Especificação canônica** em [`docs/SPEC.md`](docs/SPEC.md), incluindo pseudo-código, diagrama de fluxo, caveat de encoding UTF-8.
-- **Guia de port** em [`docs/PORTING_GUIDE.md`](docs/PORTING_GUIDE.md) para implementar em novas linguagens.
-- **Visão arquitetural** em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-- **Architecture Decision Records** 0001-0004 em [`docs/adr/`](docs/adr/):
-  - ADR-0001: port nativo por linguagem (vs core C + FFI).
-  - ADR-0002: layout do monorepo.
-  - ADR-0003: estratégia de packaging e versionamento.
-  - ADR-0004: matriz de CI.
-- **Port Python** (`langs/python/`, pacote `tiss-hash`) com 19 testes passando: 15 vetores de conformidade + 4 testes de API auxiliares.
-  - API pública: `hash_tiss(bytes) -> str`, `hash_tiss_file(path) -> str`, `InvalidTissXml`.
-  - Parser endurecido com `defusedxml` (proteção contra XXE e billion-laughs).
-  - Type hints completos; suporte a Python 3.10+.
-- **Documentação de uso** em [`docs/USAGE.md`](docs/USAGE.md): instalação, quickstart, receitas (FastAPI, Flask, batch), pegadinhas, FAQ.
-- **Documentação legal**:
-  - [`docs/legal/LGPD-NOTE.md`](docs/legal/LGPD-NOTE.md): obrigações do integrador.
-  - [`docs/legal/DISCLAIMER.md`](docs/legal/DISCLAIMER.md): limites de responsabilidade.
-  - [`docs/legal/TISS-COMPLIANCE.md`](docs/legal/TISS-COMPLIANCE.md): escopo TISS.
-- **Política de contribuição**: [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) (Contributor Covenant 2.1), [`SECURITY.md`](SECURITY.md).
-- **Templates de issue e PR** para GitHub (`.github/`) e Codeberg/Forgejo (`.forgejo/`).
-- **Repositórios públicos**: GitHub [`petrinhu/TISS_ANS_hash`](https://github.com/petrinhu/TISS_ANS_hash) e Codeberg [`petrinhu/TISS_ANS_hash`](https://codeberg.org/petrinhu/TISS_ANS_hash) (mirror sincronizado via dual push).
+- **9 ports nativos**, todos passando a suíte de conformidade byte-a-byte contra a referência e entre si:
+  - **Python** (`langs/python/`, `tiss-hash`): `hash_tiss(bytes)`, `hash_tiss_file(path)`, `InvalidTissXml`; parser endurecido com `defusedxml`; Python 3.10+.
+  - **Rust** (`langs/rust/`, crate `tiss-hash`): `hash_tiss(&[u8])`, `hash_tiss_file(P)`, `TissHashError`.
+  - **C** (`langs/c/`, lib + `tiss_hash.h`): `tiss_hash_bytes(...)`, `tiss_hash_file(...)`, `tiss_hash_status_t`; CMake + Makefile.
+  - **C++** (`langs/cpp/`, header-only): `tiss_hash::HashTiss(...)`, `HashTissFile(...)`, `InvalidTissXml`; CMake, C++20.
+  - **Node.js** (`langs/node/`, `tiss-hash`): `hashTiss(bytes)`, `hashTissFile(path)`, `InvalidTissXmlError`; ESM + CJS.
+  - **PHP** (`langs/php/`, `petrinhu/tiss-hash`): `TissHash::hashTiss(string)`, `hashTissFile(string)`, `InvalidTissXmlException`.
+  - **Java** (`langs/java/`, `dev.petrus.tisshash`): `TissHash.hashTiss(byte[])`, `hashTissFile(Path)`, `InvalidTissXmlException`; Maven, JDK 17+.
+  - **Go** (`langs/go/`, módulo `tisshash`): `HashTiss([]byte)`, `HashTissFile(string)`, `error` idiomático.
+  - **C#/.NET** (`langs/csharp/`, `TissHash`): `TissHash.HashTiss(byte[])`, `HashTissFile(string)`, `InvalidTissXmlException`; .NET 8.
+- **Suíte de conformidade pública** com **20 vetores 100% sintéticos** (18 positivos + 2 negativos) em `conformance/vectors.json` + `conformance/inputs/`, cobrindo: mínimo, acentuação (discriminador de encoding UTF-8), campos vazios, CR/LF em valor, múltiplas guias, entidades XML predefinidas, entidades numéricas, CDATA, comentários (entram no concat), atributos de folha (não entram), namespace `xsi`, namespace TISS default (sem prefixo), documento sem `<ans:hash>`, whitespace puro, zeros à esquerda, símbolos ISO-8859-1, performance (~600 KB), BOM UTF-8; e 2 negativos de **rejeição**: múltiplos `<ans:hash>` e encoding UTF-16/UTF-32.
+- **Especificação canônica** em [`docs/SPEC.md`](docs/SPEC.md) (pseudo-código, diagrama de fluxo, caveat de encoding UTF-8, escopo de encoding, vetores positivos e negativos).
+- **Guia de port** [`docs/PORTING_GUIDE.md`](docs/PORTING_GUIDE.md), visão arquitetural [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), uso multi-linguagem [`docs/USAGE.md`](docs/USAGE.md).
+- **Architecture Decision Records** 0001-0005 em [`docs/adr/`](docs/adr/): port nativo por linguagem, layout monorepo, packaging/versionamento, matriz de CI, e reconciliação de nomenclatura/groupId/workflows.
+- **`THIRD_PARTY_LICENSES.md`**: inventário de dependências de terceiros por port + licenças.
+- **CI dual-host**: 9 workflows × GitHub Actions + Forgejo Actions (Codeberg). Hardening: sanitizers ASan/UBSan (C/C++), matriz gcc+clang, lint gate por port (clang-tidy/eslint/phpstan/checkstyle/dotnet-format), coverage, `dependabot.yml` multi-ecosystem, gate de CVE por port, mutation testing (Rust).
+- **Documentação legal**: [`LGPD-NOTE`](docs/legal/LGPD-NOTE.md), [`DISCLAIMER`](docs/legal/DISCLAIMER.md), [`TISS-COMPLIANCE`](docs/legal/TISS-COMPLIANCE.md) (agnóstico à versão do Padrão TISS).
+- **Política de contribuição**: [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) (Contributor Covenant 2.1), [`SECURITY.md`](SECURITY.md). Templates de issue/PR para GitHub e Codeberg/Forgejo.
+- **Repositórios públicos** dual-push: GitHub [`petrinhu/TISS_ANS_hash`](https://github.com/petrinhu/TISS_ANS_hash) e Codeberg [`petrinhu/TISS_ANS_hash`](https://codeberg.org/petrinhu/TISS_ANS_hash).
 - **Licença MIT** ([`LICENSE`](LICENSE)).
+
+### Security
+
+- **XXE fechado no port C**: `xmlSetExternalEntityLoader` nega entidade externa (`XML_PARSE_NONET` não cobre `file://`); teste de regressão `test_xxe.c`.
+- **Rejeição explícita** (em vez de hash silenciosamente errado): múltiplos `<ans:hash>` e encoding UTF-16/UTF-32 fora de escopo são rejeitados por todos os ports.
+- **Sem PII no repositório público**: nenhum hash de XML real nem dado de paciente; toda a documentação usa apenas vetores sintéticos. Os hashes-esperados dos goldens reais vivem em diretório privado fora do repo (LGPD, Lei 13.709/2018).
 
 ### Notes
 
-- **Predecessor arquivado**: o projeto `TISSGama` (editor desktop legado) foi arquivado nos dois mirrors em 2026-05-27, dado que o contexto de uso original foi descontinuado. O algoritmo de hash MD5 foi extraído e migrou para este projeto. Repositórios originais permanecem privados e arquivados (read-only).
-- **XMLs reais removidos** do repositório: durante a engenharia reversa do algoritmo, 3 XMLs reais com hashes confirmados pela ANS serviram como ground truth. Esses arquivos contêm PII de pacientes e **não estão no repositório público** (LGPD, Lei 13.709/2018, art. 5º, II). Permanecem em diretório privado do mantenedor e são usados apenas como validação pré-release adicional. A suíte pública de 15 vetores sintéticos é suficiente para garantir conformidade byte-a-byte.
-- **Cobertura de port**: apenas Python neste release. C, C++, Rust, PHP, Node.js e demais linguagens estão planejados (ver [`README.md`](README.md#linguagens-alvo)).
+- **Predecessor arquivado**: `TISSGama` (editor desktop legado) foi arquivado nos dois mirrors; o algoritmo de hash foi extraído e migrou para este projeto.
+- **Encoding**: o manual do Padrão TISS diz "ISO-8859-1", mas os bytes alimentados ao MD5 são **UTF-8** (validado contra os goldens reais aceitos pela ANS). Ver `docs/SPEC.md` §4.
 
 ---
 

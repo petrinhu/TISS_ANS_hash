@@ -16,9 +16,21 @@
 
 ## O que é
 
-`lib_hash_ans` é uma coleção de bibliotecas independentes, uma por linguagem-alvo, que calculam o hash MD5 do epílogo de mensagens TISS/ANS (padrão da Agência Nacional de Saúde Suplementar para troca de dados entre operadoras de saúde e prestadores no Brasil).
+No Brasil, planos de saúde (as operadoras) e clínicas/hospitais (os prestadores) trocam dados de atendimento usando um formato de arquivo padronizado chamado **Padrão TISS**, definido pela ANS (Agência Nacional de Saúde Suplementar, o órgão do governo que regula a saúde suplementar). Esse arquivo é um **XML**: um arquivo de texto com etiquetas (tags) que organizam a informação, parecido com uma página HTML. Dentro dele existe um campo de segurança: um **hash MD5**. Um hash é uma "impressão digital" do conteúdo: você joga o texto do arquivo numa fórmula matemática (MD5) e ela devolve sempre os mesmos 32 caracteres (de `0` a `9` e de `a` a `f`). Se uma vírgula do arquivo mudar, a impressão digital muda. A ANS usa esse hash para conferir que o arquivo não foi adulterado no caminho. O pedaço final do XML, onde esse selo é calculado e colado, é o que aqui chamamos de **epílogo**.
 
-Todas as implementações reproduzem **byte a byte** o mesmo algoritmo, validado contra goldens reais (privados, em poder do mantenedor) e contra 20 vetores de conformidade públicos (18 positivos + 2 negativos). Definição canônica em [`docs/SPEC.md`](docs/SPEC.md). Suíte de conformidade pública em [`conformance/`](conformance/).
+`lib_hash_ans` é uma coleção de **bibliotecas** (uma biblioteca é um pacote de código pronto que você instala e chama no seu programa, em vez de reescrever tudo do zero), uma para cada linguagem de programação, que calculam exatamente esse hash MD5 do epílogo TISS/ANS. Você entrega o conteúdo do arquivo XML, a lib devolve os 32 caracteres. Só isso.
+
+Todas as 9 implementações produzem **o mesmo resultado byte a byte** (um byte é a menor unidade de informação que o computador guarda; "byte a byte" significa que o resultado é idêntico até no menor detalhe, sem nenhuma diferença). O algoritmo foi conferido contra exemplos reais já aprovados pela ANS (guardados em segredo, fora deste repositório, por conterem dados de pacientes) e contra 20 casos de teste públicos e inventados (18 que devem dar certo + 2 que devem dar errado de propósito, para garantir que a lib rejeita entrada inválida). Esses casos de teste são os **vetores de conformidade**: "conformidade" aqui quer dizer "provar que a lib segue a regra exata". Definição técnica completa em [`docs/SPEC.md`](docs/SPEC.md); os testes públicos ficam em [`conformance/`](conformance/).
+
+### Novo por aqui?
+
+Comece pelo documento que combina com o seu momento:
+
+- **Quer entender o que é isto e para que serve, sem código?** Leia [`docs/CONCEITOS.md`](docs/CONCEITOS.md) (explicação do problema, do XML TISS e do hash, em linguagem de iniciante).
+- **Quer pôr a mão na massa e ver um hash sair na tela em poucos minutos?** Siga o [`docs/TUTORIAL.md`](docs/TUTORIAL.md) (passo a passo guiado, do zero ao primeiro resultado).
+- **Já sabe o que quer e só precisa usar na sua linguagem?** Vá direto ao [`docs/USAGE.md`](docs/USAGE.md) (instalação, exemplos e receitas para Python, Rust, C, C++, Node.js, PHP, Java, Go e C#).
+
+Se a dúvida for "por que existe e por que UTF-8 e não ISO-8859-1?", veja a seção [Por que existe](#por-que-existe-história) abaixo e a [`docs/SPEC.md`](docs/SPEC.md).
 
 ## O que NÃO faz
 
@@ -57,7 +69,7 @@ Todos passam a suíte de conformidade byte-a-byte (20 vetores) na CI das duas pl
 
 | Linguagem | Status     | Pasta             | Notas                                |
 |-----------|------------|-------------------|--------------------------------------|
-| Python    | ✅ pronto  | `langs/python/`   | lib `tiss-hash`, 19 testes passando  |
+| Python    | ✅ pronto  | `langs/python/`   | lib `tiss-hash`, 24 testes (20 vetores de conformidade + 4 de API) |
 | Rust      | ✅ pronto  | `langs/rust/`     | crate                                |
 | C         | ✅ pronto  | `langs/c/`        | base p/ FFI, core comum              |
 | C++       | ✅ pronto  | `langs/cpp/`      | header-friendly                      |
@@ -125,7 +137,10 @@ Pré-requisitos: Python 3.10+, `lxml` (para a referência).
 
 ## Documentação
 
+- [`docs/CONCEITOS.md`](docs/CONCEITOS.md): O que é e para que serve, sem código (explanation).
+- [`docs/TUTORIAL.md`](docs/TUTORIAL.md): Primeiro hash na tela, passo a passo (tutorial).
 - [`docs/USAGE.md`](docs/USAGE.md): Guia de uso, receitas e FAQ (how-to).
+- [`docs/FAQ.md`](docs/FAQ.md): Perguntas frequentes, glossário e troubleshooting (explanation).
 - [`docs/SPEC.md`](docs/SPEC.md): Especificação canônica do algoritmo (reference).
 - [`docs/PORTING_GUIDE.md`](docs/PORTING_GUIDE.md): Como portar para uma nova linguagem (how-to).
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): Visão arquitetural do monorepo (explanation).

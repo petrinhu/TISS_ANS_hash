@@ -1,0 +1,143 @@
+# Release no mirror Codeberg (Forgejo Actions).
+#
+# Dispara SO em push de tag `v*`. Cria o Release no Codeberg via API Forgejo
+# (compativel-Gitea) e anexa os MESMOS artefatos do release GitHub: sdist,
+# wheel, SHA256SUMS e SBOM CycloneDX.
+#
+# POR QUE NAO PUBLICA NO PyPI AQUI:
+#   PyPI Trusted Publishing (OIDC) confia em workflows do GitHub/GitLab via
+#   provedores de identidade especificos. O Codeberg NAO e um provedor OIDC
+#   aceito pelo PyPI, entao o publish no PyPI fica EXCLUSIVAMENTE no workflow
+#   GitHub (.github/workflows/release-python.yml). Este workflow so espelha o
+#   Release (notas + assets verificaveis) no mirror.
+#
+# CONSTRAINTS CODEBERG (NAO ALTERAR sem motivo — ver memoria woodpecker/forgejo):
+#   - runs-on: codeberg-small        (runner global ativo; NUNCA "docker")
+#   - container: catthehacker/ubuntu:act-latest  (default oficial; node:*-bookworm
+#     quebra setup-python)
+#   - Forgejo IGNORA `permissions:`; o token do runner (GITHUB_TOKEN /
+#     FORGEJO_TOKEN) ja tem escopo do repo. Auth da API via esse token.
+#
+# SEGURANCA: nenhum input nao confiavel entra em `run:` por interpolacao.
+# `github.ref_name` (tag, controlada por quem faz o push) e demais contextos
+# sao passados via `env:` e referenciados como "$VAR" no shell.
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  codeberg-release:
+    name: Codeberg Release (notes + checksums + SBOM)
+    runs-on: codeberg-small
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build (sdist + wheel) + validate metadata
+        working-directory: langs/python
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          python -m twine check dist/*
+
+      - name: Generate SHA256SUMS
+        working-directory: langs/python
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+
+      # SBOM CycloneDX via syft (mesma action/SHA do release GitHub).
+      - name: Generate SBOM (CycloneDX)
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: langs/python
+          format: cyclonedx-json
+          output-file: langs/python/dist/sbom.cdx.json
+          upload-release-assets: false
+          upload-artifact: false
+
+      # Cria o Release via API Forgejo (compat-Gitea) e anexa os assets.
+      # Inputs potencialmente sensiveis passam por env, nunca interpolados no shell.
+      - name: Create Codeberg Release + upload assets
+        env:
+          # Token automatico do runner (alias GITHUB_TOKEN tambem funciona).
+          FORGEJO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Em algumas versoes o endpoint vem em GITHUB_*; resolvemos com fallback.
+          API_URL: ${{ env.FORGEJO_API_URL }}
+          API_URL_FALLBACK: ${{ env.GITHUB_API_URL }}
+          SERVER_URL: ${{ env.GITHUB_SERVER_URL }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        working-directory: langs/python
+        run: |
+          set -euo pipefail
+
+          # Resolve API base: FORGEJO_API_URL > GITHUB_API_URL > deriva do server.
+          API="${API_URL:-}"
+          if [ -z "$API" ]; then API="${API_URL_FALLBACK:-}"; fi
+          if [ -z "$API" ]; then API="${SERVER_URL%/}/api/v1"; fi
+          echo "API base: $API"
+          echo "Repo: $REPO  Tag: $TAG"
+
+          AUTH="Authorization: token ${FORGEJO_TOKEN}"
+
+          # Corpo do release: RELEASE_NOTES.md da raiz se existir, senao um stub.
+          if [ -f ../../RELEASE_NOTES.md ]; then
+            BODY="$(cat ../../RELEASE_NOTES.md)"
+          else
+            BODY="Release ${TAG}. Veja CHANGELOG.md. Assets: sdist, wheel, SHA256SUMS, SBOM (CycloneDX)."
+          fi
+
+          # prerelease se a tag tiver hifen (ex.: v0.1.0-rc1), conforme SemVer.
+          PRERELEASE=false
+          case "$TAG" in *-*) PRERELEASE=true;; esac
+
+          # jq monta o JSON com seguranca (escapa BODY corretamente).
+          PAYLOAD="$(jq -n \
+            --arg tag "$TAG" \
+            --arg name "$TAG" \
+            --arg body "$BODY" \
+            --argjson prerelease "$PRERELEASE" \
+            '{tag_name:$tag, name:$name, body:$body, draft:false, prerelease:$prerelease}')"
+
+          # Cria o release. Se ja existir (re-run), recupera o id existente.
+          RESP="$(curl -fsS -X POST \
+            -H "$AUTH" -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$API/repos/$REPO/releases")" || {
+              echo "POST release falhou (talvez ja exista); tentando recuperar por tag..."
+              RESP="$(curl -fsS -H "$AUTH" "$API/repos/$REPO/releases/tags/$TAG")"
+            }
+
+          RELEASE_ID="$(echo "$RESP" | jq -r '.id')"
+          if [ -z "$RELEASE_ID" ] || [ "$RELEASE_ID" = "null" ]; then
+            echo "Nao consegui obter o release id"; echo "$RESP"; exit 1
+          fi
+          echo "Release id: $RELEASE_ID"
+
+          # Anexa cada asset do dist/.
+          for f in dist/*.tar.gz dist/*.whl dist/SHA256SUMS dist/sbom.cdx.json; do
+            [ -e "$f" ] || { echo "asset ausente: $f"; exit 1; }
+            echo "Uploading $(basename "$f")..."
+            curl -fsS -X POST \
+              -H "$AUTH" \
+              -F "attachment=@${f}" \
+              "$API/repos/$REPO/releases/$RELEASE_ID/assets?name=$(basename "$f")" >/dev/null
+          done
+          echo "Codeberg release ${TAG} pronto com $(ls dist | wc -l) arquivos no dist/."

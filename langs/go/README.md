@@ -1,6 +1,25 @@
 # tisshash (Go)
 
-Port Go da biblioteca `tiss-hash`: hash MD5 do epilogo `<ans:hash>` de mensagens XML do Padrao TISS/ANS (saude suplementar Brasil).
+Calcula a "impressao digital" do trecho final de um documento TISS/ANS. Os
+termos antes do codigo:
+
+- **XML**: formato de arquivo de texto que organiza dados em etiquetas (tags)
+  aninhadas, como caixas dentro de caixas. O Padrao TISS e o XML que operadoras
+  de saude e consultorios usam no Brasil para trocar dados de atendimento.
+- **Hash**: sequencia curta e fixa de caracteres calculada a partir de um
+  texto, como uma impressao digital. Mude uma letra, o hash muda inteiro.
+- **MD5**: a receita (algoritmo) que gera o hash; sempre 32 caracteres
+  hexadecimais (`0-9` e `a-f`).
+- **Epilogo**: a parte final do documento TISS, a etiqueta `<ans:hash>`, onde o
+  hash precisa ser gravado.
+- **Byte**: a menor unidade de dado do computador; um arquivo de texto e uma
+  fila de bytes.
+
+Em uma frase: voce passa os bytes de um XML TISS e recebe os 32 caracteres do
+hash. Este e o port Go ("port" = a mesma lib reescrita em outra linguagem) da
+biblioteca `tiss-hash`. Para entender o problema que a lib resolve, veja
+[`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
+[`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visao geral).
 
 Bate **byte-a-byte** com a implementacao de referencia Python (`conformance/reference.py`) e com os outros ports (C, C++, Rust, Python, PHP, Node.js, Java, C#) nos 20 vetores publicos (18 positivos + 2 negativos).
 
@@ -11,7 +30,23 @@ Bate **byte-a-byte** com a implementacao de referencia Python (`conformance/refe
 - Compatibilidade: Go 1.22+ (testado em Go 1.26).
 - Licenca: MIT.
 
+## Antes de comecar: instalar o Go
+
+Go e a linguagem deste port. Ela ja traz o compilador, o gerenciador de modulos
+e o runner de testes em um unico comando, `go`.
+
+- Baixe e instale pelo site oficial: <https://go.dev/dl/> (precisa da versao
+  1.22 ou mais nova). O site tem instrucoes para Windows, Linux e macOS.
+- Confira a instalacao:
+
+```bash
+go version
+```
+
 ## Instalacao
+
+Uma **dependencia** (em Go, um "modulo") e uma biblioteca de terceiros que o seu
+codigo usa. O comando abaixo baixa esta lib para o seu projeto:
 
 ```bash
 go get github.com/petrinhu/TISS_ANS_hash/langs/go
@@ -95,13 +130,18 @@ Ver `tisshash.go` para detalhes e justificativa das alternativas descartadas.
 
 ## Build / Test
 
+A partir da raiz do repositorio (a pasta que voce baixou com `git clone`):
+
 ```bash
 cd langs/go
-go mod tidy
-go test -v ./...
-go vet ./...
-gofmt -l .
+go mod tidy       # resolve as dependencias
+go test -v ./...  # roda os 20 vetores de conformidade
+go vet ./...      # checa boas praticas (opcional)
+gofmt -l .        # confere formatacao (opcional)
 ```
+
+Cada **vetor** e um par "arquivo de entrada -> hash esperado": 18 positivos
+(devem produzir um hash) e 2 negativos (devem ser rejeitados).
 
 Benchmark:
 
@@ -120,10 +160,13 @@ go test -bench=. -benchmem ./...
 
 ## Referencia canonica
 
+- Guia de uso (comece por aqui): [`docs/USAGE.md`](../../docs/USAGE.md)
+- Conceitos e visao geral: [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md)
 - Spec: [`docs/SPEC.md`](../../docs/SPEC.md)
-- Algoritmo de referencia: [`conformance/reference.py`](../../conformance/reference.py)
+- Algoritmo de referencia (o "oraculo" que define a resposta certa): [`conformance/reference.py`](../../conformance/reference.py)
 - Vetores: [`conformance/vectors.json`](../../conformance/vectors.json)
 - Ambiguidades fixadas: [`conformance/AMBIGUITY_NOTES.md`](../../conformance/AMBIGUITY_NOTES.md)
+- Como portar para outra linguagem: [`docs/PORTING_GUIDE.md`](../../docs/PORTING_GUIDE.md)
 
 ## Dependencias e licencas
 

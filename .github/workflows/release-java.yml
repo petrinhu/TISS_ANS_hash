@@ -1,0 +1,105 @@
+# Publish do port Java (langs/java) para o Maven Central via Sonatype Central.
+#
+# ==========================================================================
+# ATENCAO — ESTE E O REGISTRY MAIS PESADO. TOTALMENTE GATED (vars.MAVEN_ENABLED).
+# ==========================================================================
+# Maven Central NAO aceita publish "solto": exige uma cadeia de pre-requisitos
+# que o lider AINDA NAO tem. Enquanto a Var de repo MAVEN_ENABLED nao for true,
+# o unico job aqui e SKIPPED (verde, nao falha) e NADA vai pro Central. O job
+# `mvn package` de sanidade (sem deploy) tambem so roda sob o gate para evitar
+# baixar a toolchain Maven a cada tag sem necessidade.
+#
+# PRE-REQUISITOS QUE O LIDER PRECISA COMPLETAR ANTES DE LIGAR (todos obrigatorios):
+#
+#  1. NAMESPACE VERIFICADO no Sonatype Central. O groupId atual e `dev.petrus`
+#     (ver pom.xml). Verificar a posse do dominio `petrus.dev` (registro de TXT
+#     DNS) OU migrar o groupId para `io.github.petrinhu` (verificavel via conta
+#     GitHub, sem dominio proprio). Sem namespace verificado, o deploy e
+#     rejeitado. <https://central.sonatype.org/register/namespace/>
+#
+#  2. CONTA + TOKEN Sonatype Central. Gerar um user token no portal
+#     (central.sonatype.com -> Account -> Generate User Token). Guardar como
+#     dois Secrets de repo: OSSRH_USERNAME e OSSRH_TOKEN.
+#
+#  3. CHAVE GPG para ASSINAR os artefatos (Central EXIGE .asc para jar, sources,
+#     javadoc e pom). Gerar par GPG, publicar a PUBLICA num keyserver
+#     (keyserver.ubuntu.com), e guardar a PRIVADA (armored, `gpg --export-secret-keys
+#     --armor`) no Secret MAVEN_GPG_PRIVATE_KEY + a passphrase em MAVEN_GPG_PASSPHRASE.
+#
+#  4. POM COMPLETO PARA O CENTRAL. O pom.xml atual TEM name/description/url/scm/
+#     licenses/developers (bom), mas NAO tem os plugins de release:
+#       - maven-source-plugin   (gera -sources.jar — exigido)
+#       - maven-javadoc-plugin  (gera -javadoc.jar — exigido)
+#       - maven-gpg-plugin       (assina tudo com a chave do passo 3)
+#       - central-publishing-maven-plugin (org.sonatype.central) OU
+#         nexus-staging-maven-plugin, + <distributionManagement> apontando pro
+#         Central, e um <profile> "release" que ativa os 3 plugins acima.
+#     Sem esses plugins/profile, `mvn deploy` NAO sobe pro Central. Adicionar
+#     ANTES de ligar o gate. (Por isso este workflow esta pronto-para-completar,
+#     nao pronto-para-rodar.)
+#
+#  5. settings.xml com server id batendo o <distributionManagement>/repository
+#     id do pom (tipicamente `central`). Este workflow injeta isso via
+#     setup-java (server-id/username/password env) — ver step abaixo.
+#
+# Resumo: workflow estruturalmente pronto, gated e seguro. Falta o lider fazer
+# 1-4 (conta+namespace+GPG+plugins do pom) e setar Var+Secrets. Ver
+# docs/RELEASING.md (linha do Maven) para o checklist enxuto.
+#
+# SEGURANCA / SUPPLY CHAIN:
+#  - Credenciais e GPG via Secrets, nunca em `run:` por interpolacao.
+#  - Actions PINADAS por SHA (comentario `# vX.Y.Z` e so leitura humana).
+#  - `permissions` minimas (contents: read).
+name: release-java
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-java-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  maven-publish:
+    name: deploy to Maven Central (Sonatype)
+    runs-on: ubuntu-latest
+    # GATE TOTAL: sem a Var MAVEN_ENABLED=true, o job inteiro e SKIPPED (verde).
+    # Nem o package de sanidade roda, pra nao baixar a toolchain Maven a toa.
+    if: vars.MAVEN_ENABLED == 'true' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # setup-java configura o JDK, importa a chave GPG (privada via secret) e
+      # escreve um settings.xml com o server `central` (username/password lidos
+      # das envs OSSRH_*). server-id tem que bater o id do distributionManagement
+      # no pom (passo 4 do cabecalho).
+      - name: Setup Java + GPG + settings.xml
+        uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b # v4.6.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          server-id: central
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_TOKEN
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      # Deploy assinado para o Central. Ativa o profile `release` (definido no
+      # pom no passo 4) que liga source/javadoc/gpg. As credenciais e a
+      # passphrase chegam por env; o Maven as resolve no settings.xml.
+      - name: mvn deploy (Maven Central)
+        working-directory: langs/java
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        run: mvn --batch-mode --no-transfer-progress -P release clean deploy

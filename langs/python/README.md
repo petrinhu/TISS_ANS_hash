@@ -1,23 +1,63 @@
 # tiss-hash (Python)
 
-Hash MD5 do epílogo TISS/ANS (Padrão TISS de troca de informações em saúde
-suplementar). Implementação portável, com parsing XML endurecido contra
-ataques (XXE, billion-laughs).
+Calcula o "hash" do trecho final de um documento TISS/ANS. Vamos por partes,
+sem pressa:
 
-Este é o port Python da biblioteca `lib_hash_ans`. Outras linguagens
+- **XML** é um formato de arquivo de texto que organiza dados em etiquetas
+  (tags) aninhadas, parecido com as caixas dentro de caixas de uma pasta de
+  arquivos. O Padrão TISS é o formato XML que as operadoras de saúde e os
+  consultórios usam para trocar informações de atendimento no Brasil.
+- **Hash** é uma "impressão digital" do conteúdo: uma sequência curta e fixa
+  de caracteres calculada a partir de um texto. Se uma única letra do texto
+  mudar, o hash muda completamente. Serve para conferir que dois lados estão
+  falando do mesmo documento.
+- **MD5** é uma das receitas (algoritmos) que produzem esse hash. Ele sempre
+  devolve 32 caracteres hexadecimais (os dígitos `0-9` e as letras `a-f`).
+- **Epílogo** é a parte final do documento TISS: a etiqueta `<ans:hash>`, onde
+  esse hash precisa ser gravado.
+
+Em uma frase: você entrega os bytes de um XML TISS, esta biblioteca devolve os
+32 caracteres do hash que vão dentro de `<ans:hash>`. (Um **byte** é a menor
+unidade de dado que o computador manipula; um arquivo de texto é uma fila de
+bytes.)
+
+Este é o port Python da biblioteca `lib_hash_ans`. ("Port" = a mesma
+biblioteca reescrita em outra linguagem de programação.) Outras linguagens
 (C, C++, Rust, PHP, Node.js, etc.) seguem o mesmo contrato e os mesmos
-vetores de conformidade.
+vetores de conformidade. Para entender o problema que esta lib resolve, leia
+[`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
+[`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visão geral).
+
+## Antes de começar: instalar o Python
+
+Python é a linguagem de programação usada neste port. Se você nunca instalou:
+
+- Baixe e instale pelo site oficial: <https://www.python.org/downloads/>
+  (precisa da versão 3.10 ou mais nova). No Windows, marque a caixa
+  "Add Python to PATH" durante a instalação.
+- No Linux/macOS, o Python costuma já vir instalado. Confira com:
+
+```bash
+python3 --version
+```
+
+Se aparecer algo como `Python 3.12.x`, está pronto. O comando `pip` (gerenciador
+que baixa bibliotecas Python) vem junto com o Python.
 
 ## Quickstart
 
-> Instalação via PyPI ainda não publicada. Por enquanto, instale a partir
-> do checkout do repositório:
+Uma **dependência** é uma biblioteca de terceiros que o seu código usa. O `pip`
+baixa e instala dependências para você.
+
+> Instalação via PyPI (o repositório oficial de pacotes Python) ainda não
+> publicada. Por enquanto, instale a partir do checkout do repositório (isto é,
+> da pasta que você baixou com `git clone`):
 
 ```bash
 pip install ./langs/python
 ```
 
-Quando publicada:
+Quando publicada, bastará:
 
 ```bash
 pip install tiss-hash
@@ -59,7 +99,11 @@ except InvalidTissXml as exc:
 
 ## Algoritmo
 
-Resumo do que `hash_tiss` faz, em prosa:
+Resumo do que `hash_tiss` faz, em prosa. ("Parsear" um XML é ler o texto e
+montar a árvore de etiquetas na memória; o **parser** é o componente que faz
+essa leitura. **Encoding** é a tabela que traduz caracteres em bytes, por
+exemplo UTF-8. **Namespace** é um prefixo que evita confusão entre etiquetas de
+origens diferentes; aqui o namespace TISS identifica a etiqueta `<ans:hash>`.)
 
 1. Parseia o XML (com `defusedxml`, isto é, sem expansão de entidades e
    sem DOCTYPE externo).
@@ -78,6 +122,13 @@ Especificação canônica completa: `docs/SPEC.md` (na raiz do repositório).
 Implementação de referência: `conformance/reference.py`.
 
 ## Conformidade
+
+"Conformidade" aqui significa: provar que este port produz exatamente o mesmo
+hash que a implementação oficial, em todos os casos previstos. Um **vetor de
+conformidade** é um par "arquivo de entrada -> hash esperado": rodamos a lib no
+arquivo e conferimos se o resultado bate. Um vetor **positivo** deve produzir
+um hash; um vetor **negativo** deve ser rejeitado (a lib precisa recusar o
+arquivo, em vez de inventar um hash).
 
 Esta lib passa os **20 vetores de conformidade** em
 `conformance/vectors.json`, todos sintéticos (`source: derived`): 18
@@ -124,9 +175,13 @@ do repositório.
 
 - Repositório (origin): https://github.com/petrinhu/TISS_ANS_hash
 - Mirror: https://codeberg.org/petrinhu/TISS_ANS_hash
-- [`docs/SPEC.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/SPEC.md):
-  especificação canônica do algoritmo.
-- [`docs/PORTING_GUIDE.md`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/PORTING_GUIDE.md):
-  guia para portar para outras linguagens.
-- [`conformance/reference.py`](https://github.com/petrinhu/TISS_ANS_hash/blob/main/conformance/reference.py):
-  implementação de referência (oráculo).
+- [`docs/USAGE.md`](../../docs/USAGE.md): guia de uso, receitas e perguntas
+  frequentes (comece por aqui se você quer só usar a lib).
+- [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md): conceitos e visão geral
+  de como tudo se encaixa.
+- [`docs/SPEC.md`](../../docs/SPEC.md): especificação canônica do algoritmo
+  (a referência precisa, palavra por palavra).
+- [`docs/PORTING_GUIDE.md`](../../docs/PORTING_GUIDE.md): guia para portar para
+  outras linguagens.
+- [`conformance/reference.py`](../../conformance/reference.py): implementação de
+  referência (o "oráculo", isto é, a versão que define a resposta certa).
