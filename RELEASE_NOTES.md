@@ -36,7 +36,9 @@ Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, **Kotlin, Delphi/FPC, Dart, WA
 - **Dart (pub.dev)**: `dart pub add tiss_hash` (ou `flutter pub add tiss_hash` em Flutter), publicado em [pub.dev/packages/tiss_hash](https://pub.dev/packages/tiss_hash).
 - **Código-fonte**: tarball desta release (anexo) ou `git clone` na tag `v0.2.1`. Todos os ports buildam do fonte (README de cada `langs/<lang>/`).
 - **Artefatos prontos** (anexos): wheel/sdist (Python), jar (Java, Kotlin), nupkg (C#), crate (Rust), tgz (Node), libs (C), pkg WASM. A partir da v0.2.1, **todos os artefatos prebuilt estão presentes nos releases dos dois hosts** (GitHub e Codeberg), incluindo o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`). O port Kotlin também builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)).
-- **Demais registries** (Maven Central para Java/Kotlin; e npm para o WASM, que é opcional): em preparação; workflows prontos, ver [`docs/RELEASING.md`](docs/RELEASING.md). Por enquanto, instalar esses ports a partir do checkout (ver [`docs/USAGE.md`](docs/USAGE.md)); Java/Kotlin também estão disponíveis via Codeberg Maven.
+- **Java (Maven Central)**: `io.github.petrinhu:tiss-hash:0.1.0`, publicado em [central.sonatype.com](https://central.sonatype.com/artifact/io.github.petrinhu/tiss-hash).
+- **Kotlin (Maven Central)**: `io.github.petrinhu:tiss-hash-kotlin:0.1.0`, publicado em [central.sonatype.com](https://central.sonatype.com/artifact/io.github.petrinhu/tiss-hash-kotlin).
+- **WASM (npm)**: opcional, em preparacao. C, C++ e Delphi/FPC: sem registry canonico (releases e Codeberg Generic).
 
 ## Verificação de integridade
 

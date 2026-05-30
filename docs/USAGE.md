@@ -60,7 +60,7 @@ Cada uma das 13 linguagens tem uma seção própria, sempre com os mesmos 5 pass
 
 > **Importante (vale para as 13 linguagens):** todas produzem **o mesmo hash, byte a byte**, para o mesmo XML de entrada. São validadas contra os mesmos 20 vetores de conformidade (18 positivos, que devem dar certo, e 2 negativos, que devem dar erro de propósito). Não existe diferença de resultado entre as linguagens. Cada port é autossuficiente e tem o seu próprio README com a referência de API completa.
 
-> **Sobre instalar pela internet:** o port **Python** já está no PyPI (`pip install tiss-hash`), o port **Node.js** está no npm (`npm install tiss-hash`), o port **Rust** está no crates.io (`cargo add tiss-hash`), o port **PHP** está no Packagist (`composer require petrinhu/tiss-hash`), o port **C#** está no NuGet (`dotnet add package TissHash`), o port **Go** é resolvido pelo `go get` na tag de versão (proxy do Go / pkg.go.dev), e o port **Dart** está no pub.dev (`dart pub add tiss_hash`). São **7 registries canônicos** no ar. Os demais seguem **em preparação** (Maven Central para Java/Kotlin, e npm para o WASM, que é opcional); até subirem, instale esses ports a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
+> **Sobre instalar pela internet:** o port **Python** já está no PyPI (`pip install tiss-hash`), o port **Node.js** está no npm (`npm install tiss-hash`), o port **Rust** está no crates.io (`cargo add tiss-hash`), o port **PHP** está no Packagist (`composer require petrinhu/tiss-hash`), o port **C#** está no NuGet (`dotnet add package TissHash`), o port **Go** é resolvido pelo `go get` na tag de versão (proxy do Go / pkg.go.dev), o port **Dart** está no pub.dev (`dart pub add tiss_hash`), o port **Java** está no Maven Central (`io.github.petrinhu:tiss-hash:0.1.0`) e o port **Kotlin** também está no Maven Central (`io.github.petrinhu:tiss-hash-kotlin:0.1.0`). São **9 registries canônicos** no ar. O WASM (npm) é opcional e segue em preparação; os ports C, C++ e Delphi/FPC não possuem registry canônico (instalar do checkout ou baixar do release).
 
 **Para todas as linguagens cujo registry ainda está em preparação, o primeiro passo é baixar o repositório:**
 
@@ -591,22 +591,28 @@ cd langs/java
 mvn -q package
 ```
 
-> **Quando publicado (Maven Central):** adicione ao `pom.xml` do seu projeto:
->
-> ```xml
-> <dependency>
->   <groupId>dev.petrus</groupId>
->   <artifactId>tiss-hash</artifactId>
->   <version>0.1.0</version>
-> </dependency>
-> ```
+**Obter do Maven Central (publicado):** adicione ao `pom.xml` do seu projeto:
+
+```xml
+<dependency>
+  <groupId>io.github.petrinhu</groupId>
+  <artifactId>tiss-hash</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+Ou com Gradle (`build.gradle.kts`):
+
+```kotlin
+implementation("io.github.petrinhu:tiss-hash:0.1.0")
+```
 
 ### c. Snippet mínimo
 
 Salve como `Exemplo.java`:
 
 ```java
-import dev.petrus.tisshash.TissHash;
+import io.github.petrinhu.tisshash.TissHash;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -640,11 +646,11 @@ java  -cp .:langs/java/target/tiss-hash-0.1.0.jar Exemplo
 
 ### e. Como tratar erro
 
-O erro é a exceção `dev.petrus.tisshash.InvalidTissXmlException`. Capture com `try`/`catch`:
+O erro é a exceção `io.github.petrinhu.tisshash.InvalidTissXmlException`. Capture com `try`/`catch`:
 
 ```java
-import dev.petrus.tisshash.InvalidTissXmlException;
-import dev.petrus.tisshash.TissHash;
+import io.github.petrinhu.tisshash.InvalidTissXmlException;
+import io.github.petrinhu.tisshash.TissHash;
 
 try {
     String hash = TissHash.hashTiss("<isto-nao-fecha".getBytes());
@@ -866,13 +872,23 @@ cd langs/kotlin
 ./build.sh jar     # idem + gera build/tiss-hash-kotlin-0.1.0.jar
 ```
 
-> **Quando publicado (Maven Central):** adicione ao `build.gradle.kts` do seu projeto:
->
-> ```kotlin
-> dependencies {
->     implementation("dev.petrus:tiss-hash-kotlin:0.1.0")
-> }
-> ```
+**Obter do Maven Central (publicado):** adicione ao `build.gradle.kts` do seu projeto:
+
+```kotlin
+dependencies {
+    implementation("io.github.petrinhu:tiss-hash-kotlin:0.1.0")
+}
+```
+
+Ou com Maven (`pom.xml`):
+
+```xml
+<dependency>
+  <groupId>io.github.petrinhu</groupId>
+  <artifactId>tiss-hash-kotlin</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
 
 > **Jar prebuilt:** o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`) está anexado aos releases v0.2.1 dos **dois hosts** (GitHub e Codeberg). Você também pode buildá-lo do fonte com `./build.sh jar` (comando acima).
 
@@ -883,8 +899,8 @@ A lib tem **zero dependência de runtime** além do `kotlin-stdlib`: o parser XM
 Salve como `Exemplo.kt`:
 
 ```kotlin
-import dev.petrus.tisshash.hashTiss
-import dev.petrus.tisshash.hashTissFile
+import io.github.petrinhu.tisshash.hashTiss
+import io.github.petrinhu.tisshash.hashTissFile
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -919,8 +935,8 @@ java -cp exemplo.jar:langs/kotlin/build/tiss-hash-kotlin-0.1.0.jar ExemploKt
 O erro é a exceção `InvalidTissXmlException` (subclasse de `RuntimeException`, ou seja, não checada). É lançada para XML malformado, múltiplos `<ans:hash>` ou encoding UTF-16/UTF-32. Capture com `try`/`catch`:
 
 ```kotlin
-import dev.petrus.tisshash.hashTiss
-import dev.petrus.tisshash.InvalidTissXmlException
+import io.github.petrinhu.tisshash.hashTiss
+import io.github.petrinhu.tisshash.InvalidTissXmlException
 
 try {
     hashTiss("<isto-nao-fecha".toByteArray())
@@ -929,7 +945,7 @@ try {
 }
 ```
 
-Chamando a partir de **Java** (interop): as funções top-level viram métodos estáticos da classe `dev.petrus.tisshash.TissHash` (`TissHash.hashTiss(xmlBytes)`).
+Chamando a partir de **Java** (interop): as funções top-level viram métodos estáticos da classe `io.github.petrinhu.tisshash.TissHash` (`TissHash.hashTiss(xmlBytes)`).
 
 README completo do port: [`../langs/kotlin/README.md`](../langs/kotlin/README.md).
 
