@@ -51,7 +51,7 @@
 
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
     <orgjson.version>20240303</orgjson.version>
-    <surefire.version>3.2.5</surefire.version>
+    <surefire.version>3.5.6</surefire.version>
 
     <!-- Plugins de qualidade (A-CI3 lint / A-CI4 cobertura / A-SUP2 CVE). -->
     <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
