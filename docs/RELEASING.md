@@ -59,6 +59,7 @@ correspondente. Para **desligar**: remover a variável (ou setar `false`).
 | **Maven Central** | Java (`langs/java`, `dev.petrus:tiss-hash`) | Var `MAVEN_ENABLED=true` + Secrets `OSSRH_USERNAME`, `OSSRH_TOKEN`, `MAVEN_GPG_PRIVATE_KEY`, `MAVEN_GPG_PASSPHRASE`. | **PESADO** (ver abaixo): namespace verificado + conta Sonatype + chave GPG + plugins de release no `pom.xml`. |
 | **Packagist** | PHP (`langs/php`, `petrinhu/tiss-hash`) | Workflow `split-php.yml` + Secret `PACKAGIST_TOKEN`. Sem var de gate. | Pacote `petrinhu/tiss-hash` já submetido em packagist.org, apontando para o repo dedicado `github.com/petrinhu/tiss-hash-php`. **Publicado.** (ver abaixo) |
 | **Go modules** | Go (`langs/go`) | **Sem workflow.** Automático pela tag. | Nenhum — `go get …/langs/go@v0.1.0` resolve direto pelo proxy assim que a tag existe. |
+| **pub.dev** | Dart (`langs/dart`, `tiss_hash`) | **Sem workflow no repo.** Publicado manualmente com `dart pub publish`. | Conta pub.dev (login Google) + verificação de publisher. Pacote `tiss_hash`. **Publicado** em <https://pub.dev/packages/tiss_hash>. (ver abaixo) |
 
 ### Resumo do que setar para ligar cada um
 
@@ -72,6 +73,7 @@ Maven      → Var MAVEN_ENABLED=true   + Secrets OSSRH_USERNAME, OSSRH_TOKEN,
                                                 MAVEN_GPG_PASSPHRASE
 Packagist  → Secret PACKAGIST_TOKEN  (split-php.yml; sem var de gate)
 Go         → (nenhuma var; automático via tag)
+pub.dev    → (sem workflow no repo; publicado manualmente com dart pub publish)
 ```
 
 ### Maven Central — pré-requisitos pesados (antes de `MAVEN_ENABLED=true`)
@@ -140,6 +142,26 @@ tag `v0.1.0` existe: o módulo (`go.mod` em `langs/go`) é indexado pelo proxy
 público (`proxy.golang.org`) na primeira requisição. Nenhuma conta, token ou
 publish manual. Para aparecer no índice/pkg.go.dev mais rápido, basta um
 `go get` ou visitar a página do módulo uma vez.
+
+### pub.dev (Dart): publish manual, sem workflow
+
+**Publicado:** o pacote `tiss_hash` está no ar em
+<https://pub.dev/packages/tiss_hash>. O usuário final instala com
+`dart pub add tiss_hash` (ou `flutter pub add tiss_hash` em Flutter).
+
+Diferente dos outros registries, não há um workflow `release-dart.yml` no repo:
+a publicação no pub.dev é feita **manualmente** pelo mantenedor, a partir de
+`langs/dart`, com a CLI oficial:
+
+```bash
+cd langs/dart
+dart pub publish --dry-run   # valida o pacote sem subir
+dart pub publish             # sobe ao pub.dev (pede autenticação interativa)
+```
+
+O pub.dev autentica por conta Google (fluxo OAuth interativo no navegador) e não
+por API token em CI, o que torna o publish gated por workflow menos direto que os
+demais; por isso ele fica como passo manual. Versão publicada: `tiss_hash` 0.1.0.
 
 Por que o publish no PyPI fica só no GitHub (não no Codeberg): o PyPI Trusted
 Publishing aceita identidade OIDC do GitHub Actions; o Codeberg não é provedor

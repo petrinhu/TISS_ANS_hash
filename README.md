@@ -10,6 +10,7 @@
 [![crates.io version](https://img.shields.io/crates/v/tiss-hash)](https://crates.io/crates/tiss-hash)
 [![Packagist version](https://img.shields.io/packagist/v/petrinhu/tiss-hash)](https://packagist.org/packages/petrinhu/tiss-hash)
 [![NuGet version](https://img.shields.io/nuget/v/TissHash)](https://www.nuget.org/packages/TissHash)
+[![pub.dev version](https://img.shields.io/pub/v/tiss_hash)](https://pub.dev/packages/tiss_hash)
 [![Spec](https://img.shields.io/badge/spec-v1.0.0-blue)](docs/SPEC.md)
 [![Conformance Vectors](https://img.shields.io/badge/conformance-20%20vectors-success)](conformance/vectors.json)
 [![TISS Standard](https://img.shields.io/badge/Padr%C3%A3o-TISS-blue)](docs/SPEC.md)
@@ -86,7 +87,7 @@ Todos passam a suíte de conformidade byte-a-byte (20 vetores) na CI das duas pl
 | C# / .NET               | ✅ pronto  | `langs/csharp/`   | pacote `TissHash` (.NET 8), publicado no NuGet; desktop de clínica |
 | Kotlin                  | ✅ pronto  | `langs/kotlin/`   | JVM 17+ / Android; interop Java; zero dep runtime |
 | Delphi / Object Pascal  | ✅ pronto  | `langs/delphi/`   | Free Pascal (FPC); legado de faturamento médico BR |
-| Dart                    | ✅ pronto  | `langs/dart/`     | Flutter / mobile cross-platform      |
+| Dart                    | ✅ pronto  | `langs/dart/`     | pacote `tiss_hash`, publicado no pub.dev; Flutter / mobile cross-platform |
 | WASM                    | ✅ pronto  | `langs/wasm/`     | browser e Node; hash client-side, argumento LGPD (PII não trafega); reusa o core Rust via `wasm-bindgen` |
 
 O port **WASM** tem um motivo de existir próprio: calcular o hash **no navegador do usuário**, sem que o XML com dados de paciente (PII) saia da máquina. Sem upload, sem servidor, sem ponto de vazamento. É o argumento de privacidade (LGPD) mais forte do projeto e só o WASM o entrega. Decisão em [`docs/adr/0006-wasm-port.md`](docs/adr/0006-wasm-port.md).
@@ -169,6 +170,21 @@ using TissHashLib = TissHash.TissHash;  // alias evita confusão entre namespace
 
 string digest = TissHashLib.HashTissFile("envio.xml");
 Console.WriteLine(digest);  // 32 chars hex minúsculos
+```
+
+### Usando o port Dart (pronto)
+
+```bash
+dart pub add tiss_hash
+```
+
+```dart
+import 'package:tiss_hash/tiss_hash.dart';
+
+Future<void> main() async {
+  final digest = await hashTissFile('envio.xml');
+  print(digest);  // 32 chars hex minúsculos
+}
 ```
 
 Mais exemplos, receitas e FAQ em [`docs/USAGE.md`](docs/USAGE.md).
@@ -283,6 +299,7 @@ lib_hash_ans/
 - 2026-05-27: projeto criado. Algoritmo extraído de um editor desktop legado descontinuado. 20 vetores de conformidade travados (18 positivos + 2 negativos). 9 ports liberados (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#), todos passando a conformidade byte-a-byte na CI das duas plataformas. XMLs reais retirados do repo (LGPD). Repos públicos: GitHub `petrinhu/TISS_ANS_hash` + Codeberg `petrinhu/TISS_ANS_hash`. Predecessor arquivado.
 - 2026-05-29: +4 ports (Kotlin, Delphi/Object Pascal via FPC, Dart, WASM), totalizando **13 ports**, todos passando os 20 vetores byte-a-byte + 3 goldens reais. O port WASM reusa o core Rust via `wasm-bindgen` (ADR-0006) e roda o hash client-side no browser (argumento LGPD). Marco do monorepo: v0.2.0.
 - 2026-05-29: v0.2.1 (patch). Build do Kotlin corrigido na CI; o jar prebuilt do Kotlin volta a ser anexado ao release, agora presente nos dois hosts. Adicionado o [`AGENTS.md`](AGENTS.md) (guia para IA/agente que usa a lib). Sem mudança no algoritmo (13 ports seguem 20/20 + 3/3 goldens).
+- 2026-05-30: port Dart publicado no pub.dev (`tiss_hash`): instala com `dart pub add tiss_hash` (ou `flutter pub add tiss_hash`). São 7 registries canônicos no ar (PyPI, npm, crates.io, Packagist, NuGet, pkg.go.dev, pub.dev). Java/Kotlin seguem instaláveis do checkout ou via Codeberg Maven; Maven Central em preparação. Sem mudança no algoritmo.
 
 ## Termos relacionados (busca / SEO)
 

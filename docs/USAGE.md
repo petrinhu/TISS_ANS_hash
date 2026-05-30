@@ -3,7 +3,7 @@ title: Guia de uso do lib_hash_ans
 type: how-to
 audience: iniciante a intermediário (estudante de computação, dev backend, fornecedor TISS, ERP hospitalar)
 version: 0.2.1
-last-reviewed: 2026-05-29
+last-reviewed: 2026-05-30
 owner: petrinhu@yahoo.com.br
 status: estável (13 ports prontos: Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM)
 ---
@@ -37,7 +37,7 @@ Esta seção define os termos técnicos uma única vez. Se você já é da área
 Cada uma das 13 linguagens tem uma seção própria, sempre com os mesmos 5 passos, nesta ordem:
 
 1. **Instalar a toolchain** (a linguagem em si), com link oficial e comando para conferir a versão.
-2. **Obter a lib**. Os ports **Python** (PyPI), **Node.js** (npm), **Rust** (crates.io), **PHP** (Packagist), **C#** (NuGet) e **Go** (proxy do Go) já estão publicados: instalam direto da internet (`pip install tiss-hash`, `npm install tiss-hash`, `cargo add tiss-hash`, `composer require petrinhu/tiss-hash`, `dotnet add package TissHash`, `go get ...`). Para os demais, o registry de cada linguagem ainda está em preparação, então a obtenção é a partir do **checkout** do repositório (a cópia local que você baixa com `git clone`); o placeholder "quando publicado" mostra como vai ser o comando assim que o pacote for ao ar.
+2. **Obter a lib**. Os ports **Python** (PyPI), **Node.js** (npm), **Rust** (crates.io), **PHP** (Packagist), **C#** (NuGet), **Go** (proxy do Go) e **Dart** (pub.dev) já estão publicados: instalam direto da internet (`pip install tiss-hash`, `npm install tiss-hash`, `cargo add tiss-hash`, `composer require petrinhu/tiss-hash`, `dotnet add package TissHash`, `go get ...`, `dart pub add tiss_hash`). Para os demais, o registry de cada linguagem ainda está em preparação, então a obtenção é a partir do **checkout** do repositório (a cópia local que você baixa com `git clone`); o placeholder "quando publicado" mostra como vai ser o comando assim que o pacote for ao ar.
 3. **Snippet mínimo** (pedaço de código) que você pode copiar e colar.
 4. **Saída esperada** (um hash sintético, só para ilustrar).
 5. **Como tratar erro** (o tipo de erro que a lib usa naquela linguagem).
@@ -60,7 +60,7 @@ Cada uma das 13 linguagens tem uma seção própria, sempre com os mesmos 5 pass
 
 > **Importante (vale para as 13 linguagens):** todas produzem **o mesmo hash, byte a byte**, para o mesmo XML de entrada. São validadas contra os mesmos 20 vetores de conformidade (18 positivos, que devem dar certo, e 2 negativos, que devem dar erro de propósito). Não existe diferença de resultado entre as linguagens. Cada port é autossuficiente e tem o seu próprio README com a referência de API completa.
 
-> **Sobre instalar pela internet:** o port **Python** já está no PyPI (`pip install tiss-hash`), o port **Node.js** está no npm (`npm install tiss-hash`), o port **Rust** está no crates.io (`cargo add tiss-hash`), o port **PHP** está no Packagist (`composer require petrinhu/tiss-hash`), o port **C#** está no NuGet (`dotnet add package TissHash`), e o port **Go** é resolvido pelo `go get` na tag de versão (proxy do Go / pkg.go.dev). Os demais registries seguem **em preparação** (Maven Central para Java/Kotlin, pub.dev para Dart, e npm para o WASM); até subirem, instale a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
+> **Sobre instalar pela internet:** o port **Python** já está no PyPI (`pip install tiss-hash`), o port **Node.js** está no npm (`npm install tiss-hash`), o port **Rust** está no crates.io (`cargo add tiss-hash`), o port **PHP** está no Packagist (`composer require petrinhu/tiss-hash`), o port **C#** está no NuGet (`dotnet add package TissHash`), o port **Go** é resolvido pelo `go get` na tag de versão (proxy do Go / pkg.go.dev), e o port **Dart** está no pub.dev (`dart pub add tiss_hash`). São **7 registries canônicos** no ar. Os demais seguem **em preparação** (Maven Central para Java/Kotlin, e npm para o WASM, que é opcional); até subirem, instale esses ports a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
 
 **Para todas as linguagens cujo registry ainda está em preparação, o primeiro passo é baixar o repositório:**
 
@@ -1033,24 +1033,28 @@ dart --version
 
 ### b. Obter a lib
 
-A partir do checkout, baixe as dependências do port:
+O port Dart está publicado no pub.dev ([pub.dev/packages/tiss_hash](https://pub.dev/packages/tiss_hash)). Via primária, dentro do seu projeto, instale direto da internet:
 
 ```bash
-cd langs/dart
-dart pub get
+dart pub add tiss_hash
 ```
 
-> **Quando publicado (pub.dev):** `dart pub add tiss_hash`
+Em projeto Flutter, o comando equivalente é `flutter pub add tiss_hash`. (`pub` é o gerenciador de pacotes do Dart; `dart pub add` baixa o pacote do pub.dev, o repositório oficial de pacotes Dart, e o grava em `dependencies` do seu `pubspec.yaml`.)
 
-Para usar em outro projeto seu enquanto não há publicação, aponte para o checkout no seu `pubspec.yaml`:
+As dependências são `xml` (parser, pure-Dart) e `crypto` (MD5). O `dart pub add` cuida das duas.
 
-```yaml
-dependencies:
-  tiss_hash:
-    path: /caminho/para/TISS_ANS_hash/langs/dart
-```
-
-As dependências são `xml` (parser, pure-Dart) e `crypto` (MD5). O `dart pub get` cuida das duas.
+> **Alternativa: a partir do checkout.** Se você clonou o repositório e quer usar o código local (por exemplo, para mexer na lib), baixe as dependências do port e aponte para a pasta no seu `pubspec.yaml`:
+>
+> ```bash
+> cd langs/dart
+> dart pub get
+> ```
+>
+> ```yaml
+> dependencies:
+>   tiss_hash:
+>     path: /caminho/para/TISS_ANS_hash/langs/dart
+> ```
 
 ### c. Snippet mínimo
 

@@ -19,13 +19,15 @@ do codigo, os termos essenciais:
 Em uma frase: voce passa os bytes de um XML TISS e recebe os 32 caracteres do
 hash. Este e o port Dart ("port" = a mesma lib reescrita em outra linguagem) da
 biblioteca [`lib_hash_ans`](https://github.com/petrinhu/TISS_ANS_hash). Outras
-linguagens (Python, Rust, Node.js, C, C++, PHP, Java, Go, C#) seguem o mesmo
-contrato e os mesmos vetores de conformidade. Para entender o problema que a lib
+linguagens (Python, Rust, Node.js, C, C++, PHP, Java, Go, C#, Kotlin,
+Delphi/Object Pascal, WASM) seguem o mesmo contrato e os mesmos vetores de
+conformidade. Para entender o problema que a lib
 resolve, veja [`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
 [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visao geral).
 
-- **Status:** alpha. 20/20 vetores sinteticos PASS (18 positivos + 2 negativos)
-  em `conformance/vectors.json`.
+- **Status:** publicado no [pub.dev](https://pub.dev/packages/tiss_hash). 20/20
+  vetores sinteticos PASS (18 positivos + 2 negativos) em
+  `conformance/vectors.json`.
 - **Licenca:** MIT.
 - **SDK:** Dart `^3.4` (testado em 3.12).
 - **Dependencias runtime:** [`xml`](https://pub.dev/packages/xml) (parser) e
@@ -47,15 +49,19 @@ dart --version
 ## Instalacao
 
 Uma **dependencia** e uma biblioteca de terceiros que o seu codigo usa; o `pub`
-a baixa e instala. Para adicionar esta lib ao seu projeto:
+a baixa e instala. Esta lib esta publicada no
+[pub.dev](https://pub.dev/packages/tiss_hash) (o repositorio oficial de pacotes
+Dart). Para adicionar ao seu projeto:
 
 ```bash
 dart pub add tiss_hash
 ```
 
-> A publicacao no [pub.dev](https://pub.dev) (o repositorio oficial de pacotes
-> Dart) ainda nao foi feita. Por enquanto, aponte para o checkout do repositorio
-> (a pasta que voce baixou com `git clone`) no seu `pubspec.yaml`:
+Em projeto Flutter, use `flutter pub add tiss_hash`.
+
+> **Alternativa: a partir do checkout.** Se voce clonou o repositorio e quer
+> usar o codigo local (por exemplo, para mexer na lib), aponte para a pasta do
+> port no seu `pubspec.yaml`:
 >
 > ```yaml
 > dependencies:
