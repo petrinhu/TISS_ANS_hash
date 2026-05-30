@@ -37,7 +37,7 @@ Esta seção define os termos técnicos uma única vez. Se você já é da área
 Cada uma das 13 linguagens tem uma seção própria, sempre com os mesmos 5 passos, nesta ordem:
 
 1. **Instalar a toolchain** (a linguagem em si), com link oficial e comando para conferir a versão.
-2. **Obter a lib**. Os ports **Python** (PyPI), **Node.js** (npm), **Rust** (crates.io) e **Go** (proxy do Go) já estão publicados: instalam direto da internet (`pip install tiss-hash`, `npm install tiss-hash`, `cargo add tiss-hash`, `go get ...`). Para os demais, o registry de cada linguagem ainda está em preparação, então a obtenção é a partir do **checkout** do repositório (a cópia local que você baixa com `git clone`); o placeholder "quando publicado" mostra como vai ser o comando assim que o pacote for ao ar.
+2. **Obter a lib**. Os ports **Python** (PyPI), **Node.js** (npm), **Rust** (crates.io), **PHP** (Packagist) e **Go** (proxy do Go) já estão publicados: instalam direto da internet (`pip install tiss-hash`, `npm install tiss-hash`, `cargo add tiss-hash`, `composer require petrinhu/tiss-hash`, `go get ...`). Para os demais, o registry de cada linguagem ainda está em preparação, então a obtenção é a partir do **checkout** do repositório (a cópia local que você baixa com `git clone`); o placeholder "quando publicado" mostra como vai ser o comando assim que o pacote for ao ar.
 3. **Snippet mínimo** (pedaço de código) que você pode copiar e colar.
 4. **Saída esperada** (um hash sintético, só para ilustrar).
 5. **Como tratar erro** (o tipo de erro que a lib usa naquela linguagem).
@@ -60,7 +60,7 @@ Cada uma das 13 linguagens tem uma seção própria, sempre com os mesmos 5 pass
 
 > **Importante (vale para as 13 linguagens):** todas produzem **o mesmo hash, byte a byte**, para o mesmo XML de entrada. São validadas contra os mesmos 20 vetores de conformidade (18 positivos, que devem dar certo, e 2 negativos, que devem dar erro de propósito). Não existe diferença de resultado entre as linguagens. Cada port é autossuficiente e tem o seu próprio README com a referência de API completa.
 
-> **Sobre instalar pela internet:** o port **Python** já está no PyPI (`pip install tiss-hash`), o port **Node.js** está no npm (`npm install tiss-hash`), o port **Rust** está no crates.io (`cargo add tiss-hash`), e o port **Go** é resolvido pelo `go get` na tag de versão (proxy do Go / pkg.go.dev). Os demais registries seguem **em preparação** (Packagist para PHP, Maven Central para Java/Kotlin, NuGet para C#, pub.dev para Dart, e npm para o WASM); até subirem, instale a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
+> **Sobre instalar pela internet:** o port **Python** já está no PyPI (`pip install tiss-hash`), o port **Node.js** está no npm (`npm install tiss-hash`), o port **Rust** está no crates.io (`cargo add tiss-hash`), o port **PHP** está no Packagist (`composer require petrinhu/tiss-hash`), e o port **Go** é resolvido pelo `go get` na tag de versão (proxy do Go / pkg.go.dev). Os demais registries seguem **em preparação** (Maven Central para Java/Kotlin, NuGet para C#, pub.dev para Dart, e npm para o WASM); até subirem, instale a partir do **checkout** (a cópia local do repositório que você baixa com `git clone`). Cada seção mostra como, e também o comando que **vai** funcionar quando o pacote for publicado, marcado com "quando publicado".
 
 **Para todas as linguagens cujo registry ainda está em preparação, o primeiro passo é baixar o repositório:**
 
@@ -500,21 +500,22 @@ composer --version
 
 ### b. Obter a lib
 
-A partir do checkout, instale via Composer apontando para a pasta do port:
+O port PHP está publicado no Packagist ([packagist.org/packages/petrinhu/tiss-hash](https://packagist.org/packages/petrinhu/tiss-hash)). Via primária, dentro do seu projeto, instale direto da internet:
 
 ```bash
-cd langs/php
-composer install
+composer require petrinhu/tiss-hash
 ```
 
-Para usar em outro projeto seu:
+(`composer` é o gerenciador de dependências do PHP; ele baixa o pacote do Packagist, o repositório oficial de pacotes PHP.) Para você é transparente que o Packagist serve o pacote a partir de um repositório dedicado (`github.com/petrinhu/tiss-hash-php`, um espelho somente-leitura de `langs/php` deste monorepo): o comando acima é tudo o que você precisa.
 
-```bash
-composer config repositories.tiss-hash path /caminho/para/TISS_ANS_hash/langs/php
-composer require petrinhu/tiss-hash:@dev
-```
-
-> **Quando publicado:** `composer require petrinhu/tiss-hash`
+> **Alternativa: instalar do fonte (a partir do checkout).** Se você clonou o repositório e quer usar o código local (por exemplo, para mexer na lib), aponte o Composer para a pasta do port:
+>
+> ```bash
+> composer config repositories.tiss-hash path /caminho/para/TISS_ANS_hash/langs/php
+> composer require petrinhu/tiss-hash:@dev
+> ```
+>
+> As extensões `dom`, `libxml` e `mbstring` são necessárias e vêm ativadas na maioria das instalações; o `composer require` cuida do resto.
 
 ### c. Snippet mínimo
 

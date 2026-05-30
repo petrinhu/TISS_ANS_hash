@@ -21,6 +21,7 @@ git tag v0.1.0  ─push─► GitHub:   release-python.yml ─► GitHub Release
                      ├► GitHub:   release-rust.yml   ─► dry-run sempre + [crates.io](gate CRATES_ENABLED)
                      ├► GitHub:   release-csharp.yml ─► pack sempre + [NuGet]      (gate NUGET_ENABLED)
                      ├► GitHub:   release-java.yml   ─► [Maven Central]            (gate MAVEN_ENABLED)
+                     ├► GitHub:   split-php.yml      ─► repo tiss-hash-php + recrawl Packagist (secret PACKAGIST_TOKEN)
                      └► Codeberg: release.yml        ─► Codeberg Release (mirror)
 ```
 
@@ -35,7 +36,8 @@ git tag v0.1.0  ─push─► GitHub:   release-python.yml ─► GitHub Release
 | `.github/workflows/release-node.yml` | GitHub | tag `v*` / dispatch | `npm ci` + test → `npm publish --access public --provenance` de `langs/node` | `vars.NPM_ENABLED` |
 | `.github/workflows/release-rust.yml` | GitHub | tag `v*` / dispatch | `cargo test` + `cargo publish --dry-run` (**sempre**) → `cargo publish` de `langs/rust` | `vars.CRATES_ENABLED` (só o publish real) |
 | `.github/workflows/release-csharp.yml` | GitHub | tag `v*` / dispatch | `dotnet test` + `dotnet pack` (**sempre**) → `dotnet nuget push` de `langs/csharp` | `vars.NUGET_ENABLED` (só o push) |
-| `.github/workflows/release-java.yml` | GitHub | tag `v*` / dispatch | `mvn -P release deploy` p/ **Maven Central** (Sonatype). **Job inteiro gated** | `vars.MAVEN_ENABLED` (pré-requisitos pesados — ver abaixo) |
+| `.github/workflows/release-java.yml` | GitHub | tag `v*` / dispatch | `mvn -P release deploy` p/ **Maven Central** (Sonatype). **Job inteiro gated** | `vars.MAVEN_ENABLED` (pré-requisitos pesados, ver abaixo) |
+| `.github/workflows/split-php.yml` | GitHub | tag `v*` / dispatch | faz o **split** de `langs/php` para o repo dedicado **`petrinhu/tiss-hash-php`** (espelho somente-leitura), empurra a tag lá e dispara o **recrawl** do Packagist via API | usa o Secret `PACKAGIST_TOKEN` (sem var de gate; sem o secret o recrawl é pulado) |
 | `.forgejo/workflows/release.yml` | Codeberg (mirror) | tag `v*` / dispatch | build sdist+wheel → cria **Codeberg Release** via API Forgejo com os mesmos assets. **Não** publica em registry | — |
 
 `workflow_dispatch` faz um **dry-run de build** (e, no GitHub, valida metadados
@@ -55,7 +57,7 @@ correspondente. Para **desligar**: remover a variável (ou setar `false`).
 | **crates.io** | Rust (`langs/rust`, `tiss-hash`) | Var `CRATES_ENABLED=true` + Secret `CARGO_REGISTRY_TOKEN`. | Login crates.io via GitHub; **API token** (Account Settings → API Tokens) com escopo `publish-new`+`publish-update`. Nome `tiss-hash` disponível. |
 | **NuGet** | C# (`langs/csharp`, `TissHash`) | Var `NUGET_ENABLED=true` + Secret `NUGET_API_KEY`. | Conta nuget.org; **API key** (escopo Push, glob `TissHash` ou `*`). Nome `TissHash` disponível. |
 | **Maven Central** | Java (`langs/java`, `dev.petrus:tiss-hash`) | Var `MAVEN_ENABLED=true` + Secrets `OSSRH_USERNAME`, `OSSRH_TOKEN`, `MAVEN_GPG_PRIVATE_KEY`, `MAVEN_GPG_PASSPHRASE`. | **PESADO** (ver abaixo): namespace verificado + conta Sonatype + chave GPG + plugins de release no `pom.xml`. |
-| **Packagist** | PHP (`langs/php`) | **Sem workflow.** Webhook do git (ver abaixo). | Submeter o repo 1× em packagist.org; depois atualiza sozinho via webhook. |
+| **Packagist** | PHP (`langs/php`, `petrinhu/tiss-hash`) | Workflow `split-php.yml` + Secret `PACKAGIST_TOKEN`. Sem var de gate. | Pacote `petrinhu/tiss-hash` já submetido em packagist.org, apontando para o repo dedicado `github.com/petrinhu/tiss-hash-php`. **Publicado.** (ver abaixo) |
 | **Go modules** | Go (`langs/go`) | **Sem workflow.** Automático pela tag. | Nenhum — `go get …/langs/go@v0.1.0` resolve direto pelo proxy assim que a tag existe. |
 
 ### Resumo do que setar para ligar cada um
@@ -68,7 +70,7 @@ NuGet      → Var NUGET_ENABLED=true   + Secret NUGET_API_KEY
 Maven      → Var MAVEN_ENABLED=true   + Secrets OSSRH_USERNAME, OSSRH_TOKEN,
                                                 MAVEN_GPG_PRIVATE_KEY,
                                                 MAVEN_GPG_PASSPHRASE
-Packagist  → (nenhuma var; webhook manual 1×)
+Packagist  → Secret PACKAGIST_TOKEN  (split-php.yml; sem var de gate)
 Go         → (nenhuma var; automático via tag)
 ```
 
@@ -91,18 +93,45 @@ O `release-java.yml` está **estruturalmente pronto e totalmente gated**, mas o
 O cabeçalho do `release-java.yml` repete este checklist. Só depois disso o gate
 `MAVEN_ENABLED=true` faz sentido.
 
-### Packagist (PHP) — sem workflow
+### Packagist (PHP): repo dedicado + split automático
 
-Packagist puxa do git por **webhook**, não por push de pacote. Setup único:
-1. Em <https://packagist.org/packages/submit>, submeter `https://github.com/petrinhu/TISS_ANS_hash`.
-2. Packagist detecta o `langs/php/composer.json` e cria o pacote; a cada tag
-   nova, o webhook (auto-configurado no GitHub na submissão, ou manual em
-   `Settings → Webhooks`) atualiza a versão. Nada a fazer no CI.
+**Publicado:** o pacote `petrinhu/tiss-hash` está no ar em
+<https://packagist.org/packages/petrinhu/tiss-hash>. O usuário final instala com
+`composer require petrinhu/tiss-hash`.
 
-> Nota: Composer mapeia 1 pacote por `composer.json`. Como o `composer.json`
-> está em `langs/php/`, conferir que o nome do pacote (campo `name`) e o subpath
-> ficam corretos na submissão; se necessário, usar um repositório dedicado ou
-> `path`/`vcs` repo. Verificar no primeiro submit.
+**Por que não dá para submeter este monorepo direto.** O Packagist mapeia 1
+pacote por `composer.json` e exige que o `composer.json` esteja **na raiz** do
+repositório. Aqui o `composer.json` mora em `langs/php/`, então submeter
+`github.com/petrinhu/TISS_ANS_hash` não funciona: o Packagist não acha o
+manifesto na raiz.
+
+**Setup real (repo dedicado + split).** O pacote é servido por um repositório
+**dedicado e somente-leitura**, `github.com/petrinhu/tiss-hash-php`, que contém
+**só o conteúdo de `langs/php`** com o `composer.json` na raiz. Esse repo é
+**gerado por split automático** a cada release, então é um espelho fiel de
+`langs/php` e nunca recebe edição manual. Para o usuário final isso é
+transparente: ele só roda `composer require petrinhu/tiss-hash`.
+
+O workflow `.github/workflows/split-php.yml` (dispara em tag `v*`):
+
+1. Faz o **split** do subdiretório `langs/php` para o repo `tiss-hash-php`
+   (subtree/filter), com o `composer.json` na raiz.
+2. Empurra a **mesma tag** (`vX.Y.Z`) para o `tiss-hash-php`.
+3. Dispara o **recrawl** do Packagist via API
+   (`POST https://packagist.org/api/update-package`), usando o Secret
+   **`PACKAGIST_TOKEN`** (API token da conta Packagist), para que a nova versão
+   apareça na hora em vez de esperar o crawl periódico.
+
+**Secret necessário (no monorepo):** `PACKAGIST_TOKEN` (em `Settings → Secrets
+and variables → Actions → Secrets`). Sem ele, o split e o push acontecem, mas o
+passo de recrawl é pulado (o Packagist atualizaria sozinho no próximo crawl).
+Não há variável de gate `*_ENABLED` para o Packagist: o split roda em toda tag.
+
+> Setup inicial (já feito, uma vez): criar o repo `tiss-hash-php`, submeter
+> `https://github.com/petrinhu/tiss-hash-php` em
+> <https://packagist.org/packages/submit> (o nome do pacote vem do `name` do
+> `composer.json`: `petrinhu/tiss-hash`), e gerar o API token do Packagist para
+> o Secret `PACKAGIST_TOKEN`.
 
 ### Go modules — sem workflow
 

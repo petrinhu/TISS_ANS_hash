@@ -61,10 +61,19 @@ Composer a baixa e instala. O comando abaixo adiciona esta lib ao seu projeto:
 composer require petrinhu/tiss-hash
 ```
 
-> **Nota:** ainda nao publicado no Packagist (o repositorio oficial de pacotes
-> PHP). Por enquanto, adicione o repositorio manualmente em `composer.json` ou
-> instale a partir do checkout do monorepo (a pasta que voce baixou com
-> `git clone`):
+Publicado no Packagist (o repositorio oficial de pacotes PHP):
+<https://packagist.org/packages/petrinhu/tiss-hash>. O comando acima ja resolve
+direto da internet, sem configuracao extra.
+
+> **Nota (detalhe transparente para voce):** o Packagist serve este pacote a
+> partir de um repositorio dedicado e somente-leitura,
+> `github.com/petrinhu/tiss-hash-php`, que e um espelho de `langs/php` gerado por
+> split automatico a cada release (o Packagist exige o `composer.json` na raiz, e
+> aqui o codigo vive num monorepo). Voce nao precisa fazer nada com isso: basta
+> `composer require petrinhu/tiss-hash`.
+>
+> **Alternativa: instalar do fonte (checkout do monorepo).** Se voce clonou o
+> monorepo e quer usar o codigo local, aponte o Composer para a pasta do port:
 >
 > ```bash
 > composer config repositories.tiss-hash path /caminho/para/lib_hash_ans/langs/php

@@ -8,6 +8,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/tiss-hash.svg)](https://pypi.org/project/tiss-hash/)
 [![npm version](https://img.shields.io/npm/v/tiss-hash)](https://www.npmjs.com/package/tiss-hash)
 [![crates.io version](https://img.shields.io/crates/v/tiss-hash)](https://crates.io/crates/tiss-hash)
+[![Packagist version](https://img.shields.io/packagist/v/petrinhu/tiss-hash)](https://packagist.org/packages/petrinhu/tiss-hash)
 [![Spec](https://img.shields.io/badge/spec-v1.0.0-blue)](docs/SPEC.md)
 [![Conformance Vectors](https://img.shields.io/badge/conformance-20%20vectors-success)](conformance/vectors.json)
 [![TISS Standard](https://img.shields.io/badge/Padr%C3%A3o-TISS-blue)](docs/SPEC.md)
@@ -78,7 +79,7 @@ Todos passam a suíte de conformidade byte-a-byte (20 vetores) na CI das duas pl
 | C                       | ✅ pronto  | `langs/c/`        | base p/ FFI, core comum              |
 | C++                     | ✅ pronto  | `langs/cpp/`      | header-friendly                      |
 | Node.js                 | ✅ pronto  | `langs/node/`     | package npm, TypeScript types        |
-| PHP                     | ✅ pronto  | `langs/php/`      | composer package                     |
+| PHP                     | ✅ pronto  | `langs/php/`      | composer package `petrinhu/tiss-hash`, publicado no Packagist |
 | Java                    | ✅ pronto  | `langs/java/`     | ERP/hospitalar enterprise            |
 | Go                      | ✅ pronto  | `langs/go/`       | backend, microsserviços              |
 | C# / .NET               | ✅ pronto  | `langs/csharp/`   | desktop de clínica                   |
@@ -139,6 +140,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{digest}");  // 32 chars hex minúsculos
     Ok(())
 }
+```
+
+### Usando o port PHP (pronto)
+
+```bash
+composer require petrinhu/tiss-hash
+```
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use TissHash\TissHash;
+
+echo TissHash::hashTissFile('envio.xml');  // 32 chars hex minúsculos
 ```
 
 Mais exemplos, receitas e FAQ em [`docs/USAGE.md`](docs/USAGE.md).
