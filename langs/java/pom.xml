@@ -50,7 +50,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
-    <orgjson.version>20240303</orgjson.version>
+    <orgjson.version>20260522</orgjson.version>
     <surefire.version>3.2.5</surefire.version>
 
     <!-- Plugins de qualidade (A-CI3 lint / A-CI4 cobertura / A-SUP2 CVE). -->
