@@ -1,0 +1,1 @@
+Espelho read-only de `langs/php` do monorepo [TISS_ANS_hash](https://github.com/petrinhu/TISS_ANS_hash) (mirror [Codeberg](https://codeberg.org/petrinhu/TISS_ANS_hash)). Pacote: [Packagist](https://packagist.org/packages/petrinhu/tiss-hash). Issues e PRs no monorepo. Licenca MIT.
