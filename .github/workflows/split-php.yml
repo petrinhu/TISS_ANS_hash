@@ -1,0 +1,164 @@
+name: split-php
+
+# Sincroniza o port PHP (langs/php) para o repo dedicado
+# petrinhu/tiss-hash-php a cada tag v*, replica a tag e dispara o
+# recrawl do Packagist (petrinhu/tiss-hash). O repo dedicado existe porque o
+# Packagist exige composer.json na RAIZ, e no monorepo ele fica em langs/php.
+#
+# Secrets necessarios no monorepo:
+#   SPLIT_REPO_TOKEN  PAT com Contents write no repo tiss-hash-php (ja cadastrado).
+#   PACKAGIST_TOKEN   token SAFE do Packagist do usuario petrinhu.
+#                     ATENCAO: o lider precisa cadastrar este secret. Sem ele,
+#                     o passo de recrawl e pulado (warning, nao falha o job).
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag ou ref a sincronizar (ex.: v0.1.0). Vazio = HEAD, sem tag.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: split-php
+  cancel-in-progress: false
+
+env:
+  SPLIT_REPO: petrinhu/tiss-hash-php
+  PACKAGIST_USER: petrinhu
+  PACKAGIST_PACKAGE_URL: https://github.com/petrinhu/tiss-hash-php
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monorepo (historico completo)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolver ref e tag
+        id: ref
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          # Input nao-confiavel: passado via env e validado antes de usar.
+          INPUT_REF: ${{ github.event.inputs.ref }}
+        run: |
+          set -euo pipefail
+          if [ "${EVENT_NAME}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME}"
+            SRC_REF="${GITHUB_SHA}"
+          else
+            # Aceita apenas tag/ref simples: letras, digitos, ., _, -, /.
+            if [ -n "${INPUT_REF}" ] && \
+               ! printf '%s' "${INPUT_REF}" | grep -qE '^[A-Za-z0-9._/-]+$'; then
+              echo "::error::ref invalido: '${INPUT_REF}'"
+              exit 1
+            fi
+            TAG="${INPUT_REF}"
+            SRC_REF="${TAG:-HEAD}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "src_ref=${SRC_REF}" >> "$GITHUB_OUTPUT"
+          echo "Tag: '${TAG}' | Ref de origem: '${SRC_REF}'"
+
+      - name: Guarda de privacidade (sem PII em langs/php)
+        env:
+          SRC_REF: ${{ steps.ref.outputs.src_ref }}
+        run: |
+          set -euo pipefail
+          # Falha o job se qualquer arquivo proibido aparecer no subdir publico.
+          BAD=$(git ls-tree -r --name-only "${SRC_REF}" -- langs/php \
+                | grep -iE '(^|/)real_[a-z0-9_]*\.xml$|_private_|\.pii\.xml$|/inputs/' || true)
+          if [ -n "$BAD" ]; then
+            echo "::error::Arquivos privados/PII detectados em langs/php:"
+            echo "$BAD"
+            exit 1
+          fi
+          echo "OK: nenhum arquivo privado/PII em langs/php."
+
+      - name: Instalar git-filter-repo
+        run: |
+          set -euo pipefail
+          pip install --quiet git-filter-repo
+          git filter-repo --version
+
+      - name: Split de langs/php (promove para a raiz, preserva historico)
+        env:
+          SRC_REF: ${{ steps.ref.outputs.src_ref }}
+        run: |
+          set -euo pipefail
+          # Clona o proprio checkout num diretorio limpo (filter-repo exige
+          # repo fresh) e fixa o estado no ref de origem.
+          git clone --no-local --quiet . ../php-split
+          git -C ../php-split checkout --quiet --detach "$SRC_REF"
+          # Promove langs/php para a raiz, descartando o resto do monorepo.
+          git -C ../php-split filter-repo --force \
+            --path langs/php/ \
+            --path-rename langs/php/:
+          git -C ../php-split config user.name "Petrus Silva Costa"
+          git -C ../php-split config user.email "petrinhu@yahoo.com.br"
+          echo "Split criado: $(git -C ../php-split rev-parse HEAD)"
+          echo "Arquivos na raiz do split:"
+          git -C ../php-split ls-files
+
+      - name: Conferir composer.json na raiz do split
+        run: |
+          set -euo pipefail
+          test -f ../php-split/composer.json
+          test -d ../php-split/src
+          NAME=$(python3 -c "import json;print(json.load(open('../php-split/composer.json'))['name'])")
+          if [ "$NAME" != "petrinhu/tiss-hash" ]; then
+            echo "::error::composer.json name inesperado: $NAME"
+            exit 1
+          fi
+          echo "OK: composer.json na raiz com name=$NAME."
+
+      - name: Push para o repo dedicado (main + tag)
+        env:
+          SPLIT_REPO_TOKEN: ${{ secrets.SPLIT_REPO_TOKEN }}
+          TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SPLIT_REPO_TOKEN}" ]; then
+            echo "::error::SPLIT_REPO_TOKEN ausente. Cadastre o secret no monorepo."
+            exit 1
+          fi
+          REMOTE="https://x-access-token:${SPLIT_REPO_TOKEN}@github.com/${SPLIT_REPO}.git"
+          # Atualiza main do repo dedicado (force: o repo e espelho read-only).
+          git -C ../php-split push --force "$REMOTE" HEAD:refs/heads/main
+          # Replica a tag, se houver.
+          if [ -n "$TAG" ]; then
+            git -C ../php-split tag -f -a "$TAG" -m "tiss-hash PHP ${TAG}"
+            git -C ../php-split push --force "$REMOTE" "refs/tags/${TAG}"
+            echo "Tag ${TAG} replicada no repo dedicado."
+          else
+            echo "Sem tag para replicar (execucao manual sem ref)."
+          fi
+
+      - name: Recrawl no Packagist
+        env:
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PACKAGIST_TOKEN:-}" ]; then
+            echo "::warning::PACKAGIST_TOKEN ausente; recrawl do Packagist pulado."
+            echo "Cadastre o secret PACKAGIST_TOKEN no monorepo para automatizar."
+            exit 0
+          fi
+          CODE=$(curl -sS -o /tmp/pkg.json -w "%{http_code}" \
+            -X POST "https://packagist.org/api/update-package?username=${PACKAGIST_USER}&apiToken=${PACKAGIST_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"repository\":{\"url\":\"${PACKAGIST_PACKAGE_URL}\"}}")
+          echo "Packagist update-package -> HTTP ${CODE}"
+          cat /tmp/pkg.json || true
+          if [ "$CODE" -ge 300 ]; then
+            echo "::error::Packagist recusou o recrawl (HTTP ${CODE})."
+            exit 1
+          fi
