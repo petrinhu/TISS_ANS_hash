@@ -9,6 +9,7 @@
 [![npm version](https://img.shields.io/npm/v/tiss-hash)](https://www.npmjs.com/package/tiss-hash)
 [![crates.io version](https://img.shields.io/crates/v/tiss-hash)](https://crates.io/crates/tiss-hash)
 [![Packagist version](https://img.shields.io/packagist/v/petrinhu/tiss-hash)](https://packagist.org/packages/petrinhu/tiss-hash)
+[![NuGet version](https://img.shields.io/nuget/v/TissHash)](https://www.nuget.org/packages/TissHash)
 [![Spec](https://img.shields.io/badge/spec-v1.0.0-blue)](docs/SPEC.md)
 [![Conformance Vectors](https://img.shields.io/badge/conformance-20%20vectors-success)](conformance/vectors.json)
 [![TISS Standard](https://img.shields.io/badge/Padr%C3%A3o-TISS-blue)](docs/SPEC.md)
@@ -82,7 +83,7 @@ Todos passam a suíte de conformidade byte-a-byte (20 vetores) na CI das duas pl
 | PHP                     | ✅ pronto  | `langs/php/`      | composer package `petrinhu/tiss-hash`, publicado no Packagist |
 | Java                    | ✅ pronto  | `langs/java/`     | ERP/hospitalar enterprise            |
 | Go                      | ✅ pronto  | `langs/go/`       | backend, microsserviços              |
-| C# / .NET               | ✅ pronto  | `langs/csharp/`   | desktop de clínica                   |
+| C# / .NET               | ✅ pronto  | `langs/csharp/`   | pacote `TissHash` (.NET 8), publicado no NuGet; desktop de clínica |
 | Kotlin                  | ✅ pronto  | `langs/kotlin/`   | JVM 17+ / Android; interop Java; zero dep runtime |
 | Delphi / Object Pascal  | ✅ pronto  | `langs/delphi/`   | Free Pascal (FPC); legado de faturamento médico BR |
 | Dart                    | ✅ pronto  | `langs/dart/`     | Flutter / mobile cross-platform      |
@@ -155,6 +156,19 @@ require 'vendor/autoload.php';
 use TissHash\TissHash;
 
 echo TissHash::hashTissFile('envio.xml');  // 32 chars hex minúsculos
+```
+
+### Usando o port C# / .NET (pronto)
+
+```bash
+dotnet add package TissHash
+```
+
+```csharp
+using TissHashLib = TissHash.TissHash;  // alias evita confusão entre namespace e classe
+
+string digest = TissHashLib.HashTissFile("envio.xml");
+Console.WriteLine(digest);  // 32 chars hex minúsculos
 ```
 
 Mais exemplos, receitas e FAQ em [`docs/USAGE.md`](docs/USAGE.md).

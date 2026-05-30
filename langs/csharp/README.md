@@ -25,7 +25,7 @@ Bate **byte-a-byte** com a referência Python (`conformance/reference.py`)
 nos **20 vetores** de conformidade (18 positivos + 2 negativos)
 compartilhados em `conformance/vectors.json`.
 
-- **Status:** alpha (20/20 vetores PASS: 18 positivos + 2 negativos)
+- **Status:** publicado no NuGet (20/20 vetores PASS: 18 positivos + 2 negativos)
 - **TFM:** `net8.0` (LTS)
 - **Licença:** MIT
 - **Dependências runtime:** `System.Text.Encoding.CodePages` (provider
@@ -51,19 +51,27 @@ dotnet --version
 Uma **dependência** é uma biblioteca de terceiros que o seu código usa; o
 `dotnet` a baixa por você.
 
-> Pacote **não está publicado no NuGet** (o repositório oficial de pacotes
-> .NET). Para usar localmente, adicione o projeto como referência (a partir da
-> pasta que você baixou com `git clone`):
+O pacote está publicado no NuGet (o repositório oficial de pacotes .NET),
+em <https://www.nuget.org/packages/TissHash>. Via primária, dentro do seu
+projeto (uma pasta com `.csproj`):
+
+```bash
+dotnet add package TissHash
+```
+
+Em alternativa, escreva à mão no `.csproj`:
+
+```xml
+<PackageReference Include="TissHash" Version="0.1.0" />
+```
+
+> **Alternativa: a partir do checkout.** Para usar o código local (por exemplo,
+> para mexer na lib), adicione o projeto como referência, a partir da pasta que
+> você baixou com `git clone`:
 >
 > ```bash
 > dotnet add reference path/to/lib_hash_ans/langs/csharp/src/TissHash/TissHash.csproj
 > ```
-
-Quando publicado:
-
-```bash
-dotnet add package TissHash --version 0.1.0
-```
 
 ## Uso
 
