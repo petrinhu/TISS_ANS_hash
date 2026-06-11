@@ -28,7 +28,7 @@ resolve, veja [`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
 - **Status:** publicado no [pub.dev](https://pub.dev/packages/tiss_hash). 20/20
   vetores sinteticos PASS (18 positivos + 2 negativos) em
   `conformance/vectors.json`.
-- **Licenca:** MIT.
+- **Licenca:** AGPL-3.0.
 - **SDK:** Dart `^3.4` (testado em 3.12).
 - **Dependencias runtime:** [`xml`](https://pub.dev/packages/xml) (parser) e
   [`crypto`](https://pub.dev/packages/crypto) (MD5).
@@ -232,7 +232,7 @@ Atribuicao consolidada de todos os ports em
 
 ## Licenca
 
-[MIT](LICENSE) Copyright (c) 2026 Petrus Silva Costa
+[AGPL-3.0](LICENSE) Copyright (c) 2026 Petrus Silva Costa
 
 ## Ver tambem
 

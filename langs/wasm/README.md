@@ -25,7 +25,7 @@ contrato e os mesmos vetores de conformidade.
 
 - **Status:** alpha. 20/20 vetores sintéticos PASS (18 positivos + 2 negativos)
   em `conformance/vectors.json`, mais os 3 goldens reais privados (fora do repo).
-- **Licença:** MIT.
+- **Licença:** AGPL-3.0.
 - **Runtimes:** navegadores modernos (Chrome, Firefox, Safari, Edge) e Node.js
   `>=20` (testado em Node 22).
 
@@ -239,7 +239,7 @@ Atribuição consolidada em
 
 ## Licença
 
-[MIT](LICENSE) Copyright (c) 2026 Petrus Silva Costa
+[AGPL-3.0](LICENSE) Copyright (c) 2026 Petrus Silva Costa
 
 ## Ver também
 

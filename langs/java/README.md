@@ -25,7 +25,7 @@ resolve, veja [`docs/USAGE.md`](../../docs/USAGE.md) (guia de uso) e
 - **Repo principal:** <https://github.com/petrinhu/TISS_ANS_hash>
 - **Spec canônica:** [`docs/SPEC.md`](../../docs/SPEC.md)
 - **Referência:** [`conformance/reference.py`](../../conformance/reference.py)
-- **Licença:** MIT
+- **Licença:** AGPL-3.0
 - **Status:** alpha, 20/20 vetores de conformidade passando (18 positivos + 2 negativos)
 - **Compat:** JDK 17+ (testado em OpenJDK 25)
 
@@ -189,7 +189,7 @@ ConformanceTest > conformance(syn_utf16.xml)               OK  (rejeitado: UTF-1
 
 ## Licença
 
-MIT, veja `LICENSE` no diretório do port e na raiz do repositório.
+AGPL-3.0, veja `LICENSE` no diretório do port e na raiz do repositório.
 
 ## Ver também
 

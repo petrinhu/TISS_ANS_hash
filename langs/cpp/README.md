@@ -208,7 +208,7 @@ Alternativas avaliadas e descartadas: ver comentarios em `src/tiss_hash.cpp`.
 langs/cpp/
 ├── CMakeLists.txt
 ├── README.md
-├── LICENSE                              # MIT
+├── LICENSE                              # AGPL-3.0
 ├── tiss-hash-cpp.pc.in                  # pkg-config template
 ├── cmake/
 │   └── tiss_hash_cppConfig.cmake.in
@@ -239,7 +239,7 @@ Os dois ports rodam o mesmo conjunto de 20 vetores e devem produzir hashes ident
 
 ## Licenca
 
-MIT, ver [`LICENSE`](LICENSE). doctest distribuido sob MIT (ver [`third_party/doctest.h`](third_party/doctest.h)).
+AGPL-3.0, ver [`LICENSE`](LICENSE). doctest distribuido sob MIT (ver [`third_party/doctest.h`](third_party/doctest.h)).
 
 ## Ver também
 

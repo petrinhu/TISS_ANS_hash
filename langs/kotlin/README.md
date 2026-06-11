@@ -27,7 +27,7 @@ própria JDK). Para entender o problema que a lib resolve, veja
 - **Repo principal:** <https://github.com/petrinhu/TISS_ANS_hash>
 - **Spec canônica:** [`docs/SPEC.md`](../../docs/SPEC.md)
 - **Referência:** [`conformance/reference.py`](../../conformance/reference.py)
-- **Licença:** MIT
+- **Licença:** AGPL-3.0
 - **Status:** alpha, 20/20 vetores de conformidade passando (18 positivos + 2 negativos) + 3/3 goldens reais
 - **Compat:** JVM 17+ (testado com kotlinc 2.1.0 sob OpenJDK 25)
 
@@ -233,7 +233,7 @@ sem falhar).
 
 ## Licença
 
-MIT, veja `LICENSE` no diretório do port e na raiz do repositório.
+AGPL-3.0, veja `LICENSE` no diretório do port e na raiz do repositório.
 
 ## Ver também
 

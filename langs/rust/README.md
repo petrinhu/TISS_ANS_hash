@@ -205,7 +205,7 @@ Atribuição consolidada de todos os ports em
 
 ## Licença
 
-[MIT](LICENSE) (c) 2026 Petrus Silva Costa.
+[AGPL-3.0](LICENSE) (c) 2026 Petrus Silva Costa.
 
 ## Ver também
 

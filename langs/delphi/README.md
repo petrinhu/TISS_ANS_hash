@@ -35,7 +35,7 @@ Node.js, Java, C#, Go) nos 20 vetores publicos (18 positivos + 2 negativos).
 - Toolchain de build/teste nesta maquina: **Free Pascal (FPC) 3.2.3**.
 - Codigo escrito em `{$mode delphi}` (compat Delphi); ver
   [nota de compatibilidade Delphi](#nota-de-compatibilidade-delphi).
-- Licenca: MIT.
+- Licenca: AGPL-3.0.
 
 ## Antes de comecar: instalar o Free Pascal (ou Lazarus)
 
@@ -293,4 +293,4 @@ Todas as unidades usadas vem na instalacao padrao do Free Pascal (parte da RTL
 
 A "linking exception" da FPC RTL/FCL permite uso e distribuicao em software
 proprietario sem obrigar abertura do codigo do aplicativo. Este port em si e
-licenciado sob **MIT** (ver `LICENSE`).
+licenciado sob **AGPL-3.0** (ver `LICENSE`).

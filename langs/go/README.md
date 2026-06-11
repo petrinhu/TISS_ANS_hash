@@ -28,7 +28,7 @@ Bate **byte-a-byte** com a implementacao de referencia Python (`conformance/refe
 - Alpha (v0.1.0).
 - Suite de conformidade: **20/20 PASS** (18 positivos + 2 negativos: multi-hash e UTF-16 sao rejeitados).
 - Compatibilidade: Go 1.22+ (testado em Go 1.26).
-- Licenca: MIT.
+- Licenca: AGPL-3.0.
 
 ## Antes de comecar: instalar o Go
 
@@ -181,4 +181,4 @@ Atribuicao consolidada de todos os ports em
 
 ## Licenca
 
-MIT; ver [LICENSE](LICENSE).
+AGPL-3.0; ver [LICENSE](LICENSE).

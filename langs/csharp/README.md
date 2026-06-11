@@ -27,7 +27,7 @@ compartilhados em `conformance/vectors.json`.
 
 - **Status:** publicado no NuGet (20/20 vetores PASS: 18 positivos + 2 negativos)
 - **TFM:** `net8.0` (LTS)
-- **Licença:** MIT
+- **Licença:** AGPL-3.0
 - **Dependências runtime:** `System.Text.Encoding.CodePages` (provider
   oficial Microsoft, necessário para `iso-8859-1` em .NET Core+)
 
@@ -172,7 +172,7 @@ langs/csharp/
 
 ## Licença
 
-MIT, ver `LICENSE`.
+AGPL-3.0, ver `LICENSE`.
 
 ## Ver também
 

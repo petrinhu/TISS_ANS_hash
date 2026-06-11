@@ -201,7 +201,7 @@ provider) mais testes auxiliares de API.
 
 ## Licenca
 
-[MIT](LICENSE).
+[AGPL-3.0](LICENSE).
 
 ## Ver também
 

@@ -3,7 +3,7 @@
 > **Biblioteca multi-linguagem (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WASM) para gerar o hash MD5 do epílogo XML do Padrão TISS/ANS (saúde suplementar Brasil).**
 > Multi-language library (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WebAssembly) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard).
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions%20%2B%20Forgejo%20Actions-success)](https://github.com/petrinhu/TISS_ANS_hash/actions)
 [![PyPI version](https://img.shields.io/pypi/v/tiss-hash.svg)](https://pypi.org/project/tiss-hash/)
 [![npm version](https://img.shields.io/npm/v/tiss-hash)](https://www.npmjs.com/package/tiss-hash)
@@ -261,7 +261,7 @@ lib_hash_ans/
 ├── CONTRIBUTING.md            # como contribuir, dual push
 ├── CODE_OF_CONDUCT.md         # Contributor Covenant 2.1
 ├── SECURITY.md                # política de segurança
-├── LICENSE                    # MIT
+├── LICENSE                    # AGPL-3.0
 ├── docs/
 │   ├── USAGE.md               # guia de uso (how-to)
 │   ├── SPEC.md                # algoritmo canônico (reference)
@@ -330,7 +330,7 @@ Custo: 1 clique. SemVer: não quebra nada.
 
 ## Licença
 
-[MIT](LICENSE). Uso livre, comercial e não-comercial, com manutenção do aviso de copyright.
+[AGPL-3.0](LICENSE). Software livre; uso, modificação e distribuição permitidos sob os termos da GNU Affero General Public License v3.0.
 
 ## Contribuindo
 

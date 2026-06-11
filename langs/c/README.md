@@ -206,7 +206,7 @@ langs/c/
 ├── CMakeLists.txt
 ├── Makefile                       # alternativo simples
 ├── README.md
-├── LICENSE                        # MIT
+├── LICENSE                        # AGPL-3.0
 ├── tiss-hash.pc.in                # template pkg-config
 ├── cmake/
 │   └── tiss_hashConfig.cmake.in   # template find_package
@@ -236,7 +236,7 @@ licenca correspondente. Atribuicao consolidada de todos os ports em
 
 ## Licenca
 
-MIT, ver [`LICENSE`](LICENSE).
+AGPL-3.0, ver [`LICENSE`](LICENSE).
 
 ## Ver também
 

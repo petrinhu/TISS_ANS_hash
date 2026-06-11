@@ -167,7 +167,7 @@ manifesto).
 
 ## Licença
 
-[MIT](https://github.com/petrinhu/TISS_ANS_hash/blob/main/LICENSE)
+[AGPL-3.0](https://github.com/petrinhu/TISS_ANS_hash/blob/main/LICENSE)
 Copyright (c) 2026 Petrus Silva Costa. Licença única do projeto, na raiz
 do repositório.
 

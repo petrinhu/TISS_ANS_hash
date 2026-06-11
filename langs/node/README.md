@@ -25,7 +25,7 @@ mesmos vetores de conformidade. Para entender o problema que a lib resolve, veja
 [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (conceitos e visão geral).
 
 - **Status:** alpha. 20/20 vetores sintéticos PASS (18 positivos + 2 negativos) em `conformance/vectors.json`.
-- **Licença:** MIT.
+- **Licença:** AGPL-3.0.
 - **Engines:** Node.js `>=20` (testado em 20 LTS e 22 LTS).
 - **Dependência runtime única:** [`@xmldom/xmldom`](https://github.com/xmldom/xmldom) (DOM puro, pure-JS, sem deps nativas).
 
@@ -213,7 +213,7 @@ Atribuição consolidada de todos os ports em
 
 ## Licença
 
-[MIT](LICENSE) Copyright (c) 2026 Petrus Silva Costa
+[AGPL-3.0](LICENSE) Copyright (c) 2026 Petrus Silva Costa
 
 ## Ver também
 
