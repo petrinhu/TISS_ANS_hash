@@ -1,4 +1,6 @@
-# TISS_ANS_hash — Planejamento
+> **ESTRUTURA CANÔNICA DO ARQUIVO — NÃO QUEBRAR A TABELA:** (1) **Comentários e instruções** (só no cabeçalho, acima da tabela) · (2) **TABELA UNIFICADA** (exatamente uma tabela markdown de trabalho: `| ID | Onda | … | Status |`) · **EOF** imediatamente após a última linha da tabela. **Proibido:** segunda tabela; linha em branco **dentro** da tabela (o Markdown parte o arquivo em várias tabelas); qualquer seção de checklist/INBOX/WSJF **depois** da tabela (isso vai no cabeçalho).
+
+# TODO — lib_hash_ans (TISS_ANS_hash)
 
 Tabela canônica de pendências do projeto. Atualizar via `/tab_pendencias`.
 
@@ -8,7 +10,30 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 
 ---
 
-## Pendências ordenadas (execução)
+## Resumo
+
+- **Concluído:** 79 itens (algoritmo, fixture **20 vetores** [18 positivos + 2 negativos], 9 ports byte-a-byte + rejeições, CI hardened [sanitizers, clang-tidy, coverage, CVE gate, dependabot], repos públicos dual-push, docs, ADRs 0001-0005, SEO Tier 1+2, A-SEC1 XXE, **W1+W2+W3+W4**, A-LEG4).
+- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO). 31 achados; **A-SEC1 + W1 (5) + W2 (5) + W3 (11) + W4 (9) + A-LEG4 = 32 fechados** (1 follow-up novo A-QA2). **Todos os achados de auditoria fechados**; resta só release (W5) + pós-release (W6). **Nenhum CRÍTICO restante** — v0.1.0 pronta.
+- **W4 (2026-05-28):** hardening CI. ASan/UBSan(cpp), matrix gcc+clang×Debug+Release(C/C++), lint gate 9 ports (clang-tidy/eslint/phpstan/checkstyle/dotnet-format; clang-format dropado por version-fragilidade), coverage non-gating, dependabot 8 ecosystems, CVE gate por port (todos limpos), cargo-mutants (89.7% kill, 4 survivors→A-QA2), bump x/text→0.21. Verificado local: C 20/20+clang-tidy 0, C++ ctest+clang-tidy 0, Java checkstyle 0+26... (Java 28/C# 26 test), Node/PHP/Rust/Go/Python por agents. Nota: CI real valida nos 2 hosts (push).
+- **W3 (2026-05-28):** accuracy de docs/legal. README raiz (9 ports, badges sem 404), USAGE 9 ports, CHANGELOG, ADR-0005 (nomenclatura/CI), atribuição 3rd-party por port, **remoção total da versão TISS "4.01.00"** (17 ocorrências), contagem 15→20 em todas as docs/READMEs, suavização goldens, memória A-DOC10. `git grep 4.01` e `15/15` limpos.
+
+### Ondas de execução (paralelizáveis dentro da onda)
+
+- **W1** (fechada) · foco: CRÍTICOS doc/legal · itens: ✅ A-DOC1, A-LEG1, A-DOC4/F1.10, A-DOC3, A-DOC2 · gate: **FECHADA**
+- **W2** (fechada) · foco: Robustez conformance · itens: ✅ A-COV1-5 (3 vetores positivos + 2 negativos; reject multi-hash + UTF-16) · gate: **FECHADA**
+- **W3** (fechada) · foco: Docs/legal accuracy · itens: ✅ A-DOC5/6/7/8/9/10/12/13/14 + A-LEG2/3 (+ ADR-0005) · gate: **FECHADA**
+- **W4** (fechada) · foco: Hardening CI + supply-chain · itens: ✅ A-CI1-5 + A-SUP1-3 + A-QA1 (sanitizers, clang-tidy lint, coverage, dependabot, CVE gate, mutation) · gate: **FECHADA**
+- **W5** · foco: Release v0.1.0 · itens: F7.1 → F4.4 → F7.2 → A-REL1 · gate: PyPI + GitHub/Codeberg + SBOM
+- **W6** · foco: Pós-release · itens: F7.3/7.4, F8.7-8.10, F6.2/4/6/7, F4.2b, A-DOC11, A-QA2 · gate: ports restantes, SEO Tier 3, anúncio
+
+- **Ordem de ataque:** W1-W4 ✅ FECHADAS (auditoria inteira) → **W5 = release v0.1.0** → W6 expande pós-release.
+- **Caminho crítico p/ v0.1.0:** W5 (F7.1 → F7.2). Tudo que bloqueava já fechou; resta empacotar e publicar.
+
+> **Ordenação da tabela (fusão 2026-08-20):** as 17 primeiras linhas são as pendências em ordem de execução (topological + WSJF); de `F1.1` em diante vem o histórico concluído, na ordem original. As duas tabelas antigas (`## Pendências ordenadas (execução)` + `## Concluído`) foram fundidas numa só; o Status de cada linha é o que separa pendente de concluído. A tabela `Ondas de execução` virou os bullets acima.
+
+> **Contagem:** 95 linhas de dados na tabela (17 pendências + 78 concluídas). O bullet histórico do Resumo diz "79 itens concluídos": a divergência de 1 é anterior a esta normalização e não foi resolvida aqui (nenhum item foi criado, removido ou renomeado na fusão).
+
+## TABELA UNIFICADA
 
 | ID | Onda | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -29,13 +54,6 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | F6.7 | W6 | Port WASM | langs/wasm/ (core Rust via wasm-bindgen → browser; LGPD: hash client-side, XML não sai da máquina). **v0.2.0**. rust wasm32 + wasm-pack. ADR-0006 + backend-engineer | Baixa | F5.1 | Alta | ✅ Concluído | ✓ |
 | F4.2b | W6 | CI | Alternativa self-host forgejo-runner (backup) | Baixa | F4.2 | Média | ⏳ Pendente | — |
 | A-DOC11 | W6 | Docs | Ratificar ou agendar decisão sobre AMBIGUITY_NOTES §2 (comentários XML entram no concat) — travado em 9 ports mas ninguém decidiu de propósito | Baixa | — | Baixa | 💡 Decisão tomada | — |
-
----
-
-## Concluído
-
-| ID | Onda | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | F1.1 | — | Setup | Engenharia reversa do algoritmo TISS hash (3 goldens reais) | Alta | — | Alta | ✅ Concluído | ✓ |
 | F1.2 | — | Setup | Fixture de conformidade (15 vetores sintéticos públicos) | Alta | F1.1 | Média | ✅ Concluído | ✓ |
 | F1.3 | — | Setup | Mover XMLs reais pra dir privada fora do repo (LGPD) | Alta | F1.2 | Baixa | ✅ Concluído | ✓ |
@@ -114,26 +132,3 @@ Status: ✅ Concluído / 🔄 Em andamento / 🟡 Parcial / ⏳ Pendente / 💡 
 | A-SUP2 | — | Supply-chain | CVE gate por port: npm/composer/cargo audit, govulncheck, pip-audit, dotnet --vulnerable; Java=versions watch (dependency-check pesado). Todos limpos hoje | Média | — | Média | ✅ Concluído | ✓ |
 | A-SUP3 | — | Supply-chain | golang.org/x/text v0.14→**v0.21** (não @latest=v0.37: exige Go 1.25, quebraria matrix 1.22). go test verde | Baixa | — | Baixa | ✅ Concluído | ✓ |
 | A-QA1 | — | QA | cargo-mutants no core Rust: 43 mutantes, 35 mortos, 4 sobreviventes (asserts fracos, doc em A-QA2), 89.7% kill. Job manual non-blocking (.github workflow_dispatch) | Baixa | — | Média | ✅ Concluído | ✓ |
-
----
-
-## Resumo
-
-- **Concluído:** 79 itens (algoritmo, fixture **20 vetores** [18 positivos + 2 negativos], 9 ports byte-a-byte + rejeições, CI hardened [sanitizers, clang-tidy, coverage, CVE gate, dependabot], repos públicos dual-push, docs, ADRs 0001-0005, SEO Tier 1+2, A-SEC1 XXE, **W1+W2+W3+W4**, A-LEG4).
-- **Auditoria bigtech 2026-05-28:** 0 achado que quebra o algoritmo (núcleo SÓLIDO). 31 achados; **A-SEC1 + W1 (5) + W2 (5) + W3 (11) + W4 (9) + A-LEG4 = 32 fechados** (1 follow-up novo A-QA2). **Todos os achados de auditoria fechados**; resta só release (W5) + pós-release (W6). **Nenhum CRÍTICO restante** — v0.1.0 pronta.
-- **W4 (2026-05-28):** hardening CI. ASan/UBSan(cpp), matrix gcc+clang×Debug+Release(C/C++), lint gate 9 ports (clang-tidy/eslint/phpstan/checkstyle/dotnet-format; clang-format dropado por version-fragilidade), coverage non-gating, dependabot 8 ecosystems, CVE gate por port (todos limpos), cargo-mutants (89.7% kill, 4 survivors→A-QA2), bump x/text→0.21. Verificado local: C 20/20+clang-tidy 0, C++ ctest+clang-tidy 0, Java checkstyle 0+26... (Java 28/C# 26 test), Node/PHP/Rust/Go/Python por agents. Nota: CI real valida nos 2 hosts (push).
-- **W3 (2026-05-28):** accuracy de docs/legal. README raiz (9 ports, badges sem 404), USAGE 9 ports, CHANGELOG, ADR-0005 (nomenclatura/CI), atribuição 3rd-party por port, **remoção total da versão TISS "4.01.00"** (17 ocorrências), contagem 15→20 em todas as docs/READMEs, suavização goldens, memória A-DOC10. `git grep 4.01` e `15/15` limpos.
-
-### Ondas de execução (paralelizáveis dentro da onda)
-
-| Onda | Foco | Itens | Gate |
-| :--- | :--- | :--- | :--- |
-| ~~**W1**~~ | ~~CRÍTICOS doc/legal~~ | ✅ A-DOC1, A-LEG1, A-DOC4/F1.10, A-DOC3, A-DOC2 | **FECHADA** |
-| ~~**W2**~~ | ~~Robustez conformance~~ | ✅ A-COV1-5 (3 vetores positivos + 2 negativos; reject multi-hash + UTF-16) | **FECHADA** |
-| ~~**W3**~~ | ~~Docs/legal accuracy~~ | ✅ A-DOC5/6/7/8/9/10/12/13/14 + A-LEG2/3 (+ ADR-0005) | **FECHADA** |
-| ~~**W4**~~ | ~~Hardening CI + supply-chain~~ | ✅ A-CI1-5 + A-SUP1-3 + A-QA1 (sanitizers, clang-tidy lint, coverage, dependabot, CVE gate, mutation) | **FECHADA** |
-| **W5** | Release v0.1.0 | F7.1 → F4.4 → F7.2 → A-REL1 | PyPI + GitHub/Codeberg + SBOM |
-| **W6** | Pós-release | F7.3/7.4, F8.7-8.10, F6.2/4/6/7, F4.2b, A-DOC11, A-QA2 | ports restantes, SEO Tier 3, anúncio |
-
-- **Ordem de ataque:** W1-W4 ✅ FECHADAS (auditoria inteira) → **W5 = release v0.1.0** → W6 expande pós-release.
-- **Caminho crítico p/ v0.1.0:** W5 (F7.1 → F7.2). Tudo que bloqueava já fechou; resta empacotar e publicar.
