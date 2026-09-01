@@ -16,7 +16,7 @@
   Sem argumento, tenta localizar a pasta conformance/ subindo a partir do
   diretorio do binario e do diretorio corrente.
 
-  Licenca: MIT.
+  Licenca: AGPL-3.0-only.
 }
 program conformance_test;
 

@@ -8,7 +8,7 @@
   invalida, imprime "ERRO: <causa>  <arquivo>" no stderr e segue para o
   proximo, terminando com exit code 1 se houve qualquer erro.
 
-  Licenca: MIT.
+  Licenca: AGPL-3.0-only.
 }
 program tisshash_cli;
 

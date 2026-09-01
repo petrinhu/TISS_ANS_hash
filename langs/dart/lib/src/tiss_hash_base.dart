@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Petrus Silva Costa. MIT License.
+// Copyright (c) 2026 Petrus Silva Costa. AGPL-3.0-only License.
 
 import 'dart:convert';
 import 'dart:io';

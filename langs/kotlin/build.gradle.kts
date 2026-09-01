@@ -1,5 +1,5 @@
 /*
- * SPDX-License-Identifier: MIT
+ * SPDX-License-Identifier: AGPL-3.0-only
  * Copyright (c) Petrus Silva Costa
  *
  * Manifesto Gradle do port Kotlin da lib tiss-hash. Preparado para publicação

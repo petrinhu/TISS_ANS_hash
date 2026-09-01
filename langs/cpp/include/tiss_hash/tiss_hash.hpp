@@ -13,7 +13,7 @@
 //
 // Encoding dos bytes pro MD5 = UTF-8 (NAO ISO-8859-1, apesar do manual).
 //
-// Licenca: MIT.
+// Licenca: AGPL-3.0-only.
 
 #pragma once
 

@@ -25,7 +25,7 @@
  *   - Se voce ja inicializou libxml2 no processo (`xmlInitParser`) antes
  *     de usar esta lib, tudo bem — `xmlInitParser` e idempotente.
  *
- * Licenca: MIT.
+ * Licenca: AGPL-3.0-only.
  */
 #ifndef TISS_HASH_H
 #define TISS_HASH_H

@@ -67,7 +67,7 @@ declare(strict_types=1);
  *   vezes engasga com BOM dependendo da versao do libxml. Strip
  *   defensivo + manter a declaracao XML intacta.
  *
- * @license MIT
+ * @license AGPL-3.0-only
  * @author Petrus Silva Costa <petrinhu@yahoo.com.br>
  */
 

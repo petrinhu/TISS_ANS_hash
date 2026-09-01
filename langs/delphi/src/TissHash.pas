@@ -55,7 +55,7 @@
   Xml.XMLDoc); ver nota no README sobre como adaptar (MSXML/ADOM/OmniXML
   expoem NamespaceURI/localName equivalentes).
 
-  Licenca: MIT.
+  Licenca: AGPL-3.0-only.
 }
 unit TissHash;
 

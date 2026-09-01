@@ -51,7 +51,7 @@
  * xmlInitParser() e idempotente porem nao thread-safe na PRIMEIRA chamada.
  * Usamos pthread_once_t (POSIX) pra garantir uma unica inicializacao.
  *
- * Licenca: MIT.
+ * Licenca: AGPL-3.0-only.
  */
 
 #include "tiss_hash.h"

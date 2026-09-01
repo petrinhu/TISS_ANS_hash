@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: AGPL-3.0-only
 # Copyright (c) Petrus Silva Costa
 #
 # Build + teste do port Kotlin SEM Gradle, usando apenas `kotlinc` + `java`.

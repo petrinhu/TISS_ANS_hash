@@ -9,7 +9,7 @@
 #
 # Requer: fpc (Free Pascal Compiler) 3.2+ no PATH.
 #
-# Licenca: MIT.
+# Licenca: AGPL-3.0-only.
 
 FPC      ?= fpc
 SRC      := src

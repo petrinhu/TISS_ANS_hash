@@ -34,7 +34,7 @@
 // - Bundle RFC 1321 reference impl: viavel pra eliminar dep de libcrypto.
 //   Nao escolhido pra simplicidade; quem precisar pode trocar este arquivo.
 //
-// Licenca: MIT.
+// Licenca: AGPL-3.0-only.
 
 #include "tiss_hash/tiss_hash.hpp"
 

@@ -17,7 +17,7 @@
     1  ao menos um divergiu
     2  goldens nao encontrados (SKIP -> tratado como setup, exit 2)
 
-  Licenca: MIT.
+  Licenca: AGPL-3.0-only.
 }
 program golden_test;
 
