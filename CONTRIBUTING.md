@@ -152,8 +152,8 @@ Este projeto adota o [Contributor Covenant 2.1](CODE_OF_CONDUCT.md). Contribuiç
 
 ## Licença e DCO/CLA
 
-O projeto é licenciado sob [MIT](LICENSE).
+O projeto é licenciado sob [AGPL-3.0](LICENSE).
 
-**Não exigimos DCO nem CLA.** Ao abrir um PR, você concorda implicitamente em licenciar sua contribuição sob os mesmos termos MIT. Essa é a prática padrão de projetos open source permissivos, e a MIT é compatível com qualquer outra licença que você queira usar derivando do projeto.
+**Não exigimos DCO nem CLA.** Ao abrir um PR, você concorda implicitamente em licenciar sua contribuição sob os mesmos termos AGPL-3.0 do projeto (inbound = outbound). A AGPL-3.0 é copyleft: trabalhos derivados do projeto devem ser distribuídos sob a própria AGPL-3.0, com o código-fonte correspondente disponível; e quem modifica o projeto e disponibiliza o software resultante para interação via rede deve oferecer aos usuários remotos o código-fonte da versão modificada (seção 13 da licença).
 
-Se sua contribuição inclui código de terceiros, indique no PR a origem e a licença (preferimos MIT, BSD-2/3, Apache-2.0, ou domínio público; outras licenças compatíveis com MIT podem ser aceitas após revisão).
+Se sua contribuição inclui código de terceiros, indique no PR a origem e a licença (preferimos MIT, BSD-2/3, Apache-2.0, ou domínio público, que podem ser incorporadas a um projeto AGPL-3.0; outras licenças compatíveis com a AGPL-3.0 podem ser aceitas após revisão). O conjunto resultante é sempre distribuído sob AGPL-3.0.

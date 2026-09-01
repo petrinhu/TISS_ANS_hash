@@ -36,7 +36,7 @@ Não são vulnerabilidades nesta lib:
 
 ## SLA orientativo
 
-**Best-effort, sem garantia contratual** (a lib é MIT, sem garantias; ver [`LICENSE`](LICENSE)). O mantenedor é um indivíduo, não uma empresa com plantão.
+**Best-effort, sem garantia contratual** (a lib é AGPL-3.0, sem garantias; ver [`LICENSE`](LICENSE)). O mantenedor é um indivíduo, não uma empresa com plantão.
 
 Alvos práticos:
 

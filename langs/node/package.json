@@ -41,7 +41,7 @@
     "healthcare"
   ],
   "author": "Petrus Silva Costa <petrinhu@yahoo.com.br>",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/petrinhu/TISS_ANS_hash.git",

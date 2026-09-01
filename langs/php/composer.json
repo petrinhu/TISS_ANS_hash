@@ -2,7 +2,7 @@
     "name": "petrinhu/tiss-hash",
     "description": "Hash MD5 do epilogo XML TISS/ANS (Padrao TISS). Validado contra goldens reais privados + vetores sinteticos.",
     "type": "library",
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
     "keywords": [
         "tiss",
         "ans",

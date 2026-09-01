@@ -141,7 +141,7 @@ Na prática: se você calcular o hash de um lote em Python e um colega calcular 
 
 Sim, com uma recomendação de prudência. Os 13 ports passam os 20 vetores de conformidade e os parsers (ver `parser`) são endurecidos contra ataques conhecidos via XML. Antes de colocar no fluxo real, faça este teste simples: pegue alguns lotes (ver `lote`) seus que a operadora já aceitou no passado, calcule o hash com a biblioteca e confirme que bate com o que foi aceito. Isso valida que o seu caso de uso está coberto.
 
-A licença é [MIT](../LICENSE): uso livre, inclusive comercial, sem garantias. Mais detalhes em [`USAGE.md`](USAGE.md#posso-usar-em-produção) e [`docs/legal/DISCLAIMER.md`](legal/DISCLAIMER.md).
+A licença é [AGPL-3.0](../LICENSE): uso livre, inclusive comercial, sem garantias. É copyleft: quem redistribui a lib (modificada ou não) deve disponibilizar o código-fonte sob a mesma licença, e quem a modifica e oferece o software resultante para uso via rede deve oferecer o fonte da versão modificada aos usuários remotos. Mais detalhes em [`USAGE.md`](USAGE.md#posso-usar-em-produção) e [`docs/legal/DISCLAIMER.md`](legal/DISCLAIMER.md).
 
 ### E os dados de paciente? A biblioteca guarda algo?
 

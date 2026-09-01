@@ -79,8 +79,8 @@ publishing {
                 url.set("https://github.com/petrinhu/TISS_ANS_hash")
                 licenses {
                     license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
+                        name.set("GNU Affero General Public License v3.0")
+                        url.set("https://www.gnu.org/licenses/agpl-3.0.txt")
                     }
                 }
                 developers {

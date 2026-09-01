@@ -21,7 +21,7 @@
     <Company>Petrus Silva Costa</Company>
     <Description>Hash MD5 canonico do epilogo &lt;ans:hash&gt; em XMLs do Padrao TISS/ANS (saude suplementar brasileira). Port .NET multi-linguagem; valida byte-a-byte contra 15 vetores de conformancia.</Description>
     <Copyright>Copyright (c) 2026 Petrus Silva Costa</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/petrinhu/TISS_ANS_hash</PackageProjectUrl>
     <RepositoryUrl>https://github.com/petrinhu/TISS_ANS_hash</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

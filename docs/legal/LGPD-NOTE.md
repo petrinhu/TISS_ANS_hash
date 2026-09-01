@@ -39,7 +39,7 @@ XMLs TISS contêm **dados pessoais sensíveis de saúde** (LGPD, art. 5º, II), 
 - Datas de atendimento, prestador executante.
 - Em alguns casos, dados de menores (proteção reforçada art. 14).
 
-Ao usar esta lib dentro do seu pipeline, **você** está realizando tratamento de dados pessoais. As obrigações descritas abaixo aplicam-se ao seu sistema, independente de a lib ser MIT, gratuita ou de terceiros.
+Ao usar esta lib dentro do seu pipeline, **você** está realizando tratamento de dados pessoais. As obrigações descritas abaixo aplicam-se ao seu sistema, independente de a lib ser AGPL-3.0, gratuita ou de terceiros.
 
 ## 3. Recomendações mínimas para o integrador
 
@@ -148,7 +148,7 @@ O comportamento é determinístico, in-process, sem efeito colateral observável
 
 Se seu DPO precisa de informações sobre esta lib para incluir no RTOA ou RIPD:
 
-- **Natureza:** biblioteca open source, MIT.
+- **Natureza:** biblioteca open source, AGPL-3.0.
 - **Função:** cálculo de hash MD5 sobre XML in-memory.
 - **Sub-processadores:** nenhum (sem chamada de rede).
 - **Vendedor:** mantenedor individual, sem CNPJ vinculado ao projeto.
@@ -167,11 +167,12 @@ Se seu DPO precisa de informações sobre esta lib para incluir no RTOA ou RIPD:
 
 ## 8. Licenciamento desta lib
 
-A lib `lib_hash_ans` (e seus ports) é distribuída sob licença **MIT** (ver [`LICENSE`](../../LICENSE)). Isso significa, em linguagem comum:
+A lib `lib_hash_ans` (e seus ports) é distribuída sob licença **AGPL-3.0** (ver [`LICENSE`](../../LICENSE)). Isso significa, em linguagem comum:
 
 - Uso livre, comercial e não-comercial.
 - Modificação livre.
-- Redistribuição livre, com manutenção do aviso de copyright e da licença.
+- Redistribuição livre, desde que sob a mesma AGPL-3.0 (copyleft), com o código-fonte correspondente disponível e os avisos de copyright preservados.
+- Quem modifica a lib e disponibiliza o software resultante para interação via rede deve oferecer aos usuários remotos o código-fonte da versão modificada (seção 13 da licença).
 - **Sem garantias.** O software é fornecido "como está" ("AS IS"); o autor não responde por danos decorrentes do uso. Ver também [`DISCLAIMER.md`](DISCLAIMER.md).
 
-A licença MIT **não** isenta o integrador de suas obrigações LGPD. Ao contrário: por ser MIT e o software ser amplamente reutilizável, é o integrador que decide o contexto de uso e responde por ele.
+A licença AGPL-3.0 **não** isenta o integrador de suas obrigações LGPD. Ao contrário: por ser software livre amplamente reutilizável, é o integrador que decide o contexto de uso e responde por ele.

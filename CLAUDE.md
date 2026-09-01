@@ -7,7 +7,7 @@ Instruções para Claude Code ao trabalhar neste repo.
 `TISS_ANS_hash` é biblioteca multi-linguagem do hash MD5 do epílogo XML TISS/ANS (Padrão TISS). Sucessor do TISSGama (editor desktop legado arquivado).
 
 - Site canônico (origin): https://github.com/petrinhu/TISS_ANS_hash
-- Licença: MIT
+- Licença: AGPL-3.0
 - Predecessor: ver memória global `tissgama-repos-abandonados`.
 
 ## Pendências

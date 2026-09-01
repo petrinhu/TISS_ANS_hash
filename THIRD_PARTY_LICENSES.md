@@ -1,6 +1,6 @@
 # Atribuições de terceiros (Third-Party Licenses)
 
-O projeto **TISS_ANS_hash** é distribuído sob a licença **MIT** (ver `LICENSE`).
+O projeto **TISS_ANS_hash** é distribuído sob a licença **AGPL-3.0** (ver `LICENSE`).
 Este arquivo **não altera** a licença do projeto: ele apenas **agrega os avisos
 de copyright e atribuição** exigidos pelas licenças das bibliotecas de terceiros
 usadas por cada port (port = implementação por linguagem em `langs/<lang>/`).
@@ -17,8 +17,12 @@ A atribuição é organizada **por port**, distinguindo:
 
 > Versões: quando o manifesto fixa uma faixa (`^`, `~`, `>=`), reproduzimos a
 > restrição declarada, não a versão exata resolvida no lockfile.
-> As licenças MIT, Apache-2.0, BSD e Boost são todas permissivas e compatíveis
-> com a redistribuição sob MIT do projeto.
+> As licenças MIT, Apache-2.0, BSD e Boost são permissivas e podem ser
+> incorporadas a um projeto AGPL-3.0; o conjunto redistribuído fica sob
+> AGPL-3.0, preservados os avisos de copyright e atribuição de cada uma.
+> A Apache-2.0 é compatível com a família GPLv3 (o que inclui a AGPL-3.0)
+> em uma direção só: código Apache-2.0 pode entrar em projeto AGPL-3.0,
+> não o inverso.
 
 ---
 
@@ -46,6 +50,15 @@ A atribuição é organizada **por port**, distinguindo:
 | Go | golang.org/x/text `v0.14.0` | BSD-3-Clause | runtime | `langs/go/go.mod` |
 | C# | System.Text.Encoding.CodePages `8.0.0` | MIT | runtime | `langs/csharp/src/TissHash/TissHash.csproj` |
 | C# | xunit / Microsoft.NET.Test.Sdk | MIT (Apache-2.0 para alguns componentes MS) | test/dev | `langs/csharp/tests/.../TissHash.Tests.csproj` |
+| Kotlin | kotlin-stdlib `2.1.0` | Apache-2.0 | runtime | `langs/kotlin/pom.xml` / `build.gradle.kts` |
+| Kotlin | org.json `20240303` | Public Domain (JSON License variante) | test/dev | `langs/kotlin/pom.xml` / `build.gradle.kts` |
+| Kotlin | JUnit Jupiter `5.10.2` (Maven) / kotlin-test (Gradle) | EPL-2.0 / Apache-2.0 | test/dev | `langs/kotlin/pom.xml` / `build.gradle.kts` |
+| Dart | xml `^6.5.0` | MIT | runtime | `langs/dart/pubspec.yaml` |
+| Dart | crypto `^3.0.0` | BSD-3-Clause | runtime | `langs/dart/pubspec.yaml` |
+| Dart | test `^1.25.0` / lints `^4.0.0` | BSD-3-Clause | test/dev | `langs/dart/pubspec.yaml` |
+| Delphi/FPC | Free Pascal RTL/FCL (`SysUtils`, `Classes`, `DOM`, `XMLRead`, `md5`, `fpjson`, `jsonparser`) | LGPL-2.1 com exceção de linking estático ("modified LGPL") | runtime (linkada estaticamente no binário) | `langs/delphi/Makefile` + cláusulas `uses` em `langs/delphi/src/*.pas` |
+| WASM | wasm-bindgen `=0.2.122` | MIT OR Apache-2.0 | runtime (embarcada no `.wasm`) | `langs/wasm/Cargo.toml` |
+| WASM | roxmltree / md-5 (transitivas via core Rust `langs/rust`) | MIT OR Apache-2.0 | runtime (embarcada no `.wasm`) | `langs/wasm/Cargo.toml` (path-dependency) |
 
 > **Observação sobre link dinâmico de libs de sistema (C/C++):** libxml2,
 > OpenSSL e pugixml-do-sistema normalmente são linkados dinamicamente a partir
@@ -199,6 +212,73 @@ modification, are permitted provided that the following conditions are met:
 ### xunit, Microsoft.NET.Test.Sdk, xunit.runner.visualstudio — test/dev (não distribuído)
 - xunit: **Apache-2.0** (componentes históricos sob "xUnit.net license", baseada em Apache-2.0).
 - Microsoft.NET.Test.Sdk: **MIT** — Copyright (c) .NET Foundation.
+
+---
+
+## Kotlin (`langs/kotlin/`)
+
+> O código de produção usa apenas a `kotlin-stdlib` além da JDK (parser XML e
+> MD5 vêm da própria JDK, como no port Java).
+
+### kotlin-stdlib `2.1.0` (runtime)
+- Licença: **Apache-2.0**.
+- Copyright (c) JetBrains s.r.o. e contribuidores do Kotlin.
+
+### org.json `20240303` (test/dev, não distribuído)
+- Licença: **Public Domain** (variante "JSON License", com a cláusula
+  "The Software shall be used for Good, not Evil").
+- Copyright (c) 2002 JSON.org.
+- Mesma observação do port Java; ver "Itens a confirmar com o jurídico/DPO".
+
+### JUnit Jupiter `5.10.2` (Maven) e kotlin-test (Gradle) (test/dev, não distribuído)
+- JUnit Jupiter: **EPL-2.0** (Eclipse Public License 2.0). Copyright (c) the JUnit Team.
+- kotlin-test: **Apache-2.0**. Copyright (c) JetBrains s.r.o.
+
+---
+
+## Dart (`langs/dart/`)
+
+### xml `^6.5.0` (runtime)
+- Licença: **MIT**.
+- Copyright (c) Lukas Renggli e contribuidores.
+
+### crypto `^3.0.0` (runtime)
+- Licença: **BSD-3-Clause**.
+- Copyright (c) the Dart project authors (Google).
+
+### test `^1.25.0`, lints `^4.0.0` (test/dev, não distribuído)
+- Licença: **BSD-3-Clause**. Copyright (c) the Dart project authors.
+
+---
+
+## Delphi / Free Pascal (`langs/delphi/`)
+
+> Sem dependência de terceiros além do próprio Free Pascal: o port usa somente
+> units da RTL/FCL do FPC (`SysUtils`, `Classes`, `DOM`, `XMLRead`, `md5`,
+> `fpjson`, `jsonparser`), linkadas estaticamente no binário gerado.
+
+### Free Pascal RTL/FCL (runtime, linkada estaticamente)
+- Licença: **LGPL-2.1 com exceção de linking estático** ("modified LGPL" do
+  projeto FPC). A exceção permite distribuir o executável resultante sob a
+  licença do projeto, sem estender as obrigações da LGPL ao binário.
+- Copyright (c) Free Pascal development team.
+
+---
+
+## WASM (`langs/wasm/`)
+
+> O port WASM reusa o core Rust (`langs/rust`, mesmo projeto, não é terceiro)
+> via path-dependency. O artefato `.wasm` distribuído embarca, compiladas, as
+> dependências runtime do core (roxmltree, md-5; ver seção Rust) e o glue do
+> wasm-bindgen.
+
+### wasm-bindgen `=0.2.122` (runtime, embarcada no `.wasm`)
+- Licença: **MIT OR Apache-2.0** (escolha do consumidor).
+- Copyright (c) The wasm-bindgen Developers.
+
+### roxmltree, md-5 (runtime, transitivas via core Rust)
+- Ver atribuição na seção **Rust** acima; a mesma atribuição vale para o
+  artefato `.wasm`.
 
 ---
 

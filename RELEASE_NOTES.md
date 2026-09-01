@@ -46,4 +46,4 @@ Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, **Kotlin, Delphi/FPC, Dart, WA
 
 ## Licença
 
-MIT. Atribuições de terceiros em [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md). Changelog: [`CHANGELOG.md`](CHANGELOG.md).
+AGPL-3.0. Atribuições de terceiros em [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md). Changelog: [`CHANGELOG.md`](CHANGELOG.md).

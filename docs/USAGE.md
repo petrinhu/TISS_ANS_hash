@@ -1379,7 +1379,7 @@ Porque o algoritmo de verdade (conferido contra hashes que a ANS já aprovou) us
 
 ### Posso usar em produção?
 
-Os 13 ports estão prontos e passam os 20 vetores byte a byte. Os parsers são endurecidos contra ataques via XML (XXE, "billion-laughs"). **Recomendação:** antes de pôr em produção, valide você mesmo contra alguns lotes seus que a operadora já aceitou. A licença [MIT](../LICENSE) é explícita: sem garantias.
+Os 13 ports estão prontos e passam os 20 vetores byte a byte. Os parsers são endurecidos contra ataques via XML (XXE, "billion-laughs"). **Recomendação:** antes de pôr em produção, valide você mesmo contra alguns lotes seus que a operadora já aceitou. A licença [AGPL-3.0](../LICENSE) é explícita: sem garantias.
 
 ### E se a ANS mudar o algoritmo?
 

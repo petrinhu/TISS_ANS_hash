@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  SPDX-License-Identifier: MIT
+  SPDX-License-Identifier: AGPL-3.0-only
   Copyright (c) Petrus Silva Costa
 
   Manifesto Maven ALTERNATIVO do port Kotlin (para quem prefere Maven +
@@ -30,8 +30,8 @@
 
   <licenses>
     <license>
-      <name>MIT License</name>
-      <url>https://opensource.org/licenses/MIT</url>
+      <name>GNU Affero General Public License v3.0</name>
+      <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
     </license>
   </licenses>
 

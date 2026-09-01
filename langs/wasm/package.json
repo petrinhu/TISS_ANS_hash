@@ -2,7 +2,7 @@
   "name": "tiss-hash-wasm",
   "version": "0.1.0",
   "description": "Hash MD5 do epílogo XML TISS/ANS em WebAssembly. Roda 100% client-side no browser (PII nunca trafega). Core Rust reusado via wasm-bindgen.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "author": "Petrus Silva Costa <petrinhu@yahoo.com.br>",
   "homepage": "https://github.com/petrinhu/TISS_ANS_hash",
   "repository": {
