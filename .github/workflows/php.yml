@@ -36,7 +36,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: mbstring, xml, dom, libxml
           coverage: none
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.composer/cache/files
           key: composer-php${{ matrix.php }}-${{ hashFiles('langs/php/composer.json') }}
@@ -65,7 +65,7 @@ jobs:
           php-version: '8.3'
           extensions: mbstring, xml, dom, libxml
           coverage: pcov
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.composer/cache/files
           key: composer-cov-${{ hashFiles('langs/php/composer.json') }}
