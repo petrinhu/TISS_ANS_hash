@@ -67,8 +67,8 @@ sobre **distribuição** e **conformidade** entre ports — não sobre runtime.
 |         |                  |  +---------+  +---------+         |   |
 |  +------+------------+     |  | go/     |  | java/   |         |   |
 |  | CI                |     |  +---------+  +---------+         |   |
-|  | .forgejo/         |     |  +---------+  +---------+         |   |
-|  | .github/          |     |  | dotnet/ |  | delphi/ |         |   |
+|  | .github/          |     |  +---------+  +---------+         |   |
+|  |                   |     |  | dotnet/ |  | delphi/ |         |   |
 |  +-------------------+     |  +---------+  +---------+         |   |
 |                            |  +---------+  +---------+         |   |
 |  +-------------------+     |  | dart/   |  | wasm/   |         |   |
@@ -194,8 +194,7 @@ do que é "o algoritmo".
 | Layout                   | Monorepo `langs/<lang>/` (ADR-0002)                  | Truth source única, evolução por port                      |
 | Versionamento            | SemVer independente por port (ADR-0003)              | Cada port no seu ritmo, regulado por vectors               |
 | Nome canônico            | `tiss-hash` (ADR-0003)                               | Curto, descritivo, livre nos registries                    |
-| CI primária              | Forgejo Actions (ADR-0004)                           | Alinhada com infra do usuário                              |
-| CI espelho               | GitHub Actions (ADR-0004)                            | Acesso a PRs externos via mirror                           |
+| CI                       | GitHub Actions (ADR-0004)                            | Host único do projeto                                      |
 | Granularidade CI         | 1 workflow por port + conformance gatekeeper         | Path-filtered, paralelo, debug claro                       |
 | Documentação             | Hub `README.md` + ADRs + `ARCHITECTURE.md`           | Padrão hub-and-spoke (preferência do usuário)              |
 | Changelog                | `CHANGELOG.md` único agregado, entradas por port     | Visão histórica unificada                                  |
@@ -258,8 +257,6 @@ do XML** (pode conter dados sensíveis de saúde — LGPD).
    ao custo de não ter "uma única fonte" implementacional. Ver ADR-0001.
 3. **Versões independentes por port.** Usuário multi-linguagem precisa
    olhar tabela de compatibilidade no README. Ver ADR-0003.
-4. **Workflows CI duplicados** (Forgejo + GitHub). Sync manual via
-   script. Ver ADR-0004.
 
 ## Riscos top-3
 
@@ -296,7 +293,7 @@ Cada port novo segue o checklist em `CONTRIBUTING.md` (a criar):
 - [ ] `langs/<lang>/` com layout idiomático da linguagem.
 - [ ] API `hash_tiss_bytes(bytes) -> string` exposta.
 - [ ] Testes rodam contra `../../conformance/vectors.json` byte-a-byte.
-- [ ] `.forgejo/workflows/lang-<lang>.yml` + espelho GitHub.
+- [ ] `.github/workflows/lang-<lang>.yml`.
 - [ ] README do port + entrada no README hub.
 - [ ] Entry no `CHANGELOG.md` agregado.
 - [ ] Nome de pacote reservado no registry (validado livre).

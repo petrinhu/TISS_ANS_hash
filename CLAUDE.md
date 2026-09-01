@@ -7,7 +7,6 @@ Instruções para Claude Code ao trabalhar neste repo.
 `TISS_ANS_hash` é biblioteca multi-linguagem do hash MD5 do epílogo XML TISS/ANS (Padrão TISS). Sucessor do TISSGama (editor desktop legado arquivado).
 
 - Site canônico (origin): https://github.com/petrinhu/TISS_ANS_hash
-- Mirror: https://codeberg.org/petrinhu/TISS_ANS_hash
 - Licença: MIT
 - Predecessor: ver memória global `tissgama-repos-abandonados`.
 
@@ -31,7 +30,7 @@ A tabela de pendências e planejamento do projeto está em `TODO.md` na raiz. At
 
 ### Git
 
-- **Dual push automático**: `origin` tem 1 fetch URL (GitHub) + 2 push URLs (GitHub + Codeberg). `git push` envia pros dois.
+- `origin` é o GitHub (único host).
 - Conventional Commits obrigatório.
 - Sem `--no-verify`, sem `--force` sem justificativa, sem amend em commit publicado.
 - Co-Authored-By no commit message quando Claude contribuir significativamente.

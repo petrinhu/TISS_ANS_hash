@@ -37,7 +37,7 @@ langs/<linguagem>/
 ## Manutenção planejada
 
 - **Quem mantém?** (você sozinho / time / open source community)
-- **CI proposto:** (GitHub Actions / Woodpecker no Codeberg / matriz)
+- **CI proposto:** (GitHub Actions / matriz)
 - **Frequência de release:** (sob demanda / quando a SPEC muda)
 
 ## Cobertura de conformidade

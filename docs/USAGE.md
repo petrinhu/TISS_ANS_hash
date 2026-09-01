@@ -890,7 +890,7 @@ Ou com Maven (`pom.xml`):
 </dependency>
 ```
 
-> **Jar prebuilt:** o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`) está anexado aos releases v0.2.1 dos **dois hosts** (GitHub e Codeberg). Você também pode buildá-lo do fonte com `./build.sh jar` (comando acima).
+> **Jar prebuilt:** o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`) foi anexado ao release v0.2.1 no [GitHub](https://github.com/petrinhu/TISS_ANS_hash/releases/tag/v0.2.1) (à época, também espelhado no mirror Codeberg, hoje descontinuado). Você também pode buildá-lo do fonte com `./build.sh jar` (comando acima).
 
 A lib tem **zero dependência de runtime** além do `kotlin-stdlib`: o parser XML e o MD5 vêm da própria JDK.
 

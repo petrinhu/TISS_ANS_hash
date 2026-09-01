@@ -8,7 +8,7 @@ Obrigado por dedicar tempo a divulgar uma vulnerabilidade de forma responsável.
 
 **Assunto:** prefixar com `[TISS_ANS_hash][SEC]` para roteamento rápido.
 
-**Não** abra issue pública no GitHub ou Codeberg para questões de segurança. Use o e-mail acima.
+**Não** abra issue pública no GitHub para questões de segurança. Use o e-mail acima.
 
 PGP / S/MIME: não disponível atualmente. Mensagens em texto claro são aceitáveis dado o escopo limitado da lib (sem operação online, sem dados em trânsito). Se você precisa de canal cifrado, mencione no primeiro contato e combinamos.
 

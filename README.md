@@ -4,7 +4,7 @@
 > Multi-language library (Python, Rust, C, C++, Node.js, PHP, Java, Go, C#, Kotlin, Delphi/Object Pascal, Dart, WebAssembly) to generate the MD5 hash of the epilogue tag in TISS/ANS XML messages (Brazilian healthcare data exchange standard).
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
-[![CI](https://img.shields.io/badge/CI-GitHub%20Actions%20%2B%20Forgejo%20Actions-success)](https://github.com/petrinhu/TISS_ANS_hash/actions)
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-success)](https://github.com/petrinhu/TISS_ANS_hash/actions)
 [![PyPI version](https://img.shields.io/pypi/v/tiss-hash.svg)](https://pypi.org/project/tiss-hash/)
 [![npm version](https://img.shields.io/npm/v/tiss-hash)](https://www.npmjs.com/package/tiss-hash)
 [![crates.io version](https://img.shields.io/crates/v/tiss-hash)](https://crates.io/crates/tiss-hash)
@@ -14,10 +14,9 @@
 [![Spec](https://img.shields.io/badge/spec-v1.0.0-blue)](docs/SPEC.md)
 [![Conformance Vectors](https://img.shields.io/badge/conformance-20%20vectors-success)](conformance/vectors.json)
 [![TISS Standard](https://img.shields.io/badge/Padr%C3%A3o-TISS-blue)](docs/SPEC.md)
-[![Codeberg](https://img.shields.io/badge/mirror-Codeberg-2185D0)](https://codeberg.org/petrinhu/TISS_ANS_hash)
 [![GitHub](https://img.shields.io/badge/mirror-GitHub-181717)](https://github.com/petrinhu/TISS_ANS_hash)
 
-> CI: cada um dos 13 ports roda em duas plataformas, **GitHub Actions** (`.github/workflows/<lang>.yml`) e **Forgejo Actions** no Codeberg (`.forgejo/workflows/<lang>.yml`).
+> CI: cada um dos 13 ports roda em **GitHub Actions** (`.github/workflows/<lang>.yml`).
 
 ## O que é
 
@@ -98,7 +97,7 @@ Legenda: `✅ pronto` (20/20 vetores PASS na CI + 3/3 goldens reais + docs + pac
 
 Todos os 13 ports **buildam do fonte** em qualquer cenário (ver o README de cada `langs/<lang>/`); os artefatos prebuilt são uma conveniência opcional anexada às releases.
 
-A partir da v0.2.1, **todos os artefatos prebuilt estão presentes nos releases dos dois hosts** ([GitHub](https://github.com/petrinhu/TISS_ANS_hash/releases/tag/v0.2.1) e [Codeberg](https://codeberg.org/petrinhu/TISS_ANS_hash/releases/tag/v0.2.1)), incluindo o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`). Mesmo assim, o port Kotlin builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)), então o jar prebuilt é apenas um atalho.
+A partir da v0.2.1, **todos os artefatos prebuilt estão presentes no release do [GitHub](https://github.com/petrinhu/TISS_ANS_hash/releases/tag/v0.2.1)** (à época, também espelhados no mirror Codeberg, hoje descontinuado), incluindo o jar do Kotlin (`tiss-hash-kotlin-0.1.0.jar`). Mesmo assim, o port Kotlin builda do fonte com `./build.sh jar` (ver [`langs/kotlin/`](langs/kotlin/)), então o jar prebuilt é apenas um atalho.
 
 ## Quickstart
 
@@ -229,7 +228,7 @@ Pré-requisitos: Python 3.10+, `lxml` (para a referência).
 - [`docs/legal/DISCLAIMER.md`](docs/legal/DISCLAIMER.md): Disclaimer técnico/legal.
 - [`docs/legal/TISS-COMPLIANCE.md`](docs/legal/TISS-COMPLIANCE.md): Escopo de conformidade com o padrão TISS.
 - [`CHANGELOG.md`](CHANGELOG.md): Histórico de versões (Keep a Changelog + SemVer).
-- [`CONTRIBUTING.md`](CONTRIBUTING.md): Como contribuir, dual push GitHub + Codeberg.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md): Como contribuir.
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md): Contributor Covenant 2.1.
 - [`SECURITY.md`](SECURITY.md): Política de divulgação responsável.
 
@@ -258,7 +257,7 @@ Detalhamento em [`docs/legal/LGPD-NOTE.md`](docs/legal/LGPD-NOTE.md).
 lib_hash_ans/
 ├── README.md                  # este arquivo
 ├── CHANGELOG.md               # Keep a Changelog
-├── CONTRIBUTING.md            # como contribuir, dual push
+├── CONTRIBUTING.md            # como contribuir
 ├── CODE_OF_CONDUCT.md         # Contributor Covenant 2.1
 ├── SECURITY.md                # política de segurança
 ├── LICENSE                    # AGPL-3.0
@@ -290,8 +289,7 @@ lib_hash_ans/
 │   ├── delphi/                # port Object Pascal (Free Pascal / Delphi)
 │   ├── dart/                  # port Dart (Flutter / mobile)
 │   └── wasm/                  # port WASM (browser/Node; reusa o core Rust)
-├── .github/workflows/         # CI GitHub Actions (1 workflow por port)
-└── .forgejo/workflows/        # CI Forgejo Actions no Codeberg (1 por port)
+└── .github/workflows/         # CI GitHub Actions (1 workflow por port)
 ```
 
 ## Histórico
@@ -334,6 +332,6 @@ Custo: 1 clique. SemVer: não quebra nada.
 
 ## Contribuindo
 
-Para portar uma nova linguagem, ver [`docs/PORTING_GUIDE.md`](docs/PORTING_GUIDE.md). Para o fluxo de contribuição (dual push GitHub + Codeberg, Conventional Commits, checklist de PR), ver [`CONTRIBUTING.md`](CONTRIBUTING.md). PR deve ter os 20 vetores de conformidade passando.
+Para portar uma nova linguagem, ver [`docs/PORTING_GUIDE.md`](docs/PORTING_GUIDE.md). Para o fluxo de contribuição (Conventional Commits, checklist de PR), ver [`CONTRIBUTING.md`](CONTRIBUTING.md). PR deve ter os 20 vetores de conformidade passando.
 
-Para reportar imprecisão na spec ou nos vetores, abrir issue com label `spec` ou `conformance` no [GitHub](https://github.com/petrinhu/TISS_ANS_hash/issues) ou no [Codeberg](https://codeberg.org/petrinhu/TISS_ANS_hash/issues).
+Para reportar imprecisão na spec ou nos vetores, abrir issue com label `spec` ou `conformance` no [GitHub](https://github.com/petrinhu/TISS_ANS_hash/issues).

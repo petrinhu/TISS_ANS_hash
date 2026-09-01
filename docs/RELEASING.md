@@ -9,10 +9,10 @@ Toda a automação é inerte antes disso.
 > publish em registry são **gated** por uma *variável de repo* (`vars.*_ENABLED`)
 > que ainda **não foi setada**. Sem ela, cada job de publish é **SKIPPED**
 > (verde, não falha). Portanto uma tag `v*` empurrada hoje:
-> - **cria os Releases nos repositórios** (GitHub + Codeberg) com os assets, e
+> - **cria o Release no repositório** (GitHub) com os assets, e
 > - **não publica em registry nenhum nem falha** por falta de token.
 >
-> O release dos **repos** (GitHub/Codeberg) é **independente** dos gates de
+> O release do **repo** (GitHub) é **independente** dos gates de
 > registry: liga-se cada registry depois, quando o líder tiver a conta/token.
 
 ```text
@@ -21,12 +21,11 @@ git tag v0.1.0  ─push─► GitHub:   release-python.yml ─► GitHub Release
                      ├► GitHub:   release-rust.yml   ─► dry-run sempre + [crates.io](gate CRATES_ENABLED)
                      ├► GitHub:   release-csharp.yml ─► pack sempre + [NuGet]      (gate NUGET_ENABLED)
                      ├► GitHub:   release-java.yml   ─► [Maven Central]            (gate MAVEN_ENABLED)
-                     ├► GitHub:   split-php.yml      ─► repo tiss-hash-php + recrawl Packagist (secret PACKAGIST_TOKEN)
-                     └► Codeberg: release.yml        ─► Codeberg Release (mirror)
+                     └► GitHub:   split-php.yml      ─► repo tiss-hash-php + recrawl Packagist (secret PACKAGIST_TOKEN)
 ```
 
 `[...]` = passo **gated**: só roda com a variável de repo correspondente em
-`true`. Hoje nenhuma está setada, então só os **Releases dos repos** acontecem.
+`true`. Hoje nenhuma está setada, então só o **Release do repo** acontece.
 
 ## Visão geral dos workflows
 
@@ -38,7 +37,6 @@ git tag v0.1.0  ─push─► GitHub:   release-python.yml ─► GitHub Release
 | `.github/workflows/release-csharp.yml` | GitHub | tag `v*` / dispatch | `dotnet test` + `dotnet pack` (**sempre**) → `dotnet nuget push` de `langs/csharp` | `vars.NUGET_ENABLED` (só o push) |
 | `.github/workflows/release-java.yml` | GitHub | tag `v*` / dispatch | `mvn -P release deploy` p/ **Maven Central** (Sonatype). **Job inteiro gated** | `vars.MAVEN_ENABLED` (pré-requisitos pesados, ver abaixo) |
 | `.github/workflows/split-php.yml` | GitHub | tag `v*` / dispatch | faz o **split** de `langs/php` para o repo dedicado **`petrinhu/tiss-hash-php`** (espelho somente-leitura), empurra a tag lá e dispara o **recrawl** do Packagist via API | usa o Secret `PACKAGIST_TOKEN` (sem var de gate; sem o secret o recrawl é pulado) |
-| `.forgejo/workflows/release.yml` | Codeberg (mirror) | tag `v*` / dispatch | build sdist+wheel → cria **Codeberg Release** via API Forgejo com os mesmos assets. **Não** publica em registry | — |
 
 `workflow_dispatch` faz um **dry-run de build** (e, no GitHub, valida metadados
 com `twine check`); os jobs de publish em registry têm guarda `if: push de tag`
@@ -163,11 +161,6 @@ O pub.dev autentica por conta Google (fluxo OAuth interativo no navegador) e nã
 por API token em CI, o que torna o publish gated por workflow menos direto que os
 demais; por isso ele fica como passo manual. Versão publicada: `tiss_hash` 0.1.0.
 
-Por que o publish no PyPI fica só no GitHub (não no Codeberg): o PyPI Trusted
-Publishing aceita identidade OIDC do GitHub Actions; o Codeberg não é provedor
-OIDC aceito pelo PyPI. O Codeberg apenas espelha o Release (notas + assets
-verificáveis).
-
 ## Pré-requisitos de configuração do PyPI (quando ligar `PYPI_ENABLED`)
 
 > Estes passos são do **mantenedor** (petrus) e só são necessários **quando o
@@ -200,20 +193,14 @@ recomendado: exigir **required reviewers** (gate manual antes de publicar) e
 restringir a deployment branches/tags `v*`. O job `pypi-publish` referencia
 `environment: { name: pypi }` — o nome tem que casar com o pending publisher.
 
-### 3. Codeberg — nada a configurar
-
-O `release.yml` autentica com o token automático do runner Forgejo
-(`secrets.GITHUB_TOKEN`, alias de `FORGEJO_TOKEN`), que já tem escopo do repo.
-Não há secret manual nem OIDC.
-
 ## Procedimento de release (a cada versão)
 
 1. **Pré-flight (na main, limpa):**
    - `CHANGELOG.md` com a seção da versão movida de `[Unreleased]` para `[x.y.z]`.
    - `langs/python/pyproject.toml` com `version = "x.y.z"` correto.
-   - (opcional) `RELEASE_NOTES.md` na raiz — se existir, vira o corpo dos dois
-     releases; senão o GitHub auto-gera das notas e o Codeberg usa um stub.
-   - CI verde nos dois hosts.
+   - (opcional) `RELEASE_NOTES.md` na raiz — se existir, vira o corpo do
+     release; senão o GitHub auto-gera das notas.
+   - CI verde.
 2. **Build local de sanidade** (espelha o CI):
    ```bash
    cd langs/python
@@ -224,10 +211,10 @@ Não há secret manual nem OIDC.
    Esperado: `tiss_hash-x.y.z.tar.gz` + `tiss_hash-x.y.z-py3-none-any.whl`
    (note o **underscore** — normalização PEP 625 do hatchling), ambos PASSED no
    twine check. Limpar o `dist/` depois.
-3. **Tag e push** (o dual push manda pros dois remotes):
+3. **Tag e push:**
    ```bash
    git tag -a vX.Y.Z -m "Release vX.Y.Z"
-   git push origin vX.Y.Z      # vai pra GitHub E Codeberg (origin tem 2 push URLs)
+   git push origin vX.Y.Z
    ```
 4. **Acompanhar:**
    - GitHub Actions → `release-python` → job `build` verde → `github-release`
@@ -238,11 +225,10 @@ Não há secret manual nem OIDC.
      publish se a `vars.*_ENABLED` correspondente estiver `true`; senão o job/step
      fica **SKIPPED** (verde). O `release-rust` ainda roda `cargo publish --dry-run`
      e o `release-csharp` ainda roda `dotnet pack` mesmo desligados (validação).
-   - Codeberg → Actions → `release` verde → conferir o Release criado.
 5. **Verificar:**
    - Registries ligados: ver a página do pacote (ex.: PyPI
      <https://pypi.org/project/tiss-hash/>) e instalar numa máquina limpa.
-   - GitHub/Codeberg Release têm os 4 assets; conferir checksums:
+   - GitHub Release tem os 4 assets; conferir checksums:
      ```bash
      sha256sum -c SHA256SUMS
      ```
@@ -252,7 +238,7 @@ Não há secret manual nem OIDC.
 - **PyPI:** uma versão publicada **não pode ser sobrescrita**. Se houver erro,
   publicar `X.Y.(Z+1)` (ou `X.Y.Z.postN`) corrigido. `yank` esconde a versão
   ruim de novos installs sem quebrar quem já pinou. Não dá pra "desfazer".
-- **GitHub/Codeberg Release:** deletável pela UI/API; a tag pode ser removida
+- **GitHub Release:** deletável pela UI/API; a tag pode ser removida
   (`git push origin :refs/tags/vX.Y.Z`) — fazer **antes** de qualquer consumo.
 - Por isso: o gate de environment `pypi` (required reviewer) é a salvaguarda
   real — é o último ponto reversível antes do publish irreversível no PyPI.
@@ -294,7 +280,3 @@ Não há secret manual nem OIDC.
 | `pypa/gh-action-pypi-publish` | v1.14.0 | `cef221092ed1bacb1cc03d23a2d87d1d172e277b` | python |
 | `softprops/action-gh-release` | v3.0.0 | `b4309332981a82ec1c5618f44dd2e27cc8bfbfda` | python |
 | `anchore/sbom-action` | v0.24.0 | `e22c389904149dbc22b58101806040fa8d37a610` | python |
-
-No `.forgejo/workflows/release.yml`, `actions/checkout`/`setup-python` ficam por
-tag móvel (`@v4`/`@v5`), seguindo a convenção dos demais workflows Forgejo do
-repo; só `anchore/sbom-action` é pinada por SHA (consistência com o GitHub).

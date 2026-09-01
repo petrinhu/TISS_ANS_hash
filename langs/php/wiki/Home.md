@@ -62,6 +62,5 @@ apenas o hash sintetico `3aa0c578c95cdb861a125f480a8a4de5`.
 
 - Pacote no Packagist: <https://packagist.org/packages/petrinhu/tiss-hash>
 - Monorepo (fonte de verdade), GitHub: <https://github.com/petrinhu/TISS_ANS_hash>
-- Monorepo, mirror Codeberg: <https://codeberg.org/petrinhu/TISS_ANS_hash>
 - Guia para IA/agente: [AGENTS.md](https://github.com/petrinhu/tiss-hash-php/blob/main/AGENTS.md)
 - Como usar (esta wiki): [[Como-usar]]

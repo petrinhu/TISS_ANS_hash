@@ -1,7 +1,5 @@
 # Dependabot — atualização automática de dependências (A-SUP1).
 # Um ecosystem por port + GitHub Actions. Schedule semanal pra não inundar.
-# (Codeberg/Forgejo não lê este arquivo; é específico do GitHub. Mirror de
-#  deps no Codeberg fica a cargo de update manual ou Renovate futuro.)
 version: 2
 updates:
   - package-ecosystem: github-actions

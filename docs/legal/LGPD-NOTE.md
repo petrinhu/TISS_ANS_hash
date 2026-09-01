@@ -154,7 +154,7 @@ Se seu DPO precisa de informações sobre esta lib para incluir no RTOA ou RIPD:
 - **Vendedor:** mantenedor individual, sem CNPJ vinculado ao projeto.
 - **Localização do processamento:** mesmo processo do aplicativo cliente; nenhum dado sai do processo.
 - **Retenção pela lib:** zero. A função retorna a string e libera referências; gerenciamento de memória cabe ao runtime do integrador.
-- **Auditoria:** código-fonte público em [GitHub](https://github.com/petrinhu/TISS_ANS_hash) e [Codeberg](https://codeberg.org/petrinhu/TISS_ANS_hash).
+- **Auditoria:** código-fonte público em [GitHub](https://github.com/petrinhu/TISS_ANS_hash).
 
 ## 7. Referências
 

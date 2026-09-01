@@ -54,9 +54,7 @@ jobs:
         run: composer audit
 
   coverage:
-    # Coverage exige driver (pcov/xdebug). Roda APENAS aqui (GitHub) numa
-    # versao de PHP — Codeberg/Forgejo nao garante driver, entao o .forgejo
-    # omite este job de proposito (ver comentario no .forgejo/workflows/php.yml).
+    # Coverage exige driver (pcov/xdebug).
     # Report only: SEM threshold que falhe o build.
     name: coverage
     runs-on: ubuntu-latest

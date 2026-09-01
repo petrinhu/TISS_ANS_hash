@@ -174,7 +174,6 @@ do repositório.
 ## Ver também
 
 - Repositório (origin): https://github.com/petrinhu/TISS_ANS_hash
-- Mirror: https://codeberg.org/petrinhu/TISS_ANS_hash
 - [`docs/USAGE.md`](../../docs/USAGE.md): guia de uso, receitas e perguntas
   frequentes (comece por aqui se você quer só usar a lib).
 - [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md): conceitos e visão geral

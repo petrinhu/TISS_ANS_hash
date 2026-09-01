@@ -54,7 +54,6 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/petrinhu/TISS_ANS_hash"
 Repository = "https://github.com/petrinhu/TISS_ANS_hash"
-"Mirror (Codeberg)" = "https://codeberg.org/petrinhu/TISS_ANS_hash"
 Issues = "https://github.com/petrinhu/TISS_ANS_hash/issues"
 Changelog = "https://github.com/petrinhu/TISS_ANS_hash/blob/main/CHANGELOG.md"
 Documentation = "https://github.com/petrinhu/TISS_ANS_hash/blob/main/docs/USAGE.md"

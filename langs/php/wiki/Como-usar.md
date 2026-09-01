@@ -112,7 +112,6 @@ hash errado. Ver [`docs/SPEC.md §4`](https://github.com/petrinhu/TISS_ANS_hash/
 Issues e pull requests vao **no monorepo**:
 
 - GitHub: <https://github.com/petrinhu/TISS_ANS_hash/issues>
-- Codeberg: <https://codeberg.org/petrinhu/TISS_ANS_hash/issues>
 
 ## Ver tambem
 
