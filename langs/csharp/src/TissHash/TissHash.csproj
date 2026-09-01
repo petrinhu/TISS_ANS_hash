@@ -34,7 +34,7 @@
   <ItemGroup>
     <!-- ISO-8859-1 nao vem no runtime .NET Core+ por padrao; provedor
          oficial Microsoft adiciona as code pages legacy. -->
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>
