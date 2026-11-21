@@ -1,4 +1,4 @@
-# LLM.md - guia para IA / agentes de código que USAM esta lib
+# AGENTS.md - guia para IA / agentes de código que USAM esta lib
 
 > **Audience:** uma IA ou agente de código (qualquer ferramenta, qualquer modelo) que precisa
 > calcular o hash MD5 do epílogo TISS/ANS dentro de um projeto. Convenção `AGENTS.md`,
