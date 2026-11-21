@@ -36,7 +36,7 @@ Comece pelo documento que combina com o seu momento:
 
 Se a dúvida for "por que existe e por que UTF-8 e não ISO-8859-1?", veja a seção [Por que existe](#por-que-existe-história) abaixo e a [`docs/SPEC.md`](docs/SPEC.md).
 
-> **É uma IA ou um agente de código usando esta lib?** Leia o [`AGENTS.md`](AGENTS.md): regra nº 1 (não reimplemente o algoritmo, use um dos 13 ports), contrato de rejeição, como validar um port e, principalmente, as obrigações de privacidade/LGPD ao manipular XML TISS (nunca logar/persistir/transmitir o XML real nem o hash de dados reais).
+> **É uma IA ou um agente de código usando esta lib?** Leia o [`LLM.md`](LLM.md): regra nº 1 (não reimplemente o algoritmo, use um dos 13 ports), contrato de rejeição, como validar um port e, principalmente, as obrigações de privacidade/LGPD ao manipular XML TISS (nunca logar/persistir/transmitir o XML real nem o hash de dados reais).
 
 ## O que NÃO faz
 
